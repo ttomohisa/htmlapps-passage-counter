@@ -28,6 +28,14 @@ jobs:
       - name: Build standalone with pinned embedded assets
         shell: pwsh
         run: ./scripts/check-repository.ps1
+      - name: Report embedded asset sizes
+        shell: pwsh
+        run: |
+          $report = Get-Content -Raw -Encoding utf8 dist/build-size-report.json | ConvertFrom-Json
+          Write-Host ("[Size] Readable bytes: {0}; Self-extract bytes: {1}" -f $report.readableHtmlBytes, $report.selfExtractHtmlBytes)
+          foreach ($entry in @($report.assets | Sort-Object storedBytes -Descending)) {
+            Write-Host ("[AssetSize] {0}/{1}: raw={2} stored={3} codec={4}" -f $entry.dependency, $entry.key, $entry.originalBytes, $entry.storedBytes, $entry.compression)
+          }
       - name: Install browser test driver (CI only)
         shell: pwsh
         run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
