@@ -97,13 +97,19 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
      const shape=inputs[0].shape;
      input=new runtime.Tensor(inputData(inputs[0].dtype,shape.reduce((a,b)=>a*b,1)),shape,inputs[0].dtype);
      const times=[];let samples=[];
+     state.stage='running-inference';
      for(let i=0;i<3;i++){
        const tick=performance.now();
        const r=await model.run(input);times.push(Math.round((performance.now()-tick)*100)/100);
        const tensors=Array.isArray(r)?r:Object.values(r);
        try{
-         samples=tensors.map(x=>({dtype:x.dtype,shape:Array.from(x.shape),
-           first:Array.from(x.toTypedArray().slice(0,6),v=>typeof v==='bigint'?String(v):v)}));
+         samples=tensors.map((x,index)=>{
+           const dtype=x.dtype??outputs[index]?.dtype;
+           const shape=outputs[index]?.shape??[];
+           if(typeof x.toTypedArray!=='function')throw Error('Output '+index+' has no toTypedArray, keys='+Object.keys(x));
+           const data=x.toTypedArray();
+           return {dtype,shape,first:Array.from(data.slice(0,6),v=>typeof v==='bigint'?String(v):v)};
+         });
        }finally{for(const x of tensors)x.delete();}
      }
      state.stage='complete';state.ok=true;state.report={mode,initMs,compileMs,inputDetails:inputs,
