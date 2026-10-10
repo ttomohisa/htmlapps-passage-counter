@@ -338,6 +338,223 @@ foreach ($dependency in $dependencies) {
   }
 }
 
+
+# Passage Counter: pin and embed the official TFLite model at build time.
+# The model URL is never referenced by application runtime code.
+$modelConfigPath = Join-Path $Root "model.config.json"
+if (-not (Test-Path -LiteralPath $modelConfigPath -PathType Leaf)) {
+  throw "model.config.json is required for Passage Counter."
+}
+$modelConfig = Get-Json $modelConfigPath
+$modelHash = ([string]$modelConfig.sha256).ToLowerInvariant()
+if ($modelHash -notmatch '^[a-f0-9]{64}
+  schemaVersion = 2
+  builder = "single-html-app-template/1.3"
+  generatedAtUtc = [DateTime]::UtcNow.ToString("o")
+  app = [ordered]@{
+    name = [string]$appConfig.name
+    slug = [string]$appConfig.slug
+    version = [string]$appConfig.version
+  }
+  dependencies = $manifestDependencies
+}
+
+Write-Step "Generating standalone HTML"
+$template = [System.IO.File]::ReadAllText($TemplatePath, [System.Text.Encoding]::UTF8)
+$assetBundleJson = ConvertTo-SafeJson $assetBundle 50
+$replacements = [ordered]@{
+  "__APP_CONFIG_JSON__" = ConvertTo-SafeJson $appConfig 20
+  "__BUILD_MANIFEST_JSON__" = ConvertTo-SafeJson $manifest 40
+  "__EMBEDDED_ASSET_BUNDLE_JSON__" = $assetBundleJson
+  "__APP_ICON_DATA_URI__" = $appIconDataUri
+}
+$replacementExpectedCounts = @{
+  "__APP_CONFIG_JSON__" = 1
+  "__BUILD_MANIFEST_JSON__" = 1
+  "__EMBEDDED_ASSET_BUNDLE_JSON__" = 1
+  "__APP_ICON_DATA_URI__" = 2
+}
+
+foreach ($entry in $replacements.GetEnumerator()) {
+  $count = ([regex]::Matches($template, [regex]::Escape($entry.Key))).Count
+  $expectedCount = [int]$replacementExpectedCounts[$entry.Key]
+  if ($count -ne $expectedCount) {
+    throw "Template placeholder $($entry.Key) must occur exactly $expectedCount time(s); found $count."
+  }
+  $template = $template.Replace($entry.Key, [string]$entry.Value)
+}
+
+$outputDirectory = Split-Path -Parent $OutputPath
+New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
+[System.IO.File]::WriteAllText($OutputPath, $template, (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText((Join-Path $outputDirectory "dependency-manifest.json"), ($manifest | ConvertTo-Json -Depth 40), (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText((Join-Path $outputDirectory ".nojekyll"), "", (New-Object System.Text.UTF8Encoding($false)))
+
+& $VerifyPath `
+  -Path $OutputPath `
+  -RequireNetworkBlock ([bool]$appConfig.build.blockRuntimeNetwork) `
+  -ForbiddenPlaceholders @($replacements.Keys)
+
+if (-not [string]::IsNullOrWhiteSpace($rootHtmlOutputPath)) {
+  [System.IO.File]::Copy($OutputPath, $rootHtmlOutputPath, $true)
+}
+
+$selfExtractEnabled = $false
+$selfExtractOutputPath = ""
+if (-not $SkipSelfExtract -and ($appConfig.build.PSObject.Properties.Name -contains "selfExtract")) {
+  $selfExtractConfig = $appConfig.build.selfExtract
+  if ($selfExtractConfig -and ($selfExtractConfig.PSObject.Properties.Name -contains "enabled")) {
+    $selfExtractEnabled = [bool]$selfExtractConfig.enabled
+  }
+  if ($selfExtractEnabled) {
+    if (-not ($selfExtractConfig.PSObject.Properties.Name -contains "output")) {
+      throw "app.config.json: build.selfExtract.output is required when self-extract output is enabled."
+    }
+    if ($OutputPathWasSpecified) {
+      $customDirectory = Split-Path -Parent $OutputPath
+      $customBaseName = [System.IO.Path]::GetFileNameWithoutExtension($OutputPath)
+      $selfExtractOutputPath = Join-Path $customDirectory ($customBaseName + ".self-extract.html")
+    } else {
+      $configuredSelfExtractOutput = [string]$selfExtractConfig.output
+      if ([string]::IsNullOrWhiteSpace($configuredSelfExtractOutput)) {
+        throw "app.config.json: build.selfExtract.output cannot be empty."
+      }
+      $selfExtractOutputPath = if ([System.IO.Path]::IsPathRooted($configuredSelfExtractOutput)) {
+        $configuredSelfExtractOutput
+      } else {
+        Join-Path $Root $configuredSelfExtractOutput
+      }
+    }
+
+    Write-Step "Generating self-extracting HTML"
+    & $SelfExtractBuilderPath `
+      -InputPath $OutputPath `
+      -OutputPath $selfExtractOutputPath `
+      -AppName ([string]$appConfig.name) `
+      -AppNameJa ([string]$appConfig.nameJa)
+  }
+}
+
+$readableBytes = (Get-Item $OutputPath).Length
+$selfExtractBytes = 0
+if ($selfExtractEnabled -and (Test-Path $selfExtractOutputPath)) { $selfExtractBytes = (Get-Item $selfExtractOutputPath).Length }
+$assetRawBytes = 0
+$assetStoredBytes = 0
+$sizeAssets = @()
+foreach ($dependencyEntry in $manifestDependencies) {
+  foreach ($assetEntry in @($dependencyEntry.assets)) {
+    $assetRawBytes += [long]$assetEntry.bytes
+    $assetStoredBytes += [long]$assetEntry.storedBytes
+    $sizeAssets += [ordered]@{
+      dependency = [string]$dependencyEntry.id
+      key = [string]$assetEntry.key
+      compression = [string]$assetEntry.compression
+      originalBytes = [long]$assetEntry.bytes
+      storedBytes = [long]$assetEntry.storedBytes
+    }
+  }
+}
+$sizeReport = [ordered]@{
+  schemaVersion = 1
+  generatedAtUtc = [DateTime]::UtcNow.ToString("o")
+  readableHtmlBytes = [long]$readableBytes
+  selfExtractHtmlBytes = [long]$selfExtractBytes
+  embeddedAssetOriginalBytes = [long]$assetRawBytes
+  embeddedAssetStoredBytes = [long]$assetStoredBytes
+  embeddedAssetSavedBytes = [long]($assetRawBytes - $assetStoredBytes)
+  assets = $sizeAssets
+}
+$sizeReportPath = Join-Path (Split-Path -Parent $OutputPath) "build-size-report.json"
+[System.IO.File]::WriteAllText($sizeReportPath, ($sizeReport | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding($false)))
+
+Write-Host ""
+Write-Host "[Size] Readable HTML: $([Math]::Round($readableBytes / 1MB, 2)) MB"
+if ($selfExtractBytes -gt 0) { Write-Host "[Size] Self-extract HTML: $([Math]::Round($selfExtractBytes / 1MB, 2)) MB" }
+Write-Host "[Size] Embedded assets: $([Math]::Round($assetRawBytes / 1MB, 2)) MB raw -> $([Math]::Round($assetStoredBytes / 1MB, 2)) MB stored"
+Write-Host "[Size] Report: $sizeReportPath"
+
+if ($appConfig.build.PSObject.Properties.Name -contains "sizeBudget" -and $appConfig.build.sizeBudget) {
+  $readableBudget = Get-OptionalNumber $appConfig.build.sizeBudget "readableWarningMb" 0
+  $selfExtractBudget = Get-OptionalNumber $appConfig.build.sizeBudget "selfExtractWarningMb" 0
+  $readableMb = $readableBytes / 1MB
+  $selfExtractMb = $selfExtractBytes / 1MB
+  if ($readableBudget -gt 0 -and $readableMb -gt $readableBudget) {
+    Write-Warning ("Readable HTML size {0:N2} MB exceeds warning budget {1:N2} MB." -f $readableMb, $readableBudget)
+  }
+  if ($selfExtractBytes -gt 0 -and $selfExtractBudget -gt 0 -and $selfExtractMb -gt $selfExtractBudget) {
+    Write-Warning ("Self-extract HTML size {0:N2} MB exceeds warning budget {1:N2} MB." -f $selfExtractMb, $selfExtractBudget)
+  }
+}
+
+$outputHash = Get-Sha256FileHex $OutputPath
+$outputSizeMb = [Math]::Round($readableBytes / 1MB, 2)
+Write-Host ""
+Write-Host "[OK] Standalone HTML: $OutputPath" -ForegroundColor Green
+if (-not [string]::IsNullOrWhiteSpace($rootHtmlOutputPath)) {
+  Write-Host "[OK] Repository-root HTML: $rootHtmlOutputPath" -ForegroundColor Green
+}
+Write-Host "[OK] Size: $outputSizeMb MB"
+Write-Host "[OK] SHA-256: $outputHash"
+Write-Host "[OK] Fetch/XHR/WebSocket-style runtime network access is blocked by CSP."
+if ($selfExtractEnabled) {
+  Write-Host "[OK] Self-extracting HTML: $selfExtractOutputPath" -ForegroundColor Green
+}
+) { throw "model.config.json: sha256 must contain the verified 64-character SHA-256." }
+if ([string]$modelConfig.url -notmatch '^https://storage\\.googleapis\\.com/mediapipe-models/') {
+  throw "model.config.json: unexpected model download origin."
+}
+$modelCachePath = Join-Path $CacheRoot ("person-model-" + $modelHash + ".tflite")
+if (-not (Test-Path -LiteralPath $modelCachePath)) {
+  $tempModel = $modelCachePath + ".part"
+  Remove-Item -Force -ErrorAction SilentlyContinue $tempModel
+  Write-Step "Downloading pinned EfficientDet-Lite0 model for build-time embedding"
+  Invoke-WebRequest -Uri ([string]$modelConfig.url) -OutFile $tempModel -UseBasicParsing
+  Move-Item -Force $tempModel $modelCachePath
+}
+$actualModelHash = Get-Sha256FileHex $modelCachePath
+if ($actualModelHash -ne $modelHash) {
+  throw "Model SHA-256 mismatch. Expected $modelHash but got $actualModelHash. Refusing to build."
+}
+$modelBytes = [System.IO.File]::ReadAllBytes($modelCachePath)
+$modelGzip = Compress-GzipBytes $modelBytes
+$modelStored = $modelBytes
+$modelCompression = "none"
+if ($modelGzip.Length -lt $modelBytes.Length) {
+  $modelStored = $modelGzip
+  $modelCompression = "gzip"
+}
+$assetBundle.dependencies["person-model"] = [ordered]@{
+  package = "official-mediapipe-model"
+  version = [string]$modelConfig.version
+  assets = [ordered]@{
+    tflite = [ordered]@{
+      mime = "application/octet-stream"
+      compression = $modelCompression
+      originalBytes = $modelBytes.Length
+      storedBytes = $modelStored.Length
+      base64 = [Convert]::ToBase64String($modelStored)
+    }
+  }
+}
+$manifestDependencies += [ordered]@{
+  id = "person-model"
+  package = "official-mediapipe-model"
+  version = [string]$modelConfig.version
+  license = [string]$modelConfig.license
+  homepage = [string]$modelConfig.homepage
+  sourceUrl = [string]$modelConfig.url
+  locked = $true
+  assets = @([ordered]@{
+    key = "tflite"
+    path = "model.config.json (build-only URL)"
+    mime = "application/octet-stream"
+    compression = $modelCompression
+    bytes = $modelBytes.Length
+    storedBytes = $modelStored.Length
+    sha256 = $actualModelHash
+  })
+}
+
 $manifest = [ordered]@{
   schemaVersion = 2
   builder = "single-html-app-template/1.3"
