@@ -142,9 +142,16 @@ function Get-AssetBytes([string]$Path, [bool]$StripSourceMapComment) {
 
 function Compress-GzipBytes([byte[]]$Bytes) {
   $output = New-Object System.IO.MemoryStream
+  # The payload is decompressed with the standard native gzip stream API.
+  # Prefer the highest compression level on modern .NET to reduce the one-HTML
+  # file; Windows PowerShell 5.1 can still use the compatible Optimal level.
+  $level = [System.IO.Compression.CompressionLevel]::Optimal
+  if ([Enum]::GetNames([System.IO.Compression.CompressionLevel]) -contains "SmallestSize") {
+    $level = [Enum]::Parse([System.IO.Compression.CompressionLevel], "SmallestSize")
+  }
   $gzip = New-Object System.IO.Compression.GZipStream -ArgumentList @(
     $output,
-    [System.IO.Compression.CompressionMode]::Compress,
+    $level,
     $true
   )
   try {
