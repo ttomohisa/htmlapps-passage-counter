@@ -44,7 +44,12 @@ try {
     }
   });
   page.on('console', message => {
-    if (message.type() === 'error') errors.push(message.text());
+    // MediaPipe's XNNPACK native initialization emits an INFO line on console.error.
+    // It is not a runtime failure, so exclude only this known informational message.
+    if (message.type() === 'error' &&
+        !/^INFO: Created TensorFlow Lite XNNPACK delegate for CPU\.$/.test(message.text())) {
+      errors.push(message.text());
+    }
   });
   await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   const assets = await page.evaluate(() => window.StandaloneAssets?.list?.() ?? []);
