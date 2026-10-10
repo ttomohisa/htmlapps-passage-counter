@@ -88,7 +88,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   <div class="header-wrap">
     <div class="brand">
       <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
-      <div><strong>Passage Counter</strong><small data-i18n="subTitle">通過カウンター · v0.1.0</small></div>
+      <div><strong>Passage Counter</strong><small data-i18n="subTitle">通過カウンター · v0.2.0</small></div>
     </div>
     <label class="sr-only" for="languageSelect" data-i18n="language">言語</label>
     <select id="languageSelect" class="language" aria-label="Language"><option value="ja">日本語</option><option value="en">English</option></select>
@@ -136,11 +136,11 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
     <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
     <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
-    <p class="helper" data-i18n="prototypeNote">v0.1.0は人物検出・短時間追跡の初期実装です。計測用途での精度確認はまだ完了していません。</p>
+    <p class="helper" data-i18n="prototypeNote">v0.2.0では人物の短時間追跡と線の横断判定を改善しています。計測用途での精度確認はまだ完了していません。</p>
   </section>
 </main>
 <!-- APP:END -->
-<footer>Passage Counter · v0.1.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
+<footer>Passage Counter · v0.2.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを三脚などで固定し、カメラを開始します。</li><li data-i18n="help2">判定線の白丸を動かし、人が横切る位置に置きます。</li><li data-i18n="help3">計測を開始すると、線を横切った人物を方向別に加算します。</li><li data-i18n="help4">計測を終了してCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -257,7 +257,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.1.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          language:'言語',subTitle:'通過カウンター · v0.2.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           title:'線を横切る人を、カメラで数える。',intro:'スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。',
           camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
@@ -265,7 +265,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'保存時に .csv を付けます。',download:'CSVを書き出す',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.1.0は人物検出・短時間追跡の初期実装です。計測用途での精度確認はまだ完了していません。',
+          prototypeNote:'v0.2.0は人物検出・短時間追跡の初期実装です。計測用途での精度確認はまだ完了していません。',
           footer:'モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。',
           helpTitle:'使い方と注意事項',help1:'スマホを三脚などで固定し、カメラを開始します。',help2:'判定線の白丸を動かし、人が横切る位置に置きます。',help3:'計測を開始すると、線を横切った人物を方向別に加算します。',help4:'計測を終了してCSVを書き出せます。',
           helpPrivacy:'映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。',
@@ -275,7 +275,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、計測を開始してください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.1.0',help:'Help',privacyShort:'No account · On-device processing',
+          language:'Language',subTitle:'People crossing counter · v0.2.0',help:'Help',privacyShort:'No account · On-device processing',
           title:'Count people crossing a line.',intro:'Fix your phone in place, start the camera, and position the counting line. Crossings are counted by direction. Images of people are not saved.',
           camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
@@ -283,7 +283,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'The .csv extension is added when exporting.',download:'Export CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.1.0 implements initial person detection and short tracking. Counting accuracy is not yet validated for field use.',
+          prototypeNote:'v0.2.0 improves short-term tracking and finite-line crossing detection. Counting accuracy is not yet validated for field use.',
           footer:'The AI model and WASM are bundled in the HTML. Camera frames are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your phone or webcam in position, then start the camera.',help2:'Drag the line endpoints to where people will pass.',help3:'Start counting. Crossings appear separately for each direction.',help4:'Finish counting and export the CSV.',
           helpPrivacy:'Frames, faces and audio are not stored or uploaded. The HTML contains the required AI model and WASM.',
@@ -301,7 +301,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       const STORAGE_KEY = 'passage-counter-language-v1';
       const line = [{x:0.12,y:0.52},{x:0.88,y:0.52}];
       const state = {
-        phase:'idle', stream:null, detector:null, modelUrls:[], tracks:[], nextTrackId:1,
+        phase:'idle', stream:null, detector:null, modelUrls:[],
         a:0,b:0,events:[],reverse:false,lastInfer:0,lastFrameTime:0,lastTimestamp:0,
         detections:[],fps:0,frameHandle:0,startTime:0,elapsedMs:0,lastActive:0,wakeLock:null,
         drag:null,clockTimer:null,sessionStart:null
@@ -393,53 +393,173 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#report').hidden=phase!=='done';
         $('#cameraPlaceholder').hidden=Boolean(state.stream);
       }
-      function zeroTracks(){state.tracks=[];state.nextTrackId=1;state.detections=[];}
-      function signedSide(point){
-        const a=line[0],b=line[1];const vx=b.x-a.x,vy=b.y-a.y,px=point.x-a.x,py=point.y-a.y;
-        const length=Math.hypot(vx,vy)||1;
-        const projected=(px*vx+py*vy)/(length*length);
-        const perpendicular=(vx*py-vy*px)/length*(state.reverse?-1:1);
-        return {distance:perpendicular,projected,side:perpendicular>0.025?1:perpendicular< -0.025?-1:0};
-      }
-      // v0.1.0 provisional nearest-neighbor tracker. Multi-person identity
-      // swaps are possible; v0.2.0 replaces this with a predictive tracker.
-      function trackPeople(detections,now){
-        const points=detections.map(d=>({x:(d.originX+d.width*0.5)/video.videoWidth,y:(d.originY+d.height)/video.videoHeight}));
-        const pool=state.tracks.filter(t=>now-t.seenAt<1000);
-        const used=new Set();
-        const next=[];
-        points.forEach((point)=>{
-          let best=null,bestDistance=0.14;
-          for(const candidate of pool){
-            if(used.has(candidate.id))continue;
-            const distance=Math.hypot(point.x-candidate.point.x,point.y-candidate.point.y);
-            if(distance<bestDistance){bestDistance=distance;best=candidate;}
-          }
-          let track;
-          if(best){track=best;used.add(track.id);}
-          else{track={id:state.nextTrackId++,stableSide:0,pendingSide:0,pendingFrames:0,point,seenAt:now};}
-          track.point=point;track.seenAt=now;
-          const geo=signedSide(point);
-          if(geo.projected>=0&&geo.projected<=1&&geo.side){
-            if(!track.stableSide){
-              if(track.pendingSide===geo.side)track.pendingFrames++;
-              else{track.pendingSide=geo.side;track.pendingFrames=1;}
-              if(track.pendingFrames>=2){track.stableSide=geo.side;track.pendingFrames=0;}
-            }else if(geo.side===track.stableSide){
-              track.pendingSide=0;track.pendingFrames=0;
-            }else{
-              if(track.pendingSide===geo.side)track.pendingFrames++;
-              else{track.pendingSide=geo.side;track.pendingFrames=1;}
-              if(track.pendingFrames>=2){
-                const direction=track.stableSide===-1?'A_TO_B':'B_TO_A';
-                if(state.phase==='counting')recordCrossing(direction);
-                track.stableSide=geo.side;track.pendingFrames=0;track.pendingSide=0;
-              }
+      function zeroTracks(){tracker.reset();state.detections=[];}
+      // TRACKER:BEGIN
+      // Pure v0.2.0 tracker. Coordinates use the intrinsic frame, normalized
+      // to 0..1. Only transient rectangles and short-lived IDs are retained.
+      function createCrossingTracker({
+        minimumHits = 3, sideSamples = 2, crossingSamples = 2,
+        hysteresis = 0.026, maxMissingMs = 850, safeBridgeMs = 430
+      } = {}) {
+        let tracks = [], nextId = 1;
+        const squared = x => x * x;
+        const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+        const foot = box => ({ x: box.x + box.w / 2, y: box.y + box.h });
+        const iou = (a, b) => {
+          const x0 = Math.max(a.x, b.x), y0 = Math.max(a.y, b.y);
+          const x1 = Math.min(a.x + a.w, b.x + b.w);
+          const y1 = Math.min(a.y + a.h, b.y + b.h);
+          const intersection = Math.max(0, x1 - x0) * Math.max(0, y1 - y0);
+          const union = a.w * a.h + b.w * b.h - intersection;
+          return union > 0 ? intersection / union : 0;
+        };
+        function side(point, line, reverse) {
+          const dx = line[1].x - line[0].x, dy = line[1].y - line[0].y;
+          const length = Math.hypot(dx, dy);
+          if (length < 0.08) return { value: 0, projection: -1, zone: 0 };
+          const px = point.x - line[0].x, py = point.y - line[0].y;
+          const signed = (dx * py - dy * px) / length * (reverse ? -1 : 1);
+          const projection = (dx * px + dy * py) / squared(length);
+          return { value: signed, projection,
+            zone: signed > hysteresis ? 1 : signed < -hysteresis ? -1 : 0 };
+        }
+        // Count only where the observed movement crosses the finite segment,
+        // not its infinite extension outside the end handles.
+        function intersection(start, end, line) {
+          const ax = line[0].x, ay = line[0].y;
+          const dx = line[1].x - ax, dy = line[1].y - ay;
+          const vx = end.x - start.x, vy = end.y - start.y;
+          const denom = dx * vy - dy * vx;
+          if (Math.abs(denom) < 1e-7) return null;
+          const sx = start.x - ax, sy = start.y - ay;
+          const along = (sx * vy - sy * vx) / denom;
+          const step = (sx * dy - sy * dx) / denom;
+          if (along < 0 || along > 1 || step < 0 || step > 1) return null;
+          return { x: ax + along * dx, y: ay + along * dy };
+        }
+        function create(box, now) {
+          const point = foot(box);
+          return { id: nextId++, box, point, velocity: { x: 0, y: 0 },
+            seenAt: now, hits: 1, phase: 'tentative', armed: 0,
+            candidate: 0, candidateHits: 0, candidatePoint: null,
+            armPoint: null, armHits: 0, recentlyAmbiguous: 0 };
+        }
+        function reset() { tracks = []; nextId = 1; }
+        function inspect() {
+          return tracks.map(t => ({ id: t.id, phase: t.phase,
+            point: { ...t.point }, armed: t.armed, hits: t.hits }));
+        }
+        function update(boxes, now, line, reverse = false) {
+          if (!Number.isFinite(now) || !Array.isArray(line) || line.length !== 2 ||
+              !line.every(p => Number.isFinite(p.x) && Number.isFinite(p.y)) ||
+              distance(line[0], line[1]) < 0.08) return [];
+          const observations = boxes.filter(b => b && [b.x,b.y,b.w,b.h].every(Number.isFinite) &&
+            b.w > 0.005 && b.h > 0.01).slice(0, 20);
+          tracks = tracks.filter(t => now - t.seenAt >= 0 && now - t.seenAt <= maxMissingMs);
+          const edges = [];
+          for (let ti = 0; ti < tracks.length; ti++) {
+            const t = tracks[ti];
+            const age = now - t.seenAt;
+            const dt = Math.min(age, 360);
+            const predicted = { x: t.point.x + t.velocity.x * dt, y: t.point.y + t.velocity.y * dt };
+            const predictedBox = { ...t.box, x: t.box.x + t.velocity.x * dt,
+              y: t.box.y + t.velocity.y * dt };
+            const gate = Math.min(0.26, 0.065 + age * 0.00036);
+            for (let di = 0; di < observations.length; di++) {
+              const b = observations[di], p = foot(b), dis = distance(predicted, p);
+              if (dis > gate) continue;
+              const overlap = iou(predictedBox, b);
+              const sizeMismatch = Math.min(1, Math.abs(Math.log(b.w / t.box.w)) * 0.4 +
+                Math.abs(Math.log(b.h / t.box.h)) * 0.4);
+              const cost = 0.70 * dis / gate + 0.23 * (1 - overlap) + 0.07 * sizeMismatch;
+              edges.push({ ti, di, cost });
             }
           }
-          next.push(track);
-        });
-        state.tracks=next.concat(pool.filter(t=>!used.has(t.id)&&!next.includes(t)&&now-t.seenAt<650));
+          edges.sort((a, b) => a.cost - b.cost);
+          const takenT = new Set(), takenD = new Set(), events = [];
+          const matches = [];
+          for (const edge of edges) {
+            if (takenT.has(edge.ti) || takenD.has(edge.di)) continue;
+            // Suppress uncertain crossing events when association nearly ties.
+            const ambiguous = edges.some(other => other !== edge &&
+              ((other.di === edge.di && other.ti !== edge.ti) ||
+               (other.ti === edge.ti && other.di !== edge.di)) &&
+              other.cost - edge.cost < 0.07);
+            takenT.add(edge.ti); takenD.add(edge.di);
+            matches.push({ t: tracks[edge.ti], b: observations[edge.di], ambiguous });
+          }
+          for (const { t, b, ambiguous } of matches) {
+            const nowPoint = foot(b);
+            const gap = now - t.seenAt;
+            const previous = t.point;
+            const vX = (nowPoint.x - previous.x) / Math.max(gap, 1);
+            const vY = (nowPoint.y - previous.y) / Math.max(gap, 1);
+            t.velocity = { x: t.velocity.x * 0.35 + vX * 0.65,
+              y: t.velocity.y * 0.35 + vY * 0.65 };
+            t.point = nowPoint; t.box = b; t.seenAt = now;
+            t.hits++;
+            if (ambiguous || gap > safeBridgeMs) {
+              t.recentlyAmbiguous = 3;
+              t.armed = 0; t.armHits = 0; t.candidate = 0;
+              t.candidateHits = 0; t.candidatePoint = null;
+            } else if (t.recentlyAmbiguous > 0) t.recentlyAmbiguous--;
+            if (t.hits < minimumHits) continue;
+            t.phase = 'confirmed';
+            const geometry = side(nowPoint, line, reverse);
+            if (geometry.zone === 0) continue;
+            const onSegment = geometry.projection >= 0 && geometry.projection <= 1;
+            if (!t.armed) {
+              if (onSegment && t.recentlyAmbiguous === 0) {
+                t.armHits = (t.candidate === geometry.zone) ? t.armHits + 1 : 1;
+                t.candidate = geometry.zone;
+                if (t.armHits >= sideSamples) {
+                  t.armed = geometry.zone; t.armPoint = nowPoint;
+                  t.candidate = 0; t.candidateHits = 0;
+                }
+              } else { t.armHits = 0; t.candidate = 0; }
+              continue;
+            }
+            if (geometry.zone === t.armed) {
+              t.candidate = 0; t.candidateHits = 0; t.candidatePoint = null;
+              if (onSegment) t.armPoint = nowPoint;
+              continue;
+            }
+            if (t.candidate !== geometry.zone) {
+              t.candidate = geometry.zone; t.candidateHits = 0;
+              t.candidatePoint = t.armPoint && intersection(t.armPoint, nowPoint, line);
+            }
+            t.candidateHits++;
+            if (t.candidateHits < crossingSamples) continue;
+            if (t.candidatePoint && t.recentlyAmbiguous === 0 && onSegment) {
+              events.push({ direction: t.armed === -1 ? 'A_TO_B' : 'B_TO_A',
+                trackId: t.id, crossedAt: t.candidatePoint, time: now });
+            }
+            // Destination side is re-armed only after opposite-side confirmation.
+            t.armed = onSegment ? geometry.zone : 0;
+            t.armPoint = onSegment ? nowPoint : null;
+            t.candidate = 0; t.candidateHits = 0; t.candidatePoint = null;
+            t.armHits = 0;
+          }
+          for (let di = 0; di < observations.length; di++) {
+            if (!takenD.has(di)) tracks.push(create(observations[di], now));
+          }
+          for (const t of tracks) {
+            if (!matches.some(m => m.t === t)) t.phase = 'temporarily_missing';
+          }
+          return events;
+        }
+        return Object.freeze({ reset, update, inspect });
+      }
+      // TRACKER:END
+      const tracker = createCrossingTracker();
+      function trackPeople(detections,now) {
+        const width=video.videoWidth, height=video.videoHeight;
+        if(!width||!height)return;
+        const boxes=detections.map(d=>({
+          x:d.originX/width,y:d.originY/height,w:d.width/width,h:d.height/height
+        }));
+        const events=tracker.update(boxes,now,line,state.reverse);
+        if(state.phase==='counting') for(const event of events) recordCrossing(event.direction);
       }
       function recordCrossing(direction){
         if(direction==='A_TO_B')state.a+=1;else state.b+=1;

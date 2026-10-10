@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2026-10-11 (Draft)
+
+- Added prediction-assisted matching with IoU, object size and foot-point distance.
+- Added track arming, stable-side hysteresis, direction re-arming and finite-segment intersections.
+- Suppress uncertain matches and crossings after long detection gaps rather than creating inferred counts.
+- Added 13 deterministic crossing, jitter, simultaneous-passage, occlusion and reset tests.
+- Preserved the embedded AI model, both WASM variants, offline/privacy gates and bilingual UI.
+
 ## [0.1.0] - 2026-10-11 (Draft)
 
 - Implemented initial camera capture, person detection, draggable line, provisional short-term tracking, directional counting, pause/resume/finish and CSV export.

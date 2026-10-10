@@ -2,13 +2,13 @@
 
 Count **person-crossing events by direction** with a fixed phone or desktop camera and one draggable counting line. The complete application—including its AI model, JavaScript loader, SIMD WASM, and non-SIMD WASM—lives inside one HTML file.
 
-**v0.1.0 is a technical preview.** Person tracking and crossing decisions are preliminary and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**v0.2.0 is a technical preview.** Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
 ## Features
 
 - Live camera preview; permission is requested only after choosing **Start camera**.
 - EfficientDet-Lite0 int8 person detection with MediaPipe Tasks Vision.
-- Draggable line endpoints, reversible A/B direction, initial short-term tracking and directional counts.
+- Draggable line endpoints, reversible A/B direction, short-term prediction/IoU tracking, stable-side hysteresis, finite-line crossing, and directional counts.
 - Start, pause, resume, finish, elapsed-time display and downloadable UTF-8 CSV.
 - English / Japanese, mobile-first responsive interface and attempted screen wake lock.
 - No account, runtime CDN, remote inference, telemetry, upload or recording.
@@ -25,7 +25,7 @@ A person passing back across the line counts as another event. The number is **n
 
 ## Privacy and data
 
-The camera requests video only, with audio disabled. Frames and short-term tracking data remain in browser memory. No video, still images, faces or sound are saved or transmitted. In v0.1.0, crossing records remain in memory until you export CSV. **Reloading or closing the page discards unsaved events**; persistence and recovery are planned for v0.4.0.
+The camera requests video only, with audio disabled. Frames and short-term tracking data remain in browser memory. No video, still images, faces or sound are saved or transmitted. In v0.2.0, crossing records remain in memory until you export CSV. **Reloading or closing the page discards unsaved events**; persistence and recovery are planned for v0.4.0.
 
 The runtime's CSP uses \`connect-src blob:\` so the WebAssembly loader can read *embedded in-memory* bytes through Blob URLs. No remote HTTP(S) origin is allowed. Consult local camera notice and privacy requirements before deploying in public or workplace locations.
 

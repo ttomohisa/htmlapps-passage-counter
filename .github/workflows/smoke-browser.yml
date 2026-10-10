@@ -36,6 +36,9 @@ jobs:
           foreach ($entry in @($report.assets | Sort-Object storedBytes -Descending)) {
             Write-Host ("[AssetSize] {0}/{1}: raw={2} stored={3} codec={4}" -f $entry.dependency, $entry.key, $entry.originalBytes, $entry.storedBytes, $entry.compression)
           }
+      - name: Verify tracking state machine and line geometry
+        shell: pwsh
+        run: node scripts/test-tracker.mjs
       - name: Install browser test driver (CI only)
         shell: pwsh
         run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
