@@ -830,7 +830,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         badge('A',cx-nx*29,cy-ny*29);
         badge('B',cx+nx*29,cy+ny*29);
         ctx.textAlign='start';ctx.textBaseline='alphabetic';
-        state.detections.forEach(d=>{
+        if($('#showDetections').checked)state.detections.forEach(d=>{
           const x=g.x+d.originX*g.sx,y=g.y+d.originY*g.sx;
           const dw=d.width*g.sx,dh=d.height*g.sx;
           ctx.strokeStyle='#b9f5d9';ctx.lineWidth=2;ctx.strokeRect(x,y,dw,dh);
@@ -840,7 +840,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function pointerAt(e){const r=overlay.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
       overlay.addEventListener('pointerdown',e=>{
-        if(!state.stream||state.phase==='counting')return;
+        if(!state.stream||state.phase==='counting'||state.phase==='testing')return;
         const p=pointerAt(e),g=layoutInfo();
         const d=line.map(pt=>Math.hypot(p.x-(g.x+pt.x*g.width),p.y-(g.y+pt.y*g.height)));
         const i=d[0]<d[1]?0:1;
@@ -849,11 +849,11 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
       overlay.addEventListener('pointermove',e=>{
         if(state.drag===null)return;
-        const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();draw();renderState();e.preventDefault();
+        const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();invalidateTest();draw();renderState();e.preventDefault();
       });
-      function finishDrag(){state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
+      function finishDrag(){if(state.drag!==null)saveSetup();state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
       overlay.addEventListener('keydown',event=>{
-        if(!state.stream||state.phase==='counting')return;
+        if(!state.stream||state.phase==='counting'||state.phase==='testing')return;
         const step=event.shiftKey?0.02:0.005;
         let dx=0,dy=0;
         if(event.key==='ArrowLeft')dx=-step;
@@ -866,7 +866,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           point.x=Math.max(0.03,Math.min(0.97,point.x+dx));
           point.y=Math.max(0.03,Math.min(0.97,point.y+dy));
         }
-        zeroTracks();draw();
+        zeroTracks();invalidateTest();saveSetup();draw();renderState();
       });
 
       async function initEmbeddedDetector(){
@@ -886,6 +886,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#detectorInfo').textContent='EfficientDet-Lite0 · '+(simd?'SIMD':'WASM');
       }
       function closeCamera(){
+        if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting')interrupt(tr('lostCamera'));
         cancelAnimationFrame(state.frameHandle);
         if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null;}
@@ -893,7 +894,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(state.detector){state.detector.close();state.detector=null;}
         state.modelUrls.forEach(url=>URL.revokeObjectURL(url));state.modelUrls=[];
         zeroTracks();state.drag=null;
-        if(state.phase!=='done'&&state.phase!=='interrupted')state.phase='idle';
+        if(state.phase!=='done'&&state.phase!=='interrupted')state.phase=state.startTime?'paused':'idle';
         draw();renderState();
       }
       async function startCamera(){
@@ -901,7 +902,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(state.stream)return;
         state.phase='loading';renderState();
         try{
-          const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+          const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:$('#cameraFacing').value},width:{ideal:1280},height:{ideal:720}}});
           state.stream=stream;
           const track=stream.getVideoTracks()[0];
           if(track)track.addEventListener('ended',()=>{
@@ -948,8 +949,22 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         catch{toast(tr('wakeWarning'));}
       }
       function unlockScreen(){if(state.wakeLock){state.wakeLock.release().catch(()=>{});state.wakeLock=null;}}
+      function startTest(){
+        if(!state.detector||!state.stream||!['ready','paused'].includes(state.phase))return;
+        if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
+        state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
+        state.testA=0;state.testB=0;state.testStartedAt=performance.now();state.testEndedAt=0;
+        state.phase='testing';zeroTracks();renderState();lockScreen();
+      }
+      function finishTest(cancelled=false){
+        if(state.phase!=='testing')return;
+        state.testEndedAt=performance.now();state.testCompleted=!cancelled;state.testCancelled=cancelled;
+        state.phase=state.testReturnPhase;zeroTracks();unlockScreen();
+        renderState(tr(cancelled?'testCancelled':'testReady'));
+      }
       function beginCount(){
         if(!state.detector||!state.stream){toast(tr('notReady'));return;}
+        if(!state.testCompleted){toast(tr('testRequired'));return;}
         if(state.phase!=='ready'&&state.phase!=='paused'&&state.phase!=='interrupted')return;
         if(!state.startTime){state.startTime=Date.now();state.sessionStart=new Date().toISOString();}
         state.lastActive=performance.now();state.phase='counting';zeroTracks();renderState();lockScreen();
@@ -981,8 +996,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function exportCsv(){
         if(!state.startTime){toast(tr('noEvents'));return;}
-        const rows=[['event_id','occurred_at','direction','kind','delta','elapsed_ms']];
-        for(const e of state.events)rows.push([e.id,e.occurredAt,e.direction,e.kind,e.delta,e.elapsedMs]);
+        const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of']];
+        for(const e of ledger.history())rows.push([e.id,e.occurredAt,e.direction,
+          countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf]);
         const text='\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';
         const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
         const a=document.createElement('a');a.href=url;a.download=normalizedFilename();a.click();
@@ -990,7 +1006,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function resetCounts(){
         if(state.phase==='counting')pauseCount();
-        state.a=0;state.b=0;state.events=[];state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;zeroTracks();
+        ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
+        zeroTracks();invalidateTest();
         state.phase=state.stream?'ready':'idle';renderState();
       }
       $('#languageSelect').addEventListener('change',e=>{language=e.target.value==='ja'?'ja':'en';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
@@ -1003,7 +1020,27 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
       $('#cameraStart').addEventListener('click',startCamera);
       $('#cameraStop').addEventListener('click',closeCamera);
-      $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();draw();});
+      $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();invalidateTest();saveSetup();draw();renderState();});
+      $('#testButton').addEventListener('click',()=>{
+        if(state.phase==='testing')finishTest();
+        else startTest();
+      });
+      $('#showDetections').addEventListener('change',()=>{saveSetup();draw();});
+      $('#cameraFacing').addEventListener('change',async()=>{
+        if(['counting','testing','loading','done'].includes(state.phase))return;
+        const connected=Boolean(state.stream);
+        saveSetup();invalidateTest();
+        if(connected){closeCamera();await startCamera();}
+        else renderState();
+      });
+      for(const id of ['#labelA','#labelB']){
+        $(id).addEventListener('input',()=>{saveSetup();renderState();});
+      }
+      $('#minusA').addEventListener('click',()=>correction('A_TO_B',-1));
+      $('#plusA').addEventListener('click',()=>correction('A_TO_B',1));
+      $('#minusB').addEventListener('click',()=>correction('B_TO_A',-1));
+      $('#plusB').addEventListener('click',()=>correction('B_TO_A',1));
+      $('#undoCorrection').addEventListener('click',()=>undoLastCorrection());
       $('#beginCount').addEventListener('click',beginCount);
       $('#pauseCount').addEventListener('click',pauseCount);
       $('#finishCount').addEventListener('click',finishCount);
@@ -1013,12 +1050,26 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(confirmed)resetCounts();
       });
       $('#outputFilename').addEventListener('blur',normalizedFilename);
-      document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'&&state.phase==='counting')interrupt(tr('hiddenStop'));});
-      window.addEventListener('pagehide',()=>{if(state.phase==='counting')interrupt(tr('hiddenStop'));unlockScreen();if(state.stream)state.stream.getTracks().forEach(t=>t.stop());});
+      document.addEventListener('visibilitychange',()=>{
+        if(document.visibilityState!=='visible'){
+          if(state.phase==='testing')finishTest(true);
+          if(state.phase==='counting')interrupt(tr('hiddenStop'));
+        }
+      });
+      window.addEventListener('pagehide',()=>{
+        if(state.phase==='testing')finishTest(true);
+        if(state.phase==='counting')interrupt(tr('hiddenStop'));
+        unlockScreen();if(state.stream)state.stream.getTracks().forEach(t=>t.stop());
+      });
       window.addEventListener('resize',draw);
-      state.clockTimer=setInterval(()=>{if(state.phase==='counting')renderState();},1000);
+      state.clockTimer=setInterval(()=>{
+        if(state.phase==='testing'){
+          if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
+          else renderState();
+        }else if(state.phase==='counting')renderState();
+      },250);
       $('#outputFilename').value='passage-counter-'+new Date().toISOString().slice(0,10);
-      localize();
+      restoreSetup();localize();
 
   })();
 </script>
