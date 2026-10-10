@@ -69,6 +69,8 @@ footer{max-width:1180px;margin:auto;padding:0 22px 25px;color:var(--muted);font-
 dialog{border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px #1116;max-height:min(85dvh,700px);overflow:auto;width:min(460px,calc(100vw - 32px));padding:20px;color:var(--text)}
 dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog li{font-size:14px}
 .dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+#helpDialog h2{position:sticky;top:-20px;padding:8px 0 10px;background:var(--surface);z-index:1}
+#helpDialog .dialog-actions{position:sticky;bottom:-20px;padding:12px 0 max(12px,env(safe-area-inset-bottom));background:var(--surface);z-index:1}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom));z-index:9;display:flex;gap:12px;align-items:center;justify-content:center;background:#20382f;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 5px 18px #0004;max-width:min(95vw,540px)}
 .toast button{background:transparent;border-color:#d1e2d8;color:#fff;min-height:40px}
 .toast[hidden],[hidden]{display:none!important}
@@ -105,7 +107,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       <div class="section-head"><h2 id="cameraHeading" data-i18n="camera">カメラ映像</h2><span class="status-pill" id="statusPill" data-kind="idle" role="status" aria-live="polite" data-i18n="idle">未接続</span></div>
       <div class="camera-stage" id="cameraStage">
         <video id="cameraFeed" autoplay muted playsinline aria-label="Camera preview"></video>
-        <canvas id="overlay" aria-label="判定線：カメラ開始後、両端をドラッグして位置調整"></canvas>
+        <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：両端をドラッグ、矢印キーで移動できます"></canvas>
         <div class="camera-placeholder" id="cameraPlaceholder">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="12" width="40" height="28" rx="5"/><circle cx="24" cy="26" r="8"/><path d="M15 12l3-5h12l3 5"/></svg>
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
@@ -258,7 +260,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           language:'言語',subTitle:'通過カウンター · v0.1.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           title:'線を横切る人を、カメラで数える。',intro:'スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。',
           camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
-          previewEmpty:'カメラを開始すると映像が表示されます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
+          previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
@@ -276,7 +278,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           language:'Language',subTitle:'People crossing counter · v0.1.0',help:'Help',privacyShort:'No account · On-device processing',
           title:'Count people crossing a line.',intro:'Fix your phone in place, start the camera, and position the counting line. Crossings are counted by direction. Images of people are not saved.',
           camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
-          previewEmpty:'Start the camera to view the scene.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
+          previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
@@ -310,6 +312,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       function localize(){
         document.documentElement.lang=language;
         document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n);});
+        document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{el.setAttribute('aria-label',tr(el.dataset.i18nAriaLabel));});
         $('#languageSelect').value=language;
         renderState();
       }
@@ -323,6 +326,43 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         toast.timer=setTimeout(()=>{root.hidden=true;},4000);
       }
       window.AppToast={show({message='',actionLabel='',onAction=null}={}){toast(message,actionLabel,onAction);}};
+
+      // Compatible adapter for the template's Promise-based AppConfirm pattern.
+      // A reset is destructive, so the dialog must resolve only after a real choice.
+      const AppConfirm = (() => {
+        const dialog=$('#confirmDialog'),ok=$('#confirmReset'),cancel=$('#cancelReset');
+        let resolver=null,lastFocus=null;
+        function settle(value){
+          if(!resolver)return;
+          const finish=resolver;resolver=null;
+          dialog.close();
+          finish(value);
+          if(lastFocus?.isConnected)lastFocus.focus();
+        }
+        function ask({title=tr('resetTitle'),message=tr('resetMessage'),confirmLabel=tr('reset'),cancelLabel=tr('cancel')}={}){
+          if(resolver)settle(false);
+          lastFocus=document.activeElement;
+          $('#confirmHeading').textContent=title;
+          dialog.querySelector('p').textContent=message;
+          ok.textContent=confirmLabel;cancel.textContent=cancelLabel;
+          return new Promise(resolve=>{
+            resolver=resolve;
+            dialog.showModal();
+            cancel.focus();
+          });
+        }
+        cancel.addEventListener('click',()=>settle(false));
+        ok.addEventListener('click',()=>settle(true));
+        dialog.addEventListener('cancel',event=>{event.preventDefault();settle(false);});
+        dialog.addEventListener('click',event=>{
+          if(event.target!==dialog)return;
+          const r=dialog.getBoundingClientRect();
+          if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)settle(false);
+        });
+        return {ask};
+      })();
+      window.AppConfirm=AppConfirm;
+
       function formatElapsed(ms){
         const sec=Math.max(0,Math.floor(ms/1000));
         return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
@@ -457,6 +497,23 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();draw();e.preventDefault();
       });
       function finishDrag(){state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
+      overlay.addEventListener('keydown',event=>{
+        if(!state.stream||state.phase==='counting')return;
+        const step=event.shiftKey?0.02:0.005;
+        let dx=0,dy=0;
+        if(event.key==='ArrowLeft')dx=-step;
+        else if(event.key==='ArrowRight')dx=step;
+        else if(event.key==='ArrowUp')dy=-step;
+        else if(event.key==='ArrowDown')dy=step;
+        else return;
+        event.preventDefault();
+        for(const point of line){
+          point.x=Math.max(0.03,Math.min(0.97,point.x+dx));
+          point.y=Math.max(0.03,Math.min(0.97,point.y+dy));
+        }
+        zeroTracks();draw();
+      });
+
       async function initEmbeddedDetector(){
         // The official JS/WASM and the TFLite model are read only from this HTML.
         const mp=await window.StandaloneAssets.importModule('mediapipe','module');
@@ -584,6 +641,11 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       $('#languageSelect').addEventListener('change',e=>{language=e.target.value==='ja'?'ja':'en';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
       $('#helpButton').addEventListener('click',()=>$('#helpDialog').showModal());
       $('#helpClose').addEventListener('click',()=>$('#helpDialog').close());
+      $('#helpDialog').addEventListener('click',event=>{
+        if(event.target!==$('#helpDialog'))return;
+        const bounds=$('#helpDialog').getBoundingClientRect();
+        if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)$('#helpDialog').close();
+      });
       $('#cameraStart').addEventListener('click',startCamera);
       $('#cameraStop').addEventListener('click',closeCamera);
       $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();draw();});
@@ -591,9 +653,10 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       $('#pauseCount').addEventListener('click',pauseCount);
       $('#finishCount').addEventListener('click',finishCount);
       $('#downloadButton').addEventListener('click',exportCsv);
-      $('#resetButton').addEventListener('click',()=>$('#confirmDialog').showModal());
-      $('#cancelReset').addEventListener('click',()=>$('#confirmDialog').close());
-      $('#confirmReset').addEventListener('click',()=>{$('#confirmDialog').close();resetCounts();});
+      $('#resetButton').addEventListener('click',async()=>{
+        const confirmed=await AppConfirm.ask({title:tr('resetTitle'),message:tr('resetMessage'),confirmLabel:tr('reset'),cancelLabel:tr('cancel')});
+        if(confirmed)resetCounts();
+      });
       $('#outputFilename').addEventListener('blur',normalizedFilename);
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'&&state.phase==='counting')interrupt(tr('hiddenStop'));});
       window.addEventListener('pagehide',()=>{if(state.phase==='counting')interrupt(tr('hiddenStop'));unlockScreen();if(state.stream)state.stream.getTracks().forEach(t=>t.stop());});
