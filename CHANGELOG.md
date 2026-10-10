@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] - 2026-10-11 (Draft)
+
+- Added a timed **30-second calibration test** with a live trial count, manual stop and automatic finish. Test counts are kept separate from real session totals and CSV history.
+- Added directional `+1/-1` corrections and Undo, with append-only audit events, zero-floor protection and editable direction names.
+- Added front/rear camera selection, detection overlay switch, locally remembered line/settings, setup step guidance, and on-video mobile counters.
+- Improved pause/configuration safety: calibration is invalidated by line movement or camera switching; a new test is required before counting again.
+- Extended CSV event fields for direction labels and Undo references.
+- Added deterministic ledger tests and browser smoke tests for setup, correction, export, Japanese/English and mobile layouts.
+- Kept the AI model and SIMD/non-SIMD WASM inside each gzip-optimized one-file HTML, without new runtime dependencies.
+
 ## [0.2.0] - 2026-10-11 (Draft)
 
 - Added prediction-assisted matching with IoU, object size and foot-point distance.

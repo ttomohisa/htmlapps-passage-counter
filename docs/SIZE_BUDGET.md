@@ -31,3 +31,9 @@ We investigated stripping WASM custom sections using a browser-side parser in CI
 \`app.config.json\` enables warning budgets of **13 MiB per HTML variant**. The build reports exact sizes per variant and each embedded asset. Budgets are warning-only, matching the upstream \`htmlapps-template\` behavior. Every subsequent release should review \`dist/build-size-report.json\` and explain substantial growth before publication.
 
 Do not substitute external model/CDN requests for a smaller HTML. A size improvement is accepted only if browser initialization, checksum, offline, security, and accuracy tests continue to pass.
+
+## v0.3.0 UX and compression decision
+
+The model and both WASM variants remain gzip-compressed inside the single HTML, decoded with native `DecompressionStream` on initialization. The self-extracting variant compresses the entire HTML before the internal runtime assets are expanded; therefore it adds an initial decompression step. Neither variant requires network access after downloading/opening the original HTML.
+
+**Do not trade away first-camera startup, phone memory headroom, or browser support to shave bytes.** Both variants remain available; readable `dist/index.html` is the default for speed-sensitive use. Chrome CI validates model inference, two WASM paths, `file://` loading and no outgoing HTTP. Real mobile startup times, memory peaks and battery performance are not yet validated; those are release gates in v0.6.0–v0.7.0. Updated v0.3.0 byte sizes should be taken from the PR's `dist/build-size-report.json`, not assumed to match the previous table.
