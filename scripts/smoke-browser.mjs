@@ -74,6 +74,42 @@ try {
       Array.from((await window.StandaloneAssets.bytesAsync('mediapipe',key)).slice(0,4)),key);
     assert.deepEqual(magic,[0,97,115,109],'WASM magic mismatch for '+key);
   }
+  const sectionReport=await page.evaluate(async()=>{
+    function varint(a,offset){
+      let value=0,shift=0;
+      for(let i=0;i<5;i++){
+        const b=a[offset++];value+=(b&0x7f)*2**shift;
+        if(!(b&0x80))return {value,next:offset};
+        shift+=7;
+      }
+      throw new Error('Invalid WASM section size');
+    }
+    const out=[];
+    for(const key of ['simd-wasm','baseline-wasm']){
+      const bytes=await window.StandaloneAssets.bytesAsync('mediapipe',key);
+      const custom=[];
+      let cursor=8;
+      while(cursor<bytes.length){
+        const id=bytes[cursor++];
+        const chunk=varint(bytes,cursor);
+        cursor=chunk.next;
+        const end=cursor+chunk.value;
+        if(end>bytes.length)throw new Error('Malformed WASM section');
+        if(id===0){
+          const nameLen=varint(bytes,cursor);
+          const name=new TextDecoder().decode(bytes.subarray(nameLen.next,nameLen.next+nameLen.value));
+          custom.push({name,bytes:end-(cursor-1)});
+        }
+        cursor=end;
+      }
+      out.push({key,bytes:bytes.length,custom});
+    }
+    return out;
+  });
+  for(const part of sectionReport){
+    console.log('[wasm-size] '+part.key+' custom sections: '+
+      JSON.stringify(part.custom.map(s=>({name:s.name,bytes:s.bytes}))));
+  }
   console.log('[smoke] All bundled model, WASM, and loader assets are present.');
   await page.locator('#cameraStart').click();
   await page.waitForFunction(() => {
