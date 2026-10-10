@@ -377,6 +377,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           undoCorrection:'直前の補正を取り消す',undo:'元に戻す',undone:'補正を元に戻しました。',
           corrected:'補正しました',negativeBlocked:'0件より小さくできません。',undoUnavailable:'この補正は取り消せません。',
           manualA:'A → B 手動補正',manualB:'B → A 手動補正',
+          simdUnsupported:'このブラウザはWebAssembly SIMDに対応していません。SIMD専用版ではカメラを開始できません。SIMD対応ブラウザを利用してください。',
+          simdUnsupportedShort:'SIMD非対応',
           close:'閉じる',cancel:'キャンセル',resetTitle:'件数をリセットしますか？',resetMessage:'現在の通過件数とイベント記録を消去します。この操作は取り消せません。',
           cameraBlocked:'カメラを使用できません。ブラウザの権限とHTTPS環境を確認してください。',unsupported:'この環境ではカメラを利用できません。HTTPS、localhost、または対応するファイル直開きが必要です。',
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
@@ -412,6 +414,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           undoCorrection:'Undo last correction',undo:'Undo',undone:'Correction undone.',
           corrected:'Corrected',negativeBlocked:'Counts cannot go below zero.',undoUnavailable:'This correction can no longer be undone.',
           manualA:'A → B adjustments',manualB:'B → A adjustments',
+          simdUnsupported:'This browser does not support WebAssembly SIMD. The smaller SIMD-only edition cannot start the camera. Please use a browser with WASM SIMD support.',
+          simdUnsupportedShort:'SIMD unavailable',
           close:'Close',cancel:'Cancel',resetTitle:'Reset all counts?',resetMessage:'This permanently removes current counts and event records.',
           cameraBlocked:'Cannot use camera. Check browser permissions and use a secure context.',unsupported:'This environment cannot access cameras. Use HTTPS, localhost, or a supported local file.',modelFailed:'Failed to initialize the embedded AI. Reload and try again.',
           settingLine:'Adjust the line and run a setup test.',counting:'Counting. Keep this tab visible.',pausedText:'Paused. Tracking will reset when you resume.',hiddenStop:'The tab became hidden, so counting stopped. Crossings while hidden are unknown.',lostCamera:'Camera stopped. Reconnect before continuing.',notReady:'Camera and AI are not ready yet.',noEvents:'No crossings have been recorded.',wakeWarning:'Screen wake lock is unavailable. Counting may stop if the screen turns off.'
@@ -465,6 +469,18 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       // LEDGER:END
       const ledger=createCountingLedger();
+      // Supports SIMD-only execution; unlike the full build, no non-SIMD fallback is embedded.
+      // This standard SIMD test module uses i8x16.splat and is validated before camera access.
+      const SIMD_PROBE=new Uint8Array([
+        0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,
+        10,8,1,6,0,65,1,253,15,11
+      ]);
+      function supportsWasmSimd(){
+        try { return typeof WebAssembly!=='undefined' &&
+          typeof WebAssembly.validate==='function' && WebAssembly.validate(SIMD_PROBE); }
+        catch { return false; }
+      }
+      const simdAvailable=supportsWasmSimd();
       const STORAGE_KEY = 'passage-counter-language-v1';
       const line = [{x:0.12,y:0.52},{x:0.88,y:0.52}];
       const state = {
@@ -581,13 +597,15 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       function renderState(message){
         const phase=state.phase;
         const key=({idle:'idle',loading:'loading',ready:'ready',testing:'testing',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
-        const pill=$('#statusPill');pill.textContent=tr(key);pill.dataset.kind=phase==='error'||phase==='interrupted'?'error':phase==='counting'?'active':'idle';
+        const pill=$('#statusPill');pill.textContent=simdAvailable?tr(key):tr('simdUnsupportedShort');
+        pill.dataset.kind=!simdAvailable||phase==='error'||phase==='interrupted'?'error':phase==='counting'?'active':'idle';
         const defaultMessage={
           idle:'instruction',loading:'loading',ready:'settingLine',testing:'testingMessage',counting:'counting',
           paused:'pausedText',done:'finished',error:'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
         const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
-        $('#statusDetails').textContent=message||(!validLine&&state.stream?tr('lineTooShort'):tr(defaultMessage));
+        $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
+          message||(!validLine&&state.stream?tr('lineTooShort'):tr(defaultMessage));
         const totals=ledger.summary(),nameA=countName('A_TO_B'),nameB=countName('B_TO_A');
         $('#displayLabelA').textContent=nameA;$('#displayLabelB').textContent=nameB;
         $('#correctLabelA').textContent=nameA;$('#correctLabelB').textContent=nameB;
@@ -604,7 +622,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#elapsedText').textContent=formatElapsed(elapsed);
         $('#reportElapsed').textContent=formatElapsed(elapsed);
         const testing=phase==='testing';
-        $('#cameraStart').disabled=phase==='loading'||phase==='done'||Boolean(state.stream);
+        $('#cameraStart').disabled=!simdAvailable||phase==='loading'||phase==='done'||Boolean(state.stream);
         $('#cameraStop').disabled=!state.stream;
         $('#reverseLine').disabled=!state.stream||['counting','testing','loading','done'].includes(phase);
         $('#cameraFacing').disabled=['counting','testing','loading','done'].includes(phase);
@@ -906,20 +924,22 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
 
       async function initEmbeddedDetector(){
-        // The official JS/WASM and the TFLite model are read only from this HTML.
+        // SIMD-only experiment; model/JS/loader/binary are all embedded in the HTML.
+        if(!simdAvailable)throw new Error('WebAssembly SIMD is not available');
         const mp=await window.StandaloneAssets.importModule('mediapipe','module');
-        const simd=typeof mp.FilesetResolver.isSimdSupported==='function'
-          ? await mp.FilesetResolver.isSimdSupported():true;
-        const key=simd?'simd':'baseline';
-        const wasmLoaderPath=await window.StandaloneAssets.blobUrlAsync('mediapipe',key+'-loader');
-        const wasmBinaryPath=await window.StandaloneAssets.blobUrlAsync('mediapipe',key+'-wasm');
+        if(typeof mp.FilesetResolver.isSimdSupported==='function' &&
+          !(await mp.FilesetResolver.isSimdSupported())){
+          throw new Error('MediaPipe reports that SIMD is unavailable');
+        }
+        const wasmLoaderPath=await window.StandaloneAssets.blobUrlAsync('mediapipe','simd-loader');
+        const wasmBinaryPath=await window.StandaloneAssets.blobUrlAsync('mediapipe','simd-wasm');
         state.modelUrls.push(wasmLoaderPath,wasmBinaryPath);
         const modelAssetBuffer=await window.StandaloneAssets.bytesAsync('person-model','tflite');
         state.detector=await mp.ObjectDetector.createFromOptions({wasmLoaderPath,wasmBinaryPath},{
           baseOptions:{modelAssetBuffer,delegate:'CPU'},runningMode:'VIDEO',
           categoryAllowlist:['person'],scoreThreshold:0.45,maxResults:12
         });
-        $('#detectorInfo').textContent='EfficientDet-Lite0 · '+(simd?'SIMD':'WASM');
+        $('#detectorInfo').textContent='EfficientDet-Lite0 · SIMD';
       }
       function closeCamera(){
         if(state.phase==='testing')finishTest(true);
@@ -934,6 +954,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         draw();renderState();
       }
       async function startCamera(){
+        if(!simdAvailable){state.phase='error';renderState(tr('simdUnsupported'));return;}
         if(!navigator.mediaDevices?.getUserMedia){state.phase='error';renderState(tr('unsupported'));return;}
         if(state.stream)return;
         state.phase='loading';renderState();

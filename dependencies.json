@@ -26,18 +26,6 @@
           "path": "wasm/vision_wasm_internal.wasm",
           "mime": "application/wasm",
           "compression": "auto"
-        },
-        {
-          "key": "baseline-loader",
-          "path": "wasm/vision_wasm_nosimd_internal.js",
-          "mime": "text/javascript",
-          "compression": "auto"
-        },
-        {
-          "key": "baseline-wasm",
-          "path": "wasm/vision_wasm_nosimd_internal.wasm",
-          "mime": "application/wasm",
-          "compression": "auto"
         }
       ],
       "updates": {
