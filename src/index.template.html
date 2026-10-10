@@ -142,7 +142,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
     <p data-i18n="intro">スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。</p>
   </section>
 
-    <div class="setup-flow" aria-label="Measurement steps" id="setupFlow">
+    <div class="setup-flow" data-i18n-aria-label="setupProgress" aria-label="計測の手順" id="setupFlow">
       <span id="flowSet" aria-current="step" data-i18n="stepSetup">1 · 設定</span>
       <span id="flowTest" data-i18n="stepTest">2 · テスト</span>
       <span id="flowMeasure" data-i18n="stepMeasure">3 · 計測</span>
@@ -193,7 +193,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         <p data-i18n="testInstructions">30秒間、人が線を横切る様子を試せます。テスト件数は本計測へ加えません。</p>
         <button type="button" id="testButton" class="minor" disabled data-i18n="startTest">30秒テストを開始</button>
         <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
-          <strong id="testRemaining"></strong>
+          <strong id="testRemaining" role="timer" aria-live="off"></strong>
           <span id="testMessage"></span>
         </div>
       </section>
@@ -353,14 +353,31 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'保存時に .csv を付けます。',download:'CSVを書き出す',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.3.0は人物検出・短時間追跡の初期実装です。計測用途での精度確認はまだ完了していません。',
+          prototypeNote:'v0.3.0では設置テストと補正・Undoに対応しています。実環境での精度検証は未完了です。',
           footer:'モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。',
-          helpTitle:'使い方と注意事項',help1:'スマホを三脚などで固定し、カメラを開始します。',help2:'判定線の白丸を動かし、人が横切る位置に置きます。',help3:'計測を開始すると、線を横切った人物を方向別に加算します。',help4:'計測を終了してCSVを書き出せます。',
+          helpTitle:'使い方と注意事項',help1:'スマホを固定し、カメラを開始します。',help2:'線を置き、設置テストで通過を確認します。',help3:'計測中は±1で方向別の件数を補正できます。補正は取り消せます。',help4:'計測終了後、補正履歴付きCSVを保存できます。',
           helpPrivacy:'映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。',
           helpLimits:'正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。',
+          stepSetup:'1 · 設定',stepTest:'2 · テスト',stepMeasure:'3 · 計測',setupProgress:'計測の手順',
+          settingsSummary:'カメラ・表示の設定',cameraSelection:'カメラの向き',rearCamera:'背面カメラ',frontCamera:'前面カメラ',
+          showDetections:'検出枠と追跡点を表示',directionALabel:'A→Bの名称',directionBLabel:'B→Aの名称',
+          cameraOrientationNote:'画面の鏡像反転は行いません。判定線と映像の向きを一致させます。',
+          testing:'設置テスト中',testingMessage:'テスト中です。人が判定線を横切るか確認してください。',
+          testHeading:'設置をテスト',testInstructions:'30秒間の通過テストを行えます。テスト件数は本計測に含まれません。',
+          startTest:'30秒テストを開始',stopTest:'テストを終了',remaining:'テスト残り {seconds} 秒',
+          testCompleted:'設置テスト終了',testInterrupted:'設置テストを中断しました',
+          trialCounts:'テスト: {a} / {b}。本計測には加算されません。',
+          testReady:'テスト終了。件数を確認し、よければ計測を開始してください。',
+          testCancelled:'テストが中断されました。もう一度実施してください。',
+          testRequired:'先に設置テストを実施してください。',
+          correctionHeading:'件数を補正',correctionHelp:'自動カウントは書き換えず、補正と取り消しを履歴に残します。0件未満にはできません。',
+          minusALabel:'Aから1件減らす',plusALabel:'Aに1件加える',minusBLabel:'Bから1件減らす',plusBLabel:'Bに1件加える',
+          undoCorrection:'直前の補正を取り消す',undo:'元に戻す',undone:'補正を元に戻しました。',
+          corrected:'補正しました',negativeBlocked:'0件より小さくできません。',undoUnavailable:'この補正は取り消せません。',
+          manualA:'A → B 手動補正',manualB:'B → A 手動補正',
           close:'閉じる',cancel:'キャンセル',resetTitle:'件数をリセットしますか？',resetMessage:'現在の通過件数とイベント記録を消去します。この操作は取り消せません。',
           cameraBlocked:'カメラを使用できません。ブラウザの権限とHTTPS環境を確認してください。',unsupported:'この環境ではカメラを利用できません。HTTPS、localhost、または対応するファイル直開きが必要です。',
-          modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、計測を開始してください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
+          modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
           language:'Language',subTitle:'People crossing counter · v0.3.0',help:'Help',privacyShort:'No account · On-device processing',
@@ -373,12 +390,29 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'The .csv extension is added when exporting.',download:'Export CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
           prototypeNote:'v0.3.0 improves short-term tracking and finite-line crossing detection. Counting accuracy is not yet validated for field use.',
           footer:'The AI model and WASM are bundled in the HTML. Camera frames are not uploaded.',
-          helpTitle:'How to use and limitations',help1:'Fix your phone or webcam in position, then start the camera.',help2:'Drag the line endpoints to where people will pass.',help3:'Start counting. Crossings appear separately for each direction.',help4:'Finish counting and export the CSV.',
+          helpTitle:'How to use and limitations',help1:'Fix your camera in place and start the preview.',help2:'Position the line and run the setup test.',help3:'Count and make +1/-1 corrections by direction; use Undo for mistakes.',help4:'Finish counting and save CSV with correction events.',
           helpPrivacy:'Frames, faces and audio are not stored or uploaded. The HTML contains the required AI model and WASM.',
           helpLimits:'Counts are estimates, not guaranteed. Crowds, glare, rapid movement and camera motion can affect results. Counting stops when the tab is hidden.',
+          stepSetup:'1 · Setup',stepTest:'2 · Test',stepMeasure:'3 · Count',setupProgress:'Counting steps',
+          settingsSummary:'Camera and display settings',cameraSelection:'Camera facing',rearCamera:'Rear camera',frontCamera:'Front camera',
+          showDetections:'Show detection boxes and tracking points',directionALabel:'Name for A→B',directionBLabel:'Name for B→A',
+          cameraOrientationNote:'Video is not mirrored. Line direction stays aligned with the image.',
+          testing:'Testing setup',testingMessage:'Try crossing the line to check the counting setup.',
+          testHeading:'Test the setup',testInstructions:'Try a 30-second crossing test. Trial events are excluded from your session.',
+          startTest:'Start 30-second test',stopTest:'End test',remaining:'Test: {seconds} s remaining',
+          testCompleted:'Setup test finished',testInterrupted:'Setup test interrupted',
+          trialCounts:'Trial: {a} / {b}. Not included in your session.',
+          testReady:'Test complete. Check the result and start counting when ready.',
+          testCancelled:'Test interrupted. Run the setup test again.',
+          testRequired:'Run the setup test before starting a session.',
+          correctionHeading:'Correct counts',correctionHelp:'Corrections and Undo are logged without changing the automatic records. Counts cannot go below zero.',
+          minusALabel:'Subtract one from A',plusALabel:'Add one to A',minusBLabel:'Subtract one from B',plusBLabel:'Add one to B',
+          undoCorrection:'Undo last correction',undo:'Undo',undone:'Correction undone.',
+          corrected:'Corrected',negativeBlocked:'Counts cannot go below zero.',undoUnavailable:'This correction can no longer be undone.',
+          manualA:'A → B adjustments',manualB:'B → A adjustments',
           close:'Close',cancel:'Cancel',resetTitle:'Reset all counts?',resetMessage:'This permanently removes current counts and event records.',
           cameraBlocked:'Cannot use camera. Check browser permissions and use a secure context.',unsupported:'This environment cannot access cameras. Use HTTPS, localhost, or a supported local file.',modelFailed:'Failed to initialize the embedded AI. Reload and try again.',
-          settingLine:'Adjust the line and start counting.',counting:'Counting. Keep this tab visible.',pausedText:'Paused. Tracking will reset when you resume.',hiddenStop:'The tab became hidden, so counting stopped. Crossings while hidden are unknown.',lostCamera:'Camera stopped. Reconnect before continuing.',notReady:'Camera and AI are not ready yet.',noEvents:'No crossings have been recorded.',wakeWarning:'Screen wake lock is unavailable. Counting may stop if the screen turns off.'
+          settingLine:'Adjust the line and run a setup test.',counting:'Counting. Keep this tab visible.',pausedText:'Paused. Tracking will reset when you resume.',hiddenStop:'The tab became hidden, so counting stopped. Crossings while hidden are unknown.',lostCamera:'Camera stopped. Reconnect before continuing.',notReady:'Camera and AI are not ready yet.',noEvents:'No crossings have been recorded.',wakeWarning:'Screen wake lock is unavailable. Counting may stop if the screen turns off.'
         }
       };
       const $ = selector => document.querySelector(selector);
@@ -544,10 +578,10 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function renderState(message){
         const phase=state.phase;
-        const key=({idle:'idle',loading:'loading',ready:'ready',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
+        const key=({idle:'idle',loading:'loading',ready:'ready',testing:'testing',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
         const pill=$('#statusPill');pill.textContent=tr(key);pill.dataset.kind=phase==='error'||phase==='interrupted'?'error':phase==='counting'?'active':'idle';
         const defaultMessage={
-          idle:'instruction',loading:'loading',ready:'settingLine',counting:'counting',
+          idle:'instruction',loading:'loading',ready:'settingLine',testing:'testingMessage',counting:'counting',
           paused:'pausedText',done:'finished',error:'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
         const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
@@ -975,6 +1009,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         state.phase='paused';unlockScreen();zeroTracks();renderState();
       }
       function interrupt(msg){
+        if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting'){state.elapsedMs+=performance.now()-state.lastActive;}
         state.phase='interrupted';unlockScreen();zeroTracks();renderState(msg);
       }
