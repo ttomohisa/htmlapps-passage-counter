@@ -23,9 +23,20 @@ try{
    page.on('requestfailed',r=>failedRequests.push({url:r.url(),failure:r.failure()}));
    await page.goto(origin+'?mode='+mode,{waitUntil:'domcontentloaded'});
    if(mode==='optimized'){
-     const svg='<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320"><rect width="320" height="320" fill="#fff"/><circle cx="160" cy="85" r="40" fill="#666"/><path d="M120 140h80v110h-80Z" fill="#444"/></svg>';
-     await page.locator('#photo').setInputFiles({
-       name:'local-silhouette.svg',mimeType:'image/svg+xml',buffer:Buffer.from(svg)
+     // Use the browser's own PNG encoder for a valid, entirely local image.
+     // createImageBitmap(file) is not consistently supported for SVG blobs.
+     await page.evaluate(async()=>{
+       const canvas=document.createElement('canvas');
+       canvas.width=320;canvas.height=320;
+       const ctx=canvas.getContext('2d');
+       ctx.fillStyle='#fff';ctx.fillRect(0,0,320,320);
+       ctx.fillStyle='#555';ctx.beginPath();ctx.arc(160,85,40,0,Math.PI*2);ctx.fill();
+       ctx.fillRect(120,140,80,110);
+       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+       if(!blob)throw Error('PNG fixture generation failed');
+       const transfer=new DataTransfer();
+       transfer.items.add(new File([blob],'local-silhouette.png',{type:'image/png'}));
+       document.querySelector('#photo').files=transfer.files;
      });
    }
    await page.locator('#runButton').click();
