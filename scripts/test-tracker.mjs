@@ -32,6 +32,12 @@ run('round trip',[...crossing,...[...crossing].reverse()].map(y=>[[.48,y]]),['A_
 run('stop before line',[.15,.2,.27,.34,.39,.41,.42,.42,.41].map(y=>[[.5,y]]),[]);
 run('jitter within hysteresis',[.15,.2,.28,.35,.4,.45,.47,.48,.49,.51,.48,.5,.52,.49].map(y=>[[.5,y]]),[]);
 run('outside the finite segment',crossing.map(y=>[[.96,y]]),[]);
+run('diagonal line crossing',
+  Array.from({length:16},(_,i)=>[[.18+i*.04,.50]]),
+  ['B_TO_A'],{line:[{x:.18,y:.25},{x:.82,y:.75}]});
+run('too-short line prevents events',
+  crossing.map(y=>[[.50,y]]),[],
+  {line:[{x:.48,y:.49},{x:.52,y:.50}]});
 run('brief initial appearance near line',[.43,.47,.53,.60].map(y=>[[.5,y]]),[]);
 run('two simultaneous opposite crossings',
   crossing.map((y,i)=>[[.33,y],[.70,crossing[crossing.length-1-i]]]),

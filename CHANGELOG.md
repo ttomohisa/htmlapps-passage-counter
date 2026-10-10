@@ -5,7 +5,8 @@
 - Added prediction-assisted matching with IoU, object size and foot-point distance.
 - Added track arming, stable-side hysteresis, direction re-arming and finite-segment intersections.
 - Suppress uncertain matches and crossings after long detection gaps rather than creating inferred counts.
-- Added 13 deterministic crossing, jitter, simultaneous-passage, occlusion and reset tests.
+- Added 15 deterministic crossing, diagonal-line, jitter, simultaneous-passage, occlusion and reset tests.
+- Disabled counting when line endpoints are too close, with localized guidance.
 - Preserved the embedded AI model, both WASM variants, offline/privacy gates and bilingual UI.
 - Reduced readable HTML from 13,635,491 to 13,484,563 bytes (-1.11%) with the strongest compatible native gzip level, without removing either WASM variant.
 

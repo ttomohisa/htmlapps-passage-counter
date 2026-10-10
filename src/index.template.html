@@ -260,7 +260,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           language:'言語',subTitle:'通過カウンター · v0.2.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           title:'線を横切る人を、カメラで数える。',intro:'スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。',
           camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
-          previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
+          lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
@@ -278,7 +278,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           language:'Language',subTitle:'People crossing counter · v0.2.0',help:'Help',privacyShort:'No account · On-device processing',
           title:'Count people crossing a line.',intro:'Fix your phone in place, start the camera, and position the counting line. Crossings are counted by direction. Images of people are not saved.',
           camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
-          previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
+          lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
@@ -375,7 +375,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           idle:'instruction',loading:'loading',ready:'settingLine',counting:'counting',
           paused:'pausedText',done:'finished',error:'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
-        $('#statusDetails').textContent=message||tr(defaultMessage);
+        const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
+        $('#statusDetails').textContent=message||(!validLine&&state.stream?tr('lineTooShort'):tr(defaultMessage));
         $('#countA').textContent=state.a;$('#countB').textContent=state.b;$('#countTotal').textContent=state.a+state.b;
         $('#reportA').textContent=state.a;$('#reportB').textContent=state.b;$('#reportTotal').textContent=state.a+state.b;
         const elapsed=state.elapsedMs+(phase==='counting'?performance.now()-state.lastActive:0);
@@ -384,7 +385,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#cameraStart').disabled=phase==='loading'||phase==='done'||Boolean(state.stream);
         $('#cameraStop').disabled=!state.stream;
         $('#reverseLine').disabled=!state.stream||phase==='counting'||phase==='loading';
-        $('#beginCount').disabled=!state.detector||!state.stream||phase==='counting'||phase==='loading'||phase==='done';
+        $('#beginCount').disabled=!state.detector||!state.stream||!validLine||phase==='counting'||phase==='loading'||phase==='done';
         $('#beginCount').textContent=tr((state.startTime&&phase==='ready')||phase==='paused'||phase==='interrupted'?'resume':'beginCount');
         $('#pauseCount').disabled=phase!=='counting';
         $('#finishCount').disabled=!['counting','paused','interrupted'].includes(phase);
@@ -631,7 +632,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
       overlay.addEventListener('pointermove',e=>{
         if(state.drag===null)return;
-        const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();draw();e.preventDefault();
+        const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();draw();renderState();e.preventDefault();
       });
       function finishDrag(){state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
       overlay.addEventListener('keydown',event=>{
