@@ -119,6 +119,34 @@ try {
   await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
   assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
+
+  // Ensure the non-SIMD fallback really initializes and performs inference;
+  // checking the binary magic alone does not establish browser compatibility.
+  const baselineResult=await page.evaluate(async()=>{
+    const mp=await window.StandaloneAssets.importModule('mediapipe','module');
+    const urls=[
+      await window.StandaloneAssets.blobUrlAsync('mediapipe','baseline-loader'),
+      await window.StandaloneAssets.blobUrlAsync('mediapipe','baseline-wasm')
+    ];
+    let detector=null;
+    try {
+      detector=await mp.ObjectDetector.createFromOptions({
+        wasmLoaderPath:urls[0],wasmBinaryPath:urls[1]
+      },{
+        baseOptions:{modelAssetBuffer:await window.StandaloneAssets.bytesAsync('person-model','tflite'),delegate:'CPU'},
+        runningMode:'VIDEO',categoryAllowlist:['person'],scoreThreshold:0.45,maxResults:12
+      });
+      const result=detector.detectForVideo(
+        document.querySelector('#cameraFeed'),performance.now()+1000);
+      return Array.isArray(result?.detections);
+    } finally {
+      if(detector)detector.close();
+      urls.forEach(url=>URL.revokeObjectURL(url));
+    }
+  });
+  assert(baselineResult,'Non-SIMD WASM must run a real detector frame from embedded assets');
+  console.log('[smoke] Embedded non-SIMD WASM fallback initialized and inferred a video frame.');
+
   await page.locator('#beginCount').click();
   assert.match(await page.locator('#statusPill').textContent(), /計測中|Counting/);
   await page.locator('#pauseCount').click();
