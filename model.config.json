@@ -1,0 +1,9 @@
+{
+  "id": "person-model",
+  "name": "EfficientDet-Lite0 (int8)",
+  "version": "1",
+  "url": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite",
+  "sha256": "PENDING_BOOTSTRAP",
+  "license": "Apache-2.0",
+  "homepage": "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector"
+}

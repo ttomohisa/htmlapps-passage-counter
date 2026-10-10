@@ -1,4 +1,49 @@
 {
   "$schema": "./schemas/dependencies.schema.json",
-  "dependencies": []
+  "dependencies": [
+    {
+      "id": "mediapipe",
+      "package": "@mediapipe/tasks-vision",
+      "version": "0.10.35",
+      "license": "Apache-2.0",
+      "homepage": "https://github.com/google-ai-edge/mediapipe",
+      "assets": [
+        {
+          "key": "module",
+          "path": "vision_bundle.mjs",
+          "mime": "text/javascript",
+          "stripSourceMapComment": true,
+          "compression": "auto"
+        },
+        {
+          "key": "simd-loader",
+          "path": "wasm/vision_wasm_internal.js",
+          "mime": "text/javascript",
+          "compression": "auto"
+        },
+        {
+          "key": "simd-wasm",
+          "path": "wasm/vision_wasm_internal.wasm",
+          "mime": "application/wasm",
+          "compression": "auto"
+        },
+        {
+          "key": "baseline-loader",
+          "path": "wasm/vision_wasm_nosimd_internal.js",
+          "mime": "text/javascript",
+          "compression": "auto"
+        },
+        {
+          "key": "baseline-wasm",
+          "path": "wasm/vision_wasm_nosimd_internal.wasm",
+          "mime": "application/wasm",
+          "compression": "auto"
+        }
+      ],
+      "updates": {
+        "enabled": true,
+        "policy": "manual"
+      }
+    }
+  ]
 }

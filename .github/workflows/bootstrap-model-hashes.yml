@@ -1,0 +1,28 @@
+name: Bootstrap pinned asset hashes
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hashes:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Resolve pinned npm tarball SHA-256
+        shell: pwsh
+        run: |
+          ./scripts/sync-dependency-lock.ps1
+          Get-Content -Raw -Encoding utf8 ./dependencies.lock.json | Write-Host
+      - name: Resolve official model SHA-256
+        shell: pwsh
+        run: |
+          $m = Get-Content -Raw ./model.config.json | ConvertFrom-Json
+          New-Item -ItemType Directory -Force .cache | Out-Null
+          Invoke-WebRequest -Uri $m.url -OutFile .cache/person-model.tflite -UseBasicParsing
+          $hash = (Get-FileHash -Algorithm SHA256 .cache/person-model.tflite).Hash.ToLowerInvariant()
+          Write-Host "MODEL_SHA256=$hash"
+          Write-Host "MODEL_BYTES=$((Get-Item .cache/person-model.tflite).Length)"
+          if ($hash.Length -ne 64) { throw 'Invalid model hash' }
