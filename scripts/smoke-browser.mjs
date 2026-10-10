@@ -61,12 +61,26 @@ try {
   ]) {
     assert(assets.includes(expected), 'Missing asset in readable HTML: ' + expected);
   }
+
+  // Cryptographically assert the model bytes inside HTML really match the locked source.
+  const modelSha = await page.evaluate(async () => {
+    const bytes=await window.StandaloneAssets.bytesAsync('person-model','tflite');
+    const digest=await crypto.subtle.digest('SHA-256',bytes);
+    return Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
+  });
+  assert.equal(modelSha,'0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb');
+  for(const key of ['simd-wasm','baseline-wasm']){
+    const magic=await page.evaluate(async key=>
+      Array.from((await window.StandaloneAssets.bytesAsync('mediapipe',key)).slice(0,4)),key);
+    assert.deepEqual(magic,[0,97,115,109],'WASM magic mismatch for '+key);
+  }
   console.log('[smoke] All bundled model, WASM, and loader assets are present.');
   await page.locator('#cameraStart').click();
   await page.waitForFunction(() => {
     return /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent ?? '');
   }, null, { timeout: 90_000 });
   assert(await page.locator('#cameraFeed').evaluate(video => video.videoWidth > 0), 'Camera should provide frames');
+  await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
   assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
   await page.locator('#beginCount').click();
@@ -104,6 +118,7 @@ try {
       null, {timeout:90_000});
     assert(await localPage.locator('#cameraFeed').evaluate(video=>video.videoWidth>0),
       filename+': local-file camera has no video');
+    await localPage.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''),null,{timeout:30_000});
     console.log('[smoke] Direct local '+filename+' launched embedded AI and camera.');
     await localPage.close();
   }
