@@ -1,0 +1,36 @@
+name: Browser smoke - embedded camera runtime
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "model.config.json"
+      - "dependencies.json"
+      - "dependencies.lock.json"
+      - "build-standalone.ps1"
+      - "scripts/**"
+      - ".github/workflows/smoke-browser.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: PowerShell syntax and encoding preflight
+        shell: powershell
+        run: .\scripts\check-powershell-syntax.ps1
+      - name: Build standalone with pinned embedded assets
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+      - name: Install browser test driver (CI only)
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Verify embedded model/WASM with synthetic camera in Chrome
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
