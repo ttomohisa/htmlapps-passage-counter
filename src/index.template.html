@@ -386,22 +386,109 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       const overlay = $('#overlay');
       const stage = $('#cameraStage');
       const ctx = overlay.getContext('2d');
+      // LEDGER:BEGIN
+      // Append-only correction history. Trial crossings never enter this ledger.
+      function createCountingLedger(){
+        let records=[],sequence=0,lastCorrection=null;
+        const total={A_TO_B:0,B_TO_A:0},automatic={A_TO_B:0,B_TO_A:0};
+        const valid=d=>d==='A_TO_B'||d==='B_TO_A';
+        function add(direction,delta,kind,elapsedMs,undoOf=''){
+          if(!valid(direction)||!Number.isInteger(delta)||!['auto','correction','undo'].includes(kind))return null;
+          if(total[direction]+delta<0)return null;
+          const event={id:'pc-'+Date.now()+'-'+(++sequence),occurredAt:new Date().toISOString(),
+            direction,kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf};
+          records.push(event);total[direction]+=delta;
+          if(kind==='auto')automatic[direction]+=delta;
+          return event;
+        }
+        function auto(d,elapsed){return add(d,1,'auto',elapsed);}
+        function correct(d,delta,elapsed){
+          if(delta!==1&&delta!==-1)return null;
+          const event=add(d,delta,'correction',elapsed);
+          if(event)lastCorrection=event;
+          return event;
+        }
+        function canUndo(){return Boolean(lastCorrection && total[lastCorrection.direction]>=lastCorrection.delta);}
+        function undo(elapsed,expectedId=null){
+          if(!canUndo()||(expectedId!==null&&expectedId!==lastCorrection.id))return null;
+          const entry=lastCorrection,event=add(entry.direction,-entry.delta,'undo',elapsed,entry.id);
+          if(event)lastCorrection=null;
+          return event;
+        }
+        function summary(){
+          return {a:total.A_TO_B,b:total.B_TO_A,autoA:automatic.A_TO_B,autoB:automatic.B_TO_A,
+            manualA:total.A_TO_B-automatic.A_TO_B,manualB:total.B_TO_A-automatic.B_TO_A,
+            canUndo:canUndo(),hasEvents:records.length>0};
+        }
+        function history(){return records.map(entry=>({...entry}));}
+        function reset(){
+          records=[];sequence=0;lastCorrection=null;
+          total.A_TO_B=0;total.B_TO_A=0;automatic.A_TO_B=0;automatic.B_TO_A=0;
+        }
+        return Object.freeze({auto,correct,undo,summary,history,reset});
+      }
+      // LEDGER:END
+      const ledger=createCountingLedger();
       const STORAGE_KEY = 'passage-counter-language-v1';
       const line = [{x:0.12,y:0.52},{x:0.88,y:0.52}];
       const state = {
         phase:'idle', stream:null, detector:null, modelUrls:[],
-        a:0,b:0,events:[],reverse:false,lastInfer:0,lastFrameTime:0,lastTimestamp:0,
+        reverse:false,lastInfer:0,lastFrameTime:0,lastTimestamp:0,
         detections:[],fps:0,frameHandle:0,startTime:0,elapsedMs:0,lastActive:0,wakeLock:null,
-        drag:null,clockTimer:null,sessionStart:null
+        drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
+        testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready'
       };
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
       function tr(key){return translations[language][key]||translations.en[key]||key;}
+      const SETUP_KEY='passage-counter-setup-v1';
+      function effectiveElapsed(){return state.elapsedMs+(state.phase==='counting'?performance.now()-state.lastActive:0);}
+      function countName(direction){
+        const id=direction==='A_TO_B'?'#labelA':'#labelB';
+        return $(id).value.trim().slice(0,24)||tr(direction==='A_TO_B'?'directionA':'directionB');
+      }
+      function saveSetup(){
+        const value={line:line.map(p=>({...p})),reverse:state.reverse,
+          cameraFacing:$('#cameraFacing').value,showDetections:$('#showDetections').checked,
+          labelA:$('#labelA').value.slice(0,24),labelB:$('#labelB').value.slice(0,24)};
+        try{localStorage.setItem(SETUP_KEY,JSON.stringify(value));}catch{}
+      }
+      function restoreSetup(){
+        try{
+          const raw=localStorage.getItem(SETUP_KEY);if(!raw)return;
+          const p=JSON.parse(raw);
+          if(Array.isArray(p.line)&&p.line.length===2&&p.line.every(pt=>
+            Number.isFinite(pt.x)&&Number.isFinite(pt.y)&&pt.x>=0.03&&pt.x<=0.97&&pt.y>=0.03&&pt.y<=0.97)){
+            line[0]={x:p.line[0].x,y:p.line[0].y};line[1]={x:p.line[1].x,y:p.line[1].y};
+          }
+          state.reverse=p.reverse===true;
+          $('#cameraFacing').value=p.cameraFacing==='user'?'user':'environment';
+          $('#showDetections').checked=p.showDetections!==false;
+          $('#labelA').value=typeof p.labelA==='string'?p.labelA.slice(0,24):'';
+          $('#labelB').value=typeof p.labelB==='string'?p.labelB.slice(0,24):'';
+        }catch{}
+      }
+      function invalidateTest(){
+        if(state.phase==='testing')return;
+        state.testCompleted=false;state.testCancelled=false;state.testA=0;state.testB=0;
+        $('#testResult').hidden=true;
+      }
+      function formatTestStatus(){
+        const remaining=Math.max(0,Math.ceil((state.testStartedAt+state.testDurationMs-performance.now())/1000));
+        $('#testRemaining').textContent=state.phase==='testing'?
+          tr('remaining').replace('{seconds}',String(remaining)):
+          tr(state.testCancelled?'testInterrupted':'testCompleted');
+        $('#testMessage').textContent=tr('trialCounts')
+          .replace('{a}',countName('A_TO_B')+' '+state.testA)
+          .replace('{b}',countName('B_TO_A')+' '+state.testB);
+      }
       function localize(){
         document.documentElement.lang=language;
         document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n);});
         document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{el.setAttribute('aria-label',tr(el.dataset.i18nAriaLabel));});
         $('#languageSelect').value=language;
+        $('#labelA').placeholder=tr('directionA');
+        $('#labelB').placeholder=tr('directionB');
         renderState();
       }
       function toast(message, actionLabel, onAction){
@@ -465,22 +552,49 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         }[phase]||'instruction';
         const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
         $('#statusDetails').textContent=message||(!validLine&&state.stream?tr('lineTooShort'):tr(defaultMessage));
-        $('#countA').textContent=state.a;$('#countB').textContent=state.b;$('#countTotal').textContent=state.a+state.b;
-        $('#reportA').textContent=state.a;$('#reportB').textContent=state.b;$('#reportTotal').textContent=state.a+state.b;
-        const elapsed=state.elapsedMs+(phase==='counting'?performance.now()-state.lastActive:0);
+        const totals=ledger.summary(),nameA=countName('A_TO_B'),nameB=countName('B_TO_A');
+        $('#displayLabelA').textContent=nameA;$('#displayLabelB').textContent=nameB;
+        $('#correctLabelA').textContent=nameA;$('#correctLabelB').textContent=nameB;
+        $('#miniLabelA').textContent=nameA;$('#miniLabelB').textContent=nameB;
+        $('#countA').textContent=totals.a;$('#countB').textContent=totals.b;$('#countTotal').textContent=totals.a+totals.b;
+        $('#reportA').textContent=totals.autoA;$('#reportB').textContent=totals.autoB;
+        $('#reportManualA').textContent=totals.manualA>0?'+'+totals.manualA:totals.manualA;
+        $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;
+        $('#reportTotal').textContent=totals.a+totals.b;
+        $('#miniA').textContent=phase==='testing'?state.testA:totals.a;
+        $('#miniB').textContent=phase==='testing'?state.testB:totals.b;
+        $('#mobileCounts').hidden=!['counting','testing'].includes(phase);
+        const elapsed=effectiveElapsed();
         $('#elapsedText').textContent=formatElapsed(elapsed);
         $('#reportElapsed').textContent=formatElapsed(elapsed);
+        const testing=phase==='testing';
         $('#cameraStart').disabled=phase==='loading'||phase==='done'||Boolean(state.stream);
         $('#cameraStop').disabled=!state.stream;
-        $('#reverseLine').disabled=!state.stream||phase==='counting'||phase==='loading';
-        $('#beginCount').disabled=!state.detector||!state.stream||!validLine||phase==='counting'||phase==='loading'||phase==='done';
+        $('#reverseLine').disabled=!state.stream||['counting','testing','loading','done'].includes(phase);
+        $('#cameraFacing').disabled=['counting','testing','loading','done'].includes(phase);
+        for(const id of ['#labelA','#labelB'])$(id).disabled=testing||phase==='counting';
+        $('#testButton').disabled=!state.detector||!state.stream||!validLine||!['ready','paused','testing'].includes(phase);
+        $('#testButton').textContent=tr(testing?'stopTest':'startTest');
+        $('#testResult').hidden=!(testing||state.testCompleted||state.testCancelled);
+        if(!$('#testResult').hidden)formatTestStatus();
+        $('#beginCount').disabled=!state.detector||!state.stream||!validLine||!state.testCompleted||testing||phase==='counting'||phase==='loading'||phase==='done';
         $('#beginCount').textContent=tr((state.startTime&&phase==='ready')||phase==='paused'||phase==='interrupted'?'resume':'beginCount');
         $('#pauseCount').disabled=phase!=='counting';
         $('#finishCount').disabled=!['counting','paused','interrupted'].includes(phase);
+        const mayCorrect=state.startTime>0&&!testing;
+        $('#plusA').disabled=!mayCorrect;$('#plusB').disabled=!mayCorrect;
+        $('#minusA').disabled=!mayCorrect||totals.a===0;$('#minusB').disabled=!mayCorrect||totals.b===0;
+        $('#undoCorrection').disabled=!mayCorrect||!totals.canUndo;
         $('#downloadButton').disabled=!state.startTime;
-        $('#resetButton').disabled=!state.startTime && !state.events.length;
+        $('#resetButton').disabled=!state.startTime&&!totals.hasEvents;
         $('#report').hidden=phase!=='done';
         $('#cameraPlaceholder').hidden=Boolean(state.stream);
+        const activeStep=['counting','paused','done','interrupted'].includes(phase)?'flowMeasure':
+          (testing||state.testCompleted?'flowTest':'flowSet');
+        for(const id of ['flowSet','flowTest','flowMeasure']){
+          if(id===activeStep)$('#'+id).setAttribute('aria-current','step');
+          else $('#'+id).removeAttribute('aria-current');
+        }
       }
       function zeroTracks(){tracker.reset();state.detections=[];}
       // TRACKER:BEGIN
@@ -648,14 +762,29 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           x:d.originX/width,y:d.originY/height,w:d.width/width,h:d.height/height
         }));
         const events=tracker.update(boxes,now,line,state.reverse);
-        if(state.phase==='counting') for(const event of events) recordCrossing(event.direction);
+        if(state.phase==='counting'||state.phase==='testing') for(const event of events) recordCrossing(event.direction);
       }
       function recordCrossing(direction){
-        if(direction==='A_TO_B')state.a+=1;else state.b+=1;
-        const now=new Date();
-        state.events.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+state.events.length,
-          occurredAt:now.toISOString(),direction,kind:'auto',delta:1,elapsedMs:Math.round(state.elapsedMs+performance.now()-state.lastActive)});
+        if(state.phase==='testing'){
+          if(direction==='A_TO_B')state.testA++;else state.testB++;
+          renderState();return;
+        }
+        if(state.phase!=='counting')return;
+        ledger.auto(direction,effectiveElapsed());renderState();
+      }
+      function correction(direction,delta){
+        if(!state.startTime||state.phase==='testing')return;
+        const event=ledger.correct(direction,delta,effectiveElapsed());
+        if(!event){toast(tr('negativeBlocked'));return;}
         renderState();
+        AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
+          actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
+      }
+      function undoLastCorrection(eventId=null){
+        if(!state.startTime||state.phase==='testing')return;
+        const entry=ledger.undo(effectiveElapsed(),eventId);
+        if(!entry){toast(tr('undoUnavailable'));return;}
+        renderState();toast(tr('undone'));
       }
       function layoutInfo(){
         const sw=stage.clientWidth,sh=stage.clientHeight;
