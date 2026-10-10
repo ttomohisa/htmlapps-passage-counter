@@ -20,7 +20,10 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
  const assets=JSON.parse(document.querySelector('#bundle').textContent);
  const mode=new URLSearchParams(location.search).get('mode')==='compat'?'compat':'optimized';
  document.querySelector('#mode').textContent='Variant: '+mode;
- const state=window.__litertTrial={mode,done:false,ok:false,report:null,error:null};
+ const state=window.__litertTrial={mode,done:false,ok:false,report:null,error:null,stage:'idle',violations:[]};
+ document.addEventListener('securitypolicyviolation',e=>{
+   state.violations.push({directive:e.violatedDirective,blockedURI:e.blockedURI,sourceFile:e.sourceFile});
+ });
  let runtime=null,model=null;
  const urls=[];
  function blobUrl(data,type){
@@ -48,20 +51,26 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
    const button=document.querySelector('#runButton');button.disabled=true;
    const status=document.querySelector('#status'),out=document.querySelector('#result');
    const start=performance.now();let input=null;
+   state.stage='started';
    try{
      status.textContent='Unpacking embedded runtime';
      const moduleUrl=blobUrl(await unpack('core.mjs'),'text/javascript');
+     state.stage='import-core';
      runtime=await import(moduleUrl);
      const wasmUrl=blobUrl(await unpack(mode+'.wasm'),'application/wasm');
      const loaderUrl=blobUrl(await unpack(mode+'-loader.js'),'text/javascript');
+     state.stage='setup-loader';
      globalThis.Module={locateFile(name){
        if(name.endsWith('.wasm'))return wasmUrl;
        throw Error('Undeclared companion file '+name);
      },mainScriptUrlOrBlob:loaderUrl};
      status.textContent='Initializing LiteRT';
+     state.stage='load-wasm-loader';
      await runtime.loadLiteRt(loaderUrl);
+     state.stage='wasm-loaded';
      const initMs=performance.now()-start;
      status.textContent='Compiling unchanged official model';
+     state.stage='compile-model';
      model=await runtime.loadAndCompile(await unpack('model.tflite'),{
        accelerator:'wasm',cpuOptions:{numThreads:1}
      });
@@ -81,12 +90,12 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
            first:Array.from(x.toTypedArray().slice(0,6),v=>typeof v==='bigint'?String(v):v)}));
        }finally{for(const x of tensors)x.delete();}
      }
-     state.ok=true;state.report={mode,initMs,compileMs,inputDetails:inputs,
+     state.stage='complete';state.ok=true;state.report={mode,initMs,compileMs,inputDetails:inputs,
        outputDetails:outputs,timesMs:times,samples,totalMs:performance.now()-start};
      status.textContent='SUCCESS: model compiled and inferred';
      out.textContent=JSON.stringify(state.report,null,2);
    }catch(e){
-     state.error=String(e?.stack||e);
+     state.error=String(e?.stack||e)+' (stage='+state.stage+')';
      status.textContent='FAILED: '+String(e?.message||e);
      out.textContent=state.error;
      console.error('[litert-trial]',e);

@@ -13,16 +13,22 @@ try{
  browser=await chromium.launch({channel:'chrome',headless:true});
  for(const mode of ['optimized','compat']){
    const context=await browser.newContext(),page=await context.newPage();
-   const requests=[],exceptions=[];
+   const requests=[],exceptions=[],consoleErrors=[],failedRequests=[];
    page.on('request',r=>{if(/^https?:\/\//.test(r.url())&&!r.url().startsWith(origin))requests.push(r.url());});
    page.on('pageerror',e=>exceptions.push(e.message));
+   page.on('console',m=>{if(['error','warning'].includes(m.type()))consoleErrors.push({
+     type:m.type(),text:m.text(),location:m.location()});});
+   page.on('requestfailed',r=>failedRequests.push({url:r.url(),failure:r.failure()}));
    await page.goto(origin+'?mode='+mode,{waitUntil:'domcontentloaded'});
    await page.locator('#runButton').click();
    await page.waitForFunction(()=>window.__litertTrial?.done===true,null,{timeout:180000});
    const outcome=await page.evaluate(()=>window.__litertTrial);
-   results.push({mode,...outcome,externalRequests:requests,pageErrors:exceptions});
+   results.push({mode,...outcome,externalRequests:requests,pageErrors:exceptions,
+     consoleErrors,failedRequests});
    console.log('[LiteRT] '+mode+': '+(outcome.ok?'SUCCESS':'FAILED')+', outbound='+requests.length);
    if(outcome.error)console.log('[LiteRT] ERROR '+outcome.error.slice(0,3500));
+   if(consoleErrors.length)console.log('[LiteRT] Console diagnostics '+JSON.stringify(consoleErrors).slice(0,3500));
+   if(failedRequests.length)console.log('[LiteRT] Failed requests '+JSON.stringify(failedRequests).slice(0,1500));
    await context.close();
  }
 }finally{

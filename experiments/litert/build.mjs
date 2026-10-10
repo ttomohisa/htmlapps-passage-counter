@@ -15,6 +15,8 @@ const result=await esbuild({
   legalComments:'none',logLevel:'warning'
 });
 const wasm=join(here,'node_modules','@litertjs','core','wasm');
+const loaderHead=await readFile(join(wasm,'litert_wasm_internal.js'),'utf8');
+console.log('[litert] loader first 140 chars',JSON.stringify(loaderHead.slice(0,140)));
 const files={
   'core.mjs':Buffer.from(result.outputFiles[0].contents),
   'optimized-loader.js':await readFile(join(wasm,'litert_wasm_internal.js')),
