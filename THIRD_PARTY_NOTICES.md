@@ -1,15 +1,17 @@
-# Third-Party Notices
+# Third-party notices
 
-The default generated starter application contains no bundled third-party library code.
+## MediaPipe Tasks Vision
 
-Browser APIs and system fonts are used directly. The GitHub Actions workflows reference their respective GitHub-maintained actions under the terms published by those projects.
+- Package: \`@mediapipe/tasks-vision@0.10.35\`
+- Source: https://github.com/google-ai-edge/mediapipe
+- License: Apache License, Version 2.0 — https://www.apache.org/licenses/LICENSE-2.0
+- Included: browser ES module, SIMD and non-SIMD WASM binaries and loaders.
 
-When adding a package to `dependencies.json`:
+## EfficientDet-Lite0 (int8) model
 
-1. Add its name, exact version, license, and homepage to this file.
-2. Sync and commit the corresponding `dependencies.lock.json` entry.
-3. Include every copyright notice and license text required for redistribution.
-4. Update both README files when the dependency materially affects privacy, size, or capability.
-5. Commit the regenerated `dist/dependency-manifest.json` only if the repository policy chooses to track generated artifacts.
+- Source: https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite
+- Documentation: https://ai.google.dev/edge/mediapipe/solutions/vision/object_detector
+- SHA-256: \`0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb\`
+- Upstream license notice: Apache-2.0 (confirm the model-specific distribution terms before the stable public release).
 
-Do not assume that a package being available from npm makes it compatible with MIT redistribution.
+Both are downloaded for build-time embedding only; the built app does not download them at runtime. The application itself is MIT-licensed.
