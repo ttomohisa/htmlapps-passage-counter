@@ -78,8 +78,21 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
        accelerator:'wasm',cpuOptions:{numThreads:1}
      });
      const compileMs=performance.now()-start;
-     const inputs=model.getInputDetails().map(x=>({name:x.name,dtype:x.dtype,shape:Array.from(x.shape)}));
-     const outputs=model.getOutputDetails().map(x=>({name:x.name,dtype:x.dtype,shape:Array.from(x.shape)}));
+     state.stage='inspect-tensors';
+     const inputRaw=model.getInputDetails(),outputRaw=model.getOutputDetails();
+     function detailsOf(items){
+       return items.map(x=>{
+         const dimensionValues=x.shape??x.dimensions??x.dims??x.tensorShape;
+         return {name:x.name,dtype:x.dtype,shape:Array.from(dimensionValues??[]),
+           availableKeys:Object.keys(x),type:typeof x,
+           json:JSON.stringify(x)};
+       });
+     }
+     const inputs=detailsOf(inputRaw),outputs=detailsOf(outputRaw);
+     console.log('[litert][IO] inputs '+JSON.stringify(inputs));
+     console.log('[litert][IO] outputs '+JSON.stringify(outputs));
+     state.io={inputs,outputs};
+     if(!inputs[0]?.shape?.length)throw Error('Input dimensions unavailable on public model details object.');
      if(inputs.length!==1)throw Error('Unexpected number of inputs '+inputs.length);
      const shape=inputs[0].shape;
      input=new runtime.Tensor(inputData(inputs[0].dtype,shape.reduce((a,b)=>a*b,1)),shape,inputs[0].dtype);
