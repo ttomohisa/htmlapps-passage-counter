@@ -111,6 +111,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   .camera-stage{aspect-ratio:4/3}
   .mini-counts:not([hidden]){display:flex;gap:10px;position:absolute;right:9px;bottom:9px;border-radius:9px;background:rgba(10,40,30,.88);color:#fff;padding:7px 10px;font-size:12px;pointer-events:none;max-width:calc(100% - 18px)}
   .mini-counts strong{font-size:15px;font-variant-numeric:tabular-nums;margin-left:4px}
+  .mini-counts>span{display:inline-flex;align-items:center;gap:2px;min-width:0;max-width:50%}
+  .mini-counts>span>span{display:block;max-width:9ch;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
   .video-panel .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   .video-panel .actions button:first-child{grid-column:1/-1}
   .panel{gap:13px}

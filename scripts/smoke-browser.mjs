@@ -111,6 +111,7 @@ try {
       JSON.stringify(part.custom.map(s=>({name:s.name,bytes:s.bytes}))));
   }
   console.log('[smoke] All bundled model, WASM, and loader assets are present.');
+  const cameraStartMs=Date.now();
   await page.locator('#cameraStart').click();
   await page.waitForFunction(() => {
     return /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent ?? '');
@@ -118,6 +119,7 @@ try {
   assert(await page.locator('#cameraFeed').evaluate(video => video.videoWidth > 0), 'Camera should provide frames');
   await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
   assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
+  console.log('[perf] Synthetic Chrome camera and bundled model ready after '+(Date.now()-cameraStartMs)+'ms; not a mobile benchmark.');
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
 
   // Ensure the non-SIMD fallback really initializes and performs inference;
@@ -147,6 +149,8 @@ try {
   assert(baselineResult,'Non-SIMD WASM must run a real detector frame from embedded assets');
   console.log('[smoke] Embedded non-SIMD WASM fallback initialized and inferred a video frame.');
 
+  // Benchmark the first on-device model/camera boot in the synthetic CI environment.
+  // This is diagnostic only; desktop CI is not a substitute for mobile timing.
   // Setup test must be complete before real counting, and must never mutate totals.
   assert(await page.locator('#beginCount').isDisabled(), 'Counting cannot start before setup test');
   assert(await page.locator('#minusA').isDisabled(), 'Cannot subtract before session');
@@ -163,6 +167,31 @@ try {
   await page.locator('#labelB').fill('Exit');
   assert.equal((await page.locator('#displayLabelA').textContent()).trim(),'Entry');
   assert(await page.locator('#beginCount').isEnabled(), 'Ready after setup test');
+
+  // Switching the selected camera forces a fresh setup test.
+  await page.locator('#cameraFacing').selectOption('user');
+  await page.waitForFunction(() =>
+    /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent ?? '') &&
+    !document.querySelector('#testButton').disabled,
+    null,{timeout:90_000});
+  assert(await page.locator('#beginCount').isDisabled(), 'Changing camera invalidates previous test');
+  await page.locator('#testButton').click();
+  await page.locator('#testButton').click();
+
+  // Moving either counting-line endpoint also invalidates the setup test.
+  await page.locator('#overlay').focus();
+  await page.keyboard.press('ArrowDown');
+  assert(await page.locator('#beginCount').isDisabled(), 'Moving counting line invalidates calibration');
+  await page.locator('#testButton').click();
+  await page.locator('#testButton').click();
+  assert(await page.locator('#beginCount').isEnabled(), 'New setup test clears calibration gate');
+
+  const savedSetup=await page.evaluate(()=>JSON.parse(localStorage.getItem('passage-counter-setup-v1')));
+  assert.equal(savedSetup.cameraFacing,'user');
+  assert.equal(savedSetup.labelA,'Entry');
+  assert.equal(savedSetup.labelB,'Exit');
+  assert(savedSetup.line[0].y>.52,'Line position was not saved after keyboard move');
+
   await page.locator('#beginCount').click();
   assert.match(await page.locator('#statusPill').textContent(), /計測中|Counting/);
   assert(await page.locator('#testButton').isDisabled(), 'Cannot calibrate during a session');
