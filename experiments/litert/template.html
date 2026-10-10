@@ -66,7 +66,10 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
      },mainScriptUrlOrBlob:loaderUrl};
      status.textContent='Initializing LiteRT';
      state.stage='load-wasm-loader';
-     await runtime.loadLiteRt(loaderUrl);
+     // LiteRT treats a path without .js suffix as a directory and appends
+     // litert_wasm_internal.js. Blob URLs have UUID endings, so use a harmless
+     // fragment suffix to mark the direct JS file; Blob lookup ignores fragments.
+     await runtime.loadLiteRt(loaderUrl+'#'+(mode==='compat'?'litert_wasm_compat_internal.js':'litert_wasm_internal.js'));
      state.stage='wasm-loaded';
      const initMs=performance.now()-start;
      status.textContent='Compiling unchanged official model';
