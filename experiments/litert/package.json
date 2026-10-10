@@ -1,0 +1,10 @@
+{
+  "name": "passage-counter-litert-trial",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@litertjs/core": "2.5.3",
+    "esbuild": "0.25.9",
+    "playwright": "1.56.1"
+  }
+}

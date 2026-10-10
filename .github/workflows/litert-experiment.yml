@@ -1,0 +1,59 @@
+name: LiteRT EfficientDet standalone trial
+on:
+  push:
+    branches: [experiment/litert-efficientdet-lite0]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  litert:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build existing MediaPipe baseline
+        shell: pwsh
+        run: |
+          ./scripts/check-repository.ps1
+          Copy-Item dist/build-size-report.json dist/mediapipe-baseline-size-report.json
+      - name: Install pinned experiment dependencies (CI only)
+        shell: pwsh
+        run: npm install --prefix experiments/litert --ignore-scripts --no-audit --no-fund
+      - name: Generate LiteRT standalone HTML
+        shell: pwsh
+        run: node experiments/litert/build.mjs
+      - name: Run both LiteRT WASM variants in Chrome
+        id: probe
+        shell: pwsh
+        continue-on-error: true
+        run: node experiments/litert/smoke.mjs
+      - name: Show results
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/litert-trial-report.json) { Get-Content dist/litert-trial-report.json }
+          if (Test-Path dist/litert-browser-results.json) { Get-Content dist/litert-browser-results.json }
+      - name: Upload experiment artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: litert-efficientdet-trial
+          path: |
+            dist/litert-trial.html
+            dist/litert-trial-report.json
+            dist/litert-browser-results.json
+            dist/mediapipe-baseline-size-report.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Require real model inference success
+        if: always()
+        shell: pwsh
+        run: |
+          if (!(Test-Path dist/litert-browser-results.json)) { throw "Missing LiteRT probe output." }
+          $results = Get-Content -Raw dist/litert-browser-results.json | ConvertFrom-Json
+          if (@($results | Where-Object { -not $_.ok -or @($_.externalRequests).Count -gt 0 -or @($_.pageErrors).Count -gt 0 }).Count -gt 0) {
+            throw "LiteRT model inference failed or unexpectedly requested network; inspect logged results."
+          }
