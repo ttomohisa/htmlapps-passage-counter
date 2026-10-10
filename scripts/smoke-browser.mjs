@@ -147,18 +147,60 @@ try {
   assert(baselineResult,'Non-SIMD WASM must run a real detector frame from embedded assets');
   console.log('[smoke] Embedded non-SIMD WASM fallback initialized and inferred a video frame.');
 
+  // Setup test must be complete before real counting, and must never mutate totals.
+  assert(await page.locator('#beginCount').isDisabled(), 'Counting cannot start before setup test');
+  assert(await page.locator('#minusA').isDisabled(), 'Cannot subtract before session');
+  await page.locator('#testButton').click();
+  assert.match(await page.locator('#statusPill').textContent(), /設置テスト中|Testing setup/);
+  assert(await page.locator('#beginCount').isDisabled(), 'Counting is disabled during calibration');
+  assert(await page.locator('#plusA').isDisabled(), 'Corrections are disabled during calibration');
+  await page.locator('#testButton').click(); // Explicit early finish; 30-second auto stop also exists.
+  assert(await page.locator('#testResult').isVisible(), 'Trial results should be visible');
+  assert.equal((await page.locator('#countTotal').textContent()).trim(),'0',
+    'Trial events must never become session counts');
+  await page.locator('#setupOptions > summary').click();
+  await page.locator('#labelA').fill('Entry');
+  await page.locator('#labelB').fill('Exit');
+  assert.equal((await page.locator('#displayLabelA').textContent()).trim(),'Entry');
+  assert(await page.locator('#beginCount').isEnabled(), 'Ready after setup test');
   await page.locator('#beginCount').click();
   assert.match(await page.locator('#statusPill').textContent(), /計測中|Counting/);
+  assert(await page.locator('#testButton').isDisabled(), 'Cannot calibrate during a session');
+  assert(await page.locator('#minusB').isDisabled(), 'A zero count cannot go below zero');
+  await page.locator('#plusA').click();
+  assert.equal((await page.locator('#countA').textContent()).trim(),'1');
+  await page.locator('#undoCorrection').click();
+  assert.equal((await page.locator('#countA').textContent()).trim(),'0');
+  assert(await page.locator('#undoCorrection').isDisabled(), 'Undo cannot run twice');
+  await page.locator('#plusB').click();
+  await page.locator('#minusB').click();
+  assert.equal((await page.locator('#countB').textContent()).trim(),'0');
   await page.locator('#pauseCount').click();
   assert.match(await page.locator('#statusPill').textContent(), /一時停止|Paused/);
+  assert(await page.locator('#beginCount').isEnabled(), 'Can resume after calibration');
   await page.locator('#beginCount').click();
   await page.locator('#finishCount').click();
   assert(await page.locator('#report').isVisible(), 'Result should be visible after finish');
+  assert.equal((await page.locator('#reportTotal').textContent()).trim(),'0');
+  await page.locator('#outputFilename').fill('passage-checked');
+  const downloadPromise=page.waitForEvent('download');
+  await page.locator('#downloadButton').click();
+  const download=await downloadPromise;
+  assert.equal(download.suggestedFilename(),'passage-checked.csv');
+  const csv=await readFile(await download.path(),'utf8');
+  assert(csv.includes('"direction_label"') && csv.includes('"undo_of"'), 'CSV must include the audit columns');
+  assert(csv.includes('"correction"') && csv.includes('"undo"'), 'CSV must include adjustments and Undo');
+  assert(!csv.includes('"test"'), 'Calibration rows must never appear in session export');
+  assert(csv.includes('"Entry"') && csv.includes('"Exit"'), 'CSV includes custom direction labels');
   await page.locator('#languageSelect').selectOption('en');
   assert.match(await page.locator('#pageTitle').textContent(), /Count people/);
   await page.setViewportSize({ width: 360, height: 740 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow on mobile');
-  console.log('[smoke] Start/pause/resume/finish, i18n, and mobile layout passed.');
+  await page.setViewportSize({ width: 320, height: 640 });
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow at 320px');
+  await page.setViewportSize({ width: 740, height: 360 });
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow in landscape');
+  console.log('[smoke] Calibration separation, correction/Undo audit, CSV, i18n and mobile layout passed.');
   // The one-file requirement includes direct local opening, not just localhost.
   for (const filename of ['dist/index.html','dist/index.self-extract.html']) {
     const localPage=await context.newPage();

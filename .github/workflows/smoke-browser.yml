@@ -39,6 +39,9 @@ jobs:
       - name: Verify tracking state machine and line geometry
         shell: pwsh
         run: node scripts/test-tracker.mjs
+      - name: Verify correction and Undo ledger
+        shell: pwsh
+        run: node scripts/test-ledger.mjs
       - name: Install browser test driver (CI only)
         shell: pwsh
         run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
