@@ -500,7 +500,7 @@ if ($selfExtractEnabled) {
   Write-Host "[OK] Self-extracting HTML: $selfExtractOutputPath" -ForegroundColor Green
 }
 ) { throw "model.config.json: sha256 must contain the verified 64-character SHA-256." }
-if ([string]$modelConfig.url -notmatch '^https://storage\\.googleapis\\.com/mediapipe-models/') {
+if ([string]$modelConfig.url -notmatch '^https://storage\.googleapis\.com/mediapipe-models/') {
   throw "model.config.json: unexpected model download origin."
 }
 $modelCachePath = Join-Path $CacheRoot ("person-model-" + $modelHash + ".tflite")
