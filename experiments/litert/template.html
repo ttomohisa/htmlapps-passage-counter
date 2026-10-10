@@ -7,10 +7,19 @@ body{margin:0;padding:16px}main{max-width:760px;margin:auto}
 section{border:1px solid #cadbd1;border-radius:12px;background:white;padding:16px;margin:12px 0}
 h1{font-size:1.4rem}button{background:#16624f;color:white;padding:12px 18px;border:0;border-radius:10px;min-height:44px}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+#photo{display:block;width:100%;min-height:44px;margin-top:8px}
+canvas{display:block;max-width:100%;height:auto;border:1px solid #c8d8d0;border-radius:8px;margin:12px 0}
+canvas[hidden]{display:none}
 </style></head><body><main>
 <h1>LiteRT.js / EfficientDet-Lite0 int8</h1>
 <p>Standalone offline compatibility test. This is not the published person counter.</p>
-<section><p id="mode"></p><button type="button" id="runButton">Compile and run current model</button><p id="status" role="status">Ready</p><pre id="result"></pre></section>
+<section><p id="mode"></p>
+<label for="photo">Optional image from this device (never uploaded)</label>
+<input id="photo" type="file" accept="image/*">
+<p><small>Without a photo, a neutral test tensor is used. Selected images stay in browser memory.</small></p>
+<canvas id="photoPreview" width="320" height="320" hidden aria-label="Selected image preview"></canvas>
+<p><button type="button" id="runButton">Compile and run current model</button></p>
+<p id="status" role="status">Ready</p><pre id="result"></pre></section>
 <p>Model and WASM are embedded. This test does not establish human detection accuracy.</p>
 </main>
 <script id="bundle" type="application/json">__TRIAL_ASSETS__</script>
@@ -94,9 +103,29 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
      state.io={inputs,outputs};
      if(!inputs[0]?.shape?.length)throw Error('Input dimensions unavailable on public model details object.');
      if(inputs.length!==1)throw Error('Unexpected number of inputs '+inputs.length);
-     const shape=inputs[0].shape;
-     input=new runtime.Tensor(inputData(inputs[0].dtype,shape.reduce((a,b)=>a*b,1)),shape,inputs[0].dtype);
-     const times=[];let samples=[];
+     const shape=inputs[0].shape,source=document.querySelector('#photo').files[0];
+     let pixels=inputData(inputs[0].dtype,shape.reduce((a,b)=>a*b,1));
+     if(source){
+       if(!source.type.startsWith('image/'))throw Error('Please choose an image file');
+       if(source.size>30*1024*1024)throw Error('Image is too large for this experiment (limit 30MB)');
+       const bitmap=await createImageBitmap(source);
+       try{
+         const canvas=document.querySelector('#photoPreview'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+         const w=shape[2],h=shape[1];canvas.width=w;canvas.height=h;
+         ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+         const scale=Math.min(w/bitmap.width,h/bitmap.height);
+         const dw=bitmap.width*scale,dh=bitmap.height*scale;
+         ctx.drawImage(bitmap,(w-dw)/2,(h-dh)/2,dw,dh);
+         canvas.hidden=false;
+         const rgba=ctx.getImageData(0,0,w,h).data;
+         pixels=new Uint8Array(w*h*3);
+         for(let p=0,j=0;p<rgba.length;p+=4){
+           pixels[j++]=rgba[p];pixels[j++]=rgba[p+1];pixels[j++]=rgba[p+2];
+         }
+       }finally{bitmap.close();}
+     }
+     input=new runtime.Tensor(pixels,shape,inputs[0].dtype);
+     const times=[];let samples=[],rawSignals=null;
      state.stage='running-inference';
      for(let i=0;i<3;i++){
        const tick=performance.now();
@@ -104,16 +133,37 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
        const tensors=Array.isArray(r)?r:Object.values(r);
        try{
          samples=tensors.map((x,index)=>{
-           const dtype=x.dtype??outputs[index]?.dtype;
-           const shape=outputs[index]?.shape??[];
-           if(typeof x.toTypedArray!=='function')throw Error('Output '+index+' has no toTypedArray, keys='+Object.keys(x));
+           const dtype=x.dtype??outputs[index]?.dtype,shape=outputs[index]?.shape??[];
+           if(typeof x.toTypedArray!=='function')throw Error('Output '+index+' has no toTypedArray');
            const data=x.toTypedArray();
            return {dtype,shape,first:Array.from(data.slice(0,6),v=>typeof v==='bigint'?String(v):v)};
          });
+         if(i===2 && source){
+           const scoreIndex=outputs.findIndex(d=>d.shape?.length===3&&d.shape[2]===90);
+           if(scoreIndex>=0){
+             const scores=tensors[scoreIndex].toTypedArray(),count=outputs[scoreIndex].shape[1];
+             const sig=x=>1/(1+Math.exp(-x));
+             // Channel identity and anchor decoding still need independent verification.
+             // These are diagnostic raw score signals, NOT person detections.
+             const strongest=[];
+             for(const channel of [0,1]){
+               let max=-Infinity,anchor=-1;
+               for(let p=0;p<count;p++){
+                 const value=scores[p*90+channel];
+                 if(value>max){max=value;anchor=p;}
+               }
+               strongest.push({classChannel:channel,maxRawScore:max,sigmoidProbability:sig(max),anchor});
+             }
+             rawSignals={classChannels:strongest,candidatesPerClass:count,
+               note:'Raw model signals only. MediaPipe-equivalent anchors, NMS and labels are not implemented.'};
+           }
+         }
        }finally{for(const x of tensors)x.delete();}
      }
      state.stage='complete';state.ok=true;state.report={mode,initMs,compileMs,inputDetails:inputs,
-       outputDetails:outputs,timesMs:times,samples,totalMs:performance.now()-start};
+       outputDetails:outputs,timesMs:times,samples,rawSignals,
+       inputSource:source?'selected_photo':'neutral_uint8',
+       totalMs:performance.now()-start};
      status.textContent='SUCCESS: model compiled and inferred';
      out.textContent=JSON.stringify(state.report,null,2);
    }catch(e){
