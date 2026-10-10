@@ -2,6 +2,8 @@
 // Uses Chrome's synthetic camera; this confirms initialization, not counting accuracy.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { chromium } from '../.smoke/node_modules/playwright/index.mjs';
 
@@ -79,6 +81,32 @@ try {
   await page.setViewportSize({ width: 360, height: 740 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow on mobile');
   console.log('[smoke] Start/pause/resume/finish, i18n, and mobile layout passed.');
+  // The one-file requirement includes direct local opening, not just localhost.
+  for (const filename of ['dist/index.html','dist/index.self-extract.html']) {
+    const localPage=await context.newPage();
+    localPage.on('pageerror', error => errors.push(filename+': '+error.message));
+    localPage.on('request', request => {
+      const url=request.url();
+      if (/^https?:\/\//.test(url)) outgoing.push(filename+': '+url);
+    });
+    localPage.on('console', message => {
+      if(message.type()==='error' &&
+         !/^INFO: Created TensorFlow Lite XNNPACK delegate for CPU\.$/.test(message.text())) {
+        errors.push(filename+': '+message.text());
+      }
+    });
+    await localPage.goto(pathToFileURL(resolve(filename)).href,
+      {waitUntil:'domcontentloaded',timeout:90_000});
+    await localPage.locator('#cameraStart').waitFor({timeout:90_000});
+    await localPage.locator('#cameraStart').click();
+    await localPage.waitForFunction(() =>
+      /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent ?? ''),
+      null, {timeout:90_000});
+    assert(await localPage.locator('#cameraFeed').evaluate(video=>video.videoWidth>0),
+      filename+': local-file camera has no video');
+    console.log('[smoke] Direct local '+filename+' launched embedded AI and camera.');
+    await localPage.close();
+  }
   assert.deepEqual(outgoing, [], 'Unexpected external HTTP requests');
   assert.deepEqual(errors, [], 'Console or unhandled errors occurred');
   passed = true;
