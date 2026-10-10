@@ -48,7 +48,7 @@ run('new person reappearing opposite side',[
 {
   const tracker=factory();let now=100;
   for(const y of crossing)tracker.update([box(.5,y)],now+=170,line);
-  assert.deepEqual(tracker.update([],now+=170,line),[],'no events for missing frame');
+  assert.equal(tracker.update([],now+=170,line).length,0,'no events for missing frame');
   tracker.reset();
   assert.equal(tracker.inspect().length,0,'reset releases all tracking state');
   count++; console.log('[tracking] PASS reset');
