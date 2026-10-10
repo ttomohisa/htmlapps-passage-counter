@@ -48,6 +48,8 @@ PC／AndroidのChrome・Edgeを主な検証対象とします。Safari・Firefox
 
 [正式仕様書](APP_SPEC.md) ／ [開発計画](DEVELOPMENT_PLAN.md) ／ [オフライン検証](VERIFY_OFFLINE.md)
 
+単一HTMLの容量内訳と最適化方針：[docs/SIZE_BUDGET.md](docs/SIZE_BUDGET.md)。
+
 ## ライセンス
 
 アプリ本体はMIT。AIモデル・依存ファイルは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照。

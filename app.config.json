@@ -19,8 +19,8 @@
       "output": "dist/index.self-extract.html"
     },
     "sizeBudget": {
-      "readableWarningMb": 50,
-      "selfExtractWarningMb": 32
+      "readableWarningMb": 13,
+      "selfExtractWarningMb": 13
     }
   }
 }

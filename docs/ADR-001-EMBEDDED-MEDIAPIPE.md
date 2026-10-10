@@ -49,3 +49,7 @@ ONNX Runtime Web with a similarly licensed small person detector was considered 
 Still needed before declaring the v0.1.0 milestone complete: real-person crossing tests, actual Android Chrome and iOS Safari behavior and performance, review of the model's redistribution terms, and confirmation of zero runtime telemetry on supported physical devices.
 
 No CDN, hosted model, or separate local asset may be added as a workaround.
+
+## v0.2.0 size review
+
+Both WASM variants were kept. The browser-side WASM parser found no custom sections to strip. Switching compatible build-time gzip from default compression to the highest available built-in level reduced the readable HTML by **150,928 bytes (1.11%)** while keeping the asset protocol and runtime unchanged. See [SIZE_BUDGET.md](SIZE_BUDGET.md).

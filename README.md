@@ -51,6 +51,8 @@ Generated manifests and a size report are in \`dist/\`. The CI browser smoke tes
 
 See [APP_SPEC.md](APP_SPEC.md), [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) and [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md).
 
+Build size and optimization measurements: [docs/SIZE_BUDGET.md](docs/SIZE_BUDGET.md).
+
 ## License
 
 Application: MIT; dependencies and AI model: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
