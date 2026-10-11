@@ -934,6 +934,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
         storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,
         sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',videoError:'',
+        fileNeedsReanalysis:false,
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
         fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
         previewTargetMs:0
@@ -1529,13 +1530,13 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           renderState();return;
         }
         if(state.phase!=='counting')return;
-        const entry=ledger.auto(direction,effectiveElapsed());
+        const entry=ledger.auto(direction,effectiveElapsed(),fileMediaTimeMs());
         if(entry)queueSnapshot(entry);
         renderState();renderTimeline();
       }
       function correction(direction,delta){
         if(!state.startTime||state.phase==='testing')return;
-        const event=ledger.correct(direction,delta,effectiveElapsed());
+        const event=ledger.correct(direction,delta,effectiveElapsed(),fileMediaTimeMs());
         if(!event){toast(tr('negativeBlocked'));return;}
         queueSnapshot(event);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
@@ -1543,7 +1544,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function undoLastCorrection(eventId=null){
         if(!state.startTime||state.phase==='testing')return;
-        const entry=ledger.undo(effectiveElapsed(),eventId);
+        const entry=ledger.undo(effectiveElapsed(),eventId,fileMediaTimeMs());
         if(!entry){toast(tr('undoUnavailable'));return;}
         queueSnapshot(entry);renderState();renderTimeline();toast(tr('undone'));
       }
@@ -1565,7 +1566,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const pw=Math.floor(w*dpr),ph=Math.floor(h*dpr);
         if(overlay.width!==pw||overlay.height!==ph){overlay.width=pw;overlay.height=ph;}
         ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-        if(!state.stream)return;
+        if(!hasActiveSource())return;
         const g=layoutInfo();
         ctx.lineWidth=3;ctx.strokeStyle='#a9f6cf';ctx.shadowColor='#123327';ctx.shadowBlur=5;
         ctx.beginPath();ctx.moveTo(g.x+line[0].x*g.width,g.y+line[0].y*g.height);
@@ -1601,7 +1602,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function pointerAt(e){const r=overlay.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
       overlay.addEventListener('pointerdown',e=>{
-        if(!state.stream||state.phase==='counting'||state.phase==='testing')return;
+        if(!hasActiveSource()||state.phase==='counting'||state.phase==='testing')return;
         const p=pointerAt(e),g=layoutInfo();
         const d=line.map(pt=>Math.hypot(p.x-(g.x+pt.x*g.width),p.y-(g.y+pt.y*g.height)));
         const i=d[0]<d[1]?0:1;
@@ -1614,7 +1615,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
       function finishDrag(){if(state.drag!==null){saveSetup();if(currentSession)queueSnapshot();}state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
       overlay.addEventListener('keydown',event=>{
-        if(!state.stream||state.phase==='counting'||state.phase==='testing')return;
+        if(!hasActiveSource()||state.phase==='counting'||state.phase==='testing')return;
         const step=event.shiftKey?0.02:0.005;
         let dx=0,dy=0;
         if(event.key==='ArrowLeft')dx=-step;
@@ -1848,11 +1849,28 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         }
       }
       function loop(now=performance.now()){
-        if(!state.stream)return;
-        // Keep one inference in flight; detectForVideo is synchronous.
-        if(state.detector&&video.readyState>=2&&document.visibilityState==='visible'&&now-state.lastInfer>=160){
+        if(!hasActiveSource())return;
+        const fileMode=isFileMode(),sourceMs=fileMode?fileMediaTimeMs():null;
+        const freshFrame=!fileMode||(
+          state.videoReady&&!video.paused&&!video.seeking&&
+          Number.isFinite(sourceMs)&&sourceMs>state.lastProcessedSourceMs+8);
+        // MediaPipe requires monotonic VIDEO timestamps; tracking and CSV
+        // use video-source milliseconds for local video instead.
+        if(state.detector&&video.readyState>=2&&document.visibilityState==='visible'&&
+           now-state.lastInfer>=160&&freshFrame){
           state.lastInfer=now;
           try{
+            if(fileMode){
+              const previous=state.lastProcessedSourceMs;
+              if(previous>=0&&(sourceMs<previous-5||sourceMs-previous>1200)){
+                zeroTracks();
+                if(state.phase==='counting'){
+                  state.fileNeedsReanalysis=true;
+                  interrupt(tr('videoSeekingMessage'));
+                }
+              }
+              state.lastProcessedSourceMs=sourceMs;
+            }
             const timestamp=Math.max(now,state.lastTimestamp+0.1);
             state.lastTimestamp=timestamp;
             const result=state.detector.detectForVideo(video,timestamp);
@@ -1860,7 +1878,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
               .filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person'))
               .map(d=>d.boundingBox);
             state.detections=detections;
-            trackPeople(detections,now);
+            if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis))
+              trackPeople(detections,fileMode?sourceMs:now);
             if(state.lastFrameTime>0)state.fps=Math.round(1000/(now-state.lastFrameTime));
             state.lastFrameTime=now;
             $('#detectorInfo').textContent='EfficientDet · '+state.fps+' fps · '+detections.length;
