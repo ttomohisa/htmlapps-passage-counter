@@ -6,6 +6,7 @@ import {readFile,mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
 const html=await readFile('dist/index.html');
+const expectedIcon='data:image/svg+xml;base64,'+(await readFile('assets/favicon.svg')).toString('base64');
 const server=createServer((req,res)=>{
   if(req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(html);}
   else{res.writeHead(404);res.end();}
@@ -37,14 +38,28 @@ try{
       sticky:getComputedStyle(header).position,
       iconMatches:document.querySelector('#appBrandIcon').src===document.querySelector('link[rel="icon"]').href,
       helpSvg:document.querySelectorAll('#helpButton svg').length,
+      helpStyle:(()=>{
+        const button=document.querySelector('#helpButton');
+        const style=getComputedStyle(button),icon=button.querySelector('svg');
+        const rect=button.getBoundingClientRect();
+        return {borderWidth:style.borderTopWidth,background:style.backgroundColor,
+          iconWidth:icon.getBoundingClientRect().width,buttonWidth:rect.width,
+          buttonHeight:rect.height};
+      })(),
       version:document.querySelector('#versionBadge').textContent,
       text:document.querySelector('#pageTitle').textContent
     };
   });
   assert.equal(design.sticky,'sticky','Non-sticky BK header at '+width);
   assert.equal(design.iconMatches,true,'Favicon/header icon mismatch');
+  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),expectedIcon,
+    'Standalone favicon and header must embed the exact user-provided icon asset');
   assert.equal(design.helpSvg,1,'Header help icon is missing');
-  assert.equal(design.version,'v0.7.0');
+  assert.equal(design.helpStyle.borderWidth,'0px','Wi-Fi Share style Help must be unboxed');
+  assert.equal(design.helpStyle.background,'rgba(0, 0, 0, 0)','Header Help needs transparent background');
+  assert.equal(design.helpStyle.iconWidth,20,'Header Help must use the Wi-Fi Share 20px SVG');
+  assert(design.helpStyle.buttonWidth>=44&&design.helpStyle.buttonHeight>=44,'Header Help tap target must be 44px');
+  assert.equal(design.version,'v0.8.0');
   assert(design.scrollWidth<=width+1,'Horizontal overflow at '+width+'px');
   assert(design.brand.right<=design.actions.left+2,'Header action overlaps app name at '+width);
   assert(design.badge.top>=design.hero.top-1 &&
