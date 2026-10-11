@@ -2,7 +2,7 @@
 
 Count **person-crossing events by direction** using a fixed camera or a local video and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.7.0 integration preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.8.0 accuracy-tooling preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
 ## Browser Kitty interface and usability
 
@@ -13,6 +13,23 @@ The v0.6.0 header and hero follow the same visible conventions as [PDF Fill & Si
 v0.7.0 adds an evidence-scoped desktop Windows Chrome/Edge CI target: real embedded-model inference using a simulated camera, adjustment/CSV export, blocked outbound HTTP, combined meta+header CSP checks, cold-cache offline single-HTML startup, and bilingual error/dialog regression. Camera permission and rejected-video error messages now stay translated when switching between EN and JA; video-preview and aggregation accessibility labels are localized.
 
 **Not yet verified:** real Android Chrome, iOS Safari, 30-minute mobile heat/battery/memory/fps, live counting accuracy, and the actual Cloudflare response CSP header. Desktop simulated-camera and file tests are not a claim of physical-device compatibility. See the [v0.7.0 compatibility matrix and physical-device checklist](docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md).
+
+## v0.8.0 — accuracy evaluation and header consistency
+
+- Replaced the app header icon and generated favicon with the **provided Passage Counter SVG** (64×64, #16624f, rx=16). Both use exactly the same embedded SVG in the readable and self-extract HTML editions.
+- Changed the header Help action to the **Wi-Fi Share-style unboxed 20px SVG** with a transparent 44×44 touch target and retained focus, help dialog and EN/JA labels.
+- Added the **fully local reviewer helper** [label-passages.html](evaluation/label-passages.html). Open a local video, position its line, label A→B or B→A passage times, undo mistakes and download human ground-truth CSV. It never uploads or persists the video.
+- Added the offline [accuracy evaluator](scripts/evaluate-accuracy.mjs). It compares app **automatic events only** (not manual corrections/Undo) against independently labeled events, using direction-specific one-to-one matching within ±1.5 seconds. It reports TP/FP/FN, Precision/Recall overall and by direction, calibration vs holdout and standard vs difficult scenes.
+- Added deterministic matching/error tests and a **synthetic-only** three-event example. Synthetic data cannot satisfy the release-accuracy gate.
+
+**No physical-data accuracy has been measured in this PR.** The required 100+ independently labeled *real* fixed-camera crossings, both directions, and the 95% target are still **open**. Android Chrome/iPhone Safari/30-minute endurance are also unverified. See [ADR-007 accuracy protocol](docs/ADR-007-ACCURACY-EVALUATION.md) and [ADR-006 compatibility matrix](docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md).
+
+To check the evaluation tools without real footage:
+
+```sh
+node scripts/test-accuracy-evaluator.mjs
+node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --json=dist/accuracy-example.json --md=dist/accuracy-example.md
+```
 
 ## Features
 
