@@ -56,11 +56,14 @@ try {
   await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   const assets = await page.evaluate(() => window.StandaloneAssets?.list?.() ?? []);
   for (const expected of [
-    'mediapipe/module', 'mediapipe/simd-loader', 'mediapipe/simd-wasm',
-    'mediapipe/baseline-loader', 'mediapipe/baseline-wasm', 'person-model/tflite'
+    'mediapipe/module', 'mediapipe/simd-loader', 'mediapipe/simd-wasm', 'person-model/tflite'
   ]) {
     assert(assets.includes(expected), 'Missing asset in readable HTML: ' + expected);
   }
+  for(const forbidden of ['mediapipe/baseline-loader','mediapipe/baseline-wasm']){
+    assert(!assets.includes(forbidden), 'SIMD-only package must exclude '+forbidden);
+  }
+  console.log('[simd] No non-SIMD WASM or loader is embedded.');
 
   // Cryptographically assert the model bytes inside HTML really match the locked source.
   const modelSha = await page.evaluate(async () => {
@@ -69,7 +72,7 @@ try {
     return Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
   });
   assert.equal(modelSha,'0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb');
-  for(const key of ['simd-wasm','baseline-wasm']){
+  for(const key of ['simd-wasm']){
     const magic=await page.evaluate(async key=>
       Array.from((await window.StandaloneAssets.bytesAsync('mediapipe',key)).slice(0,4)),key);
     assert.deepEqual(magic,[0,97,115,109],'WASM magic mismatch for '+key);
@@ -85,7 +88,7 @@ try {
       throw new Error('Invalid WASM section size');
     }
     const out=[];
-    for(const key of ['simd-wasm','baseline-wasm']){
+    for(const key of ['simd-wasm']){
       const bytes=await window.StandaloneAssets.bytesAsync('mediapipe',key);
       const custom=[];
       let cursor=8;
@@ -122,32 +125,40 @@ try {
   console.log('[perf] Synthetic Chrome camera and bundled model ready after '+(Date.now()-cameraStartMs)+'ms; not a mobile benchmark.');
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
 
-  // Ensure the non-SIMD fallback really initializes and performs inference;
-  // checking the binary magic alone does not establish browser compatibility.
-  const baselineResult=await page.evaluate(async()=>{
+  // Verify real detectForVideo passes with the only bundled SIMD loader,
+  // recording frame inference times. Fake camera tests do not measure accuracy.
+  const simdBenchmark=await page.evaluate(async()=>{
     const mp=await window.StandaloneAssets.importModule('mediapipe','module');
     const urls=[
-      await window.StandaloneAssets.blobUrlAsync('mediapipe','baseline-loader'),
-      await window.StandaloneAssets.blobUrlAsync('mediapipe','baseline-wasm')
+      await window.StandaloneAssets.blobUrlAsync('mediapipe','simd-loader'),
+      await window.StandaloneAssets.blobUrlAsync('mediapipe','simd-wasm')
     ];
     let detector=null;
-    try {
+    try{
       detector=await mp.ObjectDetector.createFromOptions({
         wasmLoaderPath:urls[0],wasmBinaryPath:urls[1]
       },{
         baseOptions:{modelAssetBuffer:await window.StandaloneAssets.bytesAsync('person-model','tflite'),delegate:'CPU'},
         runningMode:'VIDEO',categoryAllowlist:['person'],scoreThreshold:0.45,maxResults:12
       });
-      const result=detector.detectForVideo(
-        document.querySelector('#cameraFeed'),performance.now()+1000);
-      return Array.isArray(result?.detections);
-    } finally {
+      const video=document.querySelector('#cameraFeed');
+      const durations=[];
+      for(let i=0;i<10;i++){
+        const started=performance.now();
+        const result=detector.detectForVideo(video,started+1000*i);
+        if(!Array.isArray(result?.detections))throw Error('No detector result for frame '+i);
+        durations.push(performance.now()-started);
+      }
+      return durations;
+    }finally{
       if(detector)detector.close();
       urls.forEach(url=>URL.revokeObjectURL(url));
     }
   });
-  assert(baselineResult,'Non-SIMD WASM must run a real detector frame from embedded assets');
-  console.log('[smoke] Embedded non-SIMD WASM fallback initialized and inferred a video frame.');
+  assert.equal(simdBenchmark.length,10,'SIMD inference sample count');
+  const sorted=[...simdBenchmark].sort((a,b)=>a-b);
+  console.log('[simd] Ten live video inference passes; median '+
+    sorted[5].toFixed(1)+'ms in CI (not mobile and not a count accuracy metric).');
 
   // Benchmark the first on-device model/camera boot in the synthetic CI environment.
   // This is diagnostic only; desktop CI is not a substitute for mobile timing.
@@ -257,6 +268,20 @@ try {
     console.log('[smoke] Direct local '+filename+' launched embedded AI and camera.');
     await localPage.close();
   }
+  // Unsupported browsers should never request camera permission.
+  const noSimdPage=await context.newPage();
+  noSimdPage.on('pageerror',err=>errors.push('No-SIMD page: '+err.message));
+  await noSimdPage.addInitScript(()=>{
+    Object.defineProperty(WebAssembly,'validate',{configurable:true,value:()=>false});
+  });
+  await noSimdPage.goto(origin,{waitUntil:'domcontentloaded'});
+  assert(await noSimdPage.locator('#cameraStart').isDisabled(),
+    'SIMD-unsupported clients must not start the camera');
+  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/SIMD/);
+  await noSimdPage.locator('#languageSelect').selectOption('en');
+  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/does not support WebAssembly SIMD/);
+  await noSimdPage.close();
+  console.log('[simd] Unsupported browser correctly blocks camera and explains the limitation in both languages.');
   assert.deepEqual(outgoing, [], 'Unexpected external HTTP requests');
   assert.deepEqual(errors, [], 'Console or unhandled errors occurred');
   passed = true;
