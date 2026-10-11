@@ -206,6 +206,16 @@ html{min-height:100%;background:var(--background)}
 @media(max-width:520px){.header-inner{gap:10px}.brand-name{font-size:15px}.brand-meta{font-size:11px}.header-actions{gap:7px}.shell.main{padding:18px 14px 36px}.page-intro{padding-bottom:14px}.page-intro h1{font-size:23px}}
 @media(max-width:340px){.brand-meta{max-width:172px}.header-actions{gap:3px}.brand-name{font-size:14px}.version-badge{font-size:9px;padding:1px 4px}}
 
+
+/* Operational status is human-readable. Model, fps and processing metrics
+   are in a native details panel, not the first-view UX. */
+.diagnostic-details{margin:3px 0 5px;font-size:12px;color:var(--muted)}
+.diagnostic-details summary{min-height:42px;display:flex;align-items:center;cursor:pointer;width:max-content;max-width:100%}
+.diagnostic-details>div{margin:0 0 9px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#f0f0ed;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#recognitionStatus{display:inline-flex;align-items:center;gap:5px;min-height:26px;font-weight:750;font-size:12px;color:var(--brand-dark)}
+#recognitionStatus[data-kind="slow"]{color:#965122}
+#recognitionStatus[data-kind="stopped"]{color:var(--muted)}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -277,7 +287,8 @@ html{min-height:100%;background:var(--background)}
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
         </div>
       </div>
-      <div class="video-footer"><span data-i18n="lineHelp">白丸をドラッグして判定線を調整できます。</span><span id="detectorInfo">—</span></div>
+      <div class="video-footer"><span data-i18n="lineHelp">白丸をドラッグして判定線を調整できます。</span><span id="recognitionStatus" role="status" aria-live="polite">準備前</span></div>
+      <details class="diagnostic-details" id="diagnosticDetails"><summary data-i18n="detailStatus">処理の詳細</summary><div id="detectorInfo">—</div></details>
       <div class="actions" id="cameraActions">
         <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
         <button type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
@@ -538,8 +549,11 @@ html{min-height:100%;background:var(--background)}
           undoCorrection:'直前の補正を取り消す',undo:'元に戻す',undone:'補正を元に戻しました。',
           corrected:'補正しました',negativeBlocked:'0件より小さくできません。',undoUnavailable:'この補正は取り消せません。',
           manualA:'A → B 手動補正',manualB:'B → A 手動補正',
-          simdUnsupported:'このブラウザはWebAssembly SIMDに対応していません。SIMD専用版ではカメラを開始できません。SIMD対応ブラウザを利用してください。',
-          simdUnsupportedShort:'SIMD非対応',
+          simdUnsupported:'このブラウザでは人物検出に必要な機能を利用できません。ブラウザを更新するか、別の対応ブラウザでお試しください。',
+          simdUnsupportedShort:'このブラウザは非対応',
+          recognitionWaiting:'準備前',recognitionRunning:'認識中',recognitionSlow:'処理が遅い',
+          recognitionReady:'認識準備完了',recognitionStopped:'停止中',detailStatus:'処理の詳細',
+          recognitionAutoStopped:'認識が大幅に遅いため計測を中断しました。中断中の通過件数は不明です。',
           sessionName:'計測名',exportSummary:'概要CSV',exportIntervals:'時間帯CSV',
           timelineHeading:'時間帯別の通過',intervalSize:'区切り',coverageHint:'中断や一時停止の時間は欠測として明示します。0件と混同しません。',
           covered:'有効計測',pausedCoverage:'一時停止',missingCoverage:'欠測',coverageObserved:'計測有効',coveragePartial:'一部欠測',coverageMissing:'欠測',
@@ -618,8 +632,11 @@ html{min-height:100%;background:var(--background)}
           undoCorrection:'Undo last correction',undo:'Undo',undone:'Correction undone.',
           corrected:'Corrected',negativeBlocked:'Counts cannot go below zero.',undoUnavailable:'This correction can no longer be undone.',
           manualA:'A → B adjustments',manualB:'B → A adjustments',
-          simdUnsupported:'This browser does not support WebAssembly SIMD. The smaller SIMD-only edition cannot start the camera. Please use a browser with WASM SIMD support.',
-          simdUnsupportedShort:'SIMD unavailable',
+          simdUnsupported:'This browser lacks a feature required for local person detection. Try updating it or using another supported browser.',
+          simdUnsupportedShort:'Browser unsupported',
+          recognitionWaiting:'Not ready',recognitionRunning:'Recognizing',recognitionSlow:'Processing is slow',
+          recognitionReady:'Ready to recognize',recognitionStopped:'Stopped',detailStatus:'Processing details',
+          recognitionAutoStopped:'Detection became too slow to count reliably. Counting stopped; crossings during interruption are unknown.',
           sessionName:'Session name',exportSummary:'Summary CSV',exportIntervals:'Time buckets CSV',
           timelineHeading:'Crossings over time',intervalSize:'Bucket',coverageHint:'Paused or interrupted periods are marked partial/missing, never assumed to be zero.',
           covered:'Observed',pausedCoverage:'Paused',missingCoverage:'Missing',coverageObserved:'Observed',coveragePartial:'Partial coverage',coverageMissing:'No coverage',
@@ -1349,8 +1366,23 @@ html{min-height:100%;background:var(--background)}
           (state.videoDurationMs>0?formatElapsed(duration*1000):tr('videoUnknownDuration'));
         $('#videoSeek').value=String(duration>0?Math.min(1000,Math.max(0,Math.round(elapsed/duration*1000))):0);
       }
+      function updateRecognitionStatus(){
+        const status=$('#recognitionStatus');
+        const perf=inferencePacer.snapshot(performance.now());
+        let key='recognitionWaiting';
+        if(state.phase==='counting'||state.phase==='testing')
+          key=perf.slow?'recognitionSlow':'recognitionRunning';
+        else if(['paused','interrupted','done'].includes(state.phase))
+          key='recognitionStopped';
+        else if(state.detector&&hasActiveSource())key='recognitionReady';
+        status.dataset.kind=key==='recognitionSlow'?'slow':
+          key==='recognitionStopped'?'stopped':'ready';
+        const label=tr(key);
+        if(status.textContent!==label)status.textContent=label;
+      }
       function renderState(message){
         const phase=state.phase,sourceAvailable=hasActiveSource(),fileMode=isFileMode();
+        updateRecognitionStatus();
         const key=({idle:'idle',loading:'loading',ready:'ready',testing:'testing',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
         const pill=$('#statusPill');pill.textContent=simdAvailable?
           (fileMode&&phase==='ready'?tr('fileReadyState'):tr(key)):tr('simdUnsupportedShort');
