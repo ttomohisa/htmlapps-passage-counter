@@ -2076,8 +2076,9 @@ html{min-height:100%;background:var(--background)}
         let analyzed=false;
         // This callback keeps no frame queue: detect only the latest decoded
         // video element frame when the synchronous CPU detector is available.
+        const slowPreview=state.phase==='paused'||state.phase==='interrupted'||state.phase==='done';
         if(state.detector&&video.readyState>=2&&document.visibilityState==='visible'&&
-           freshFrame&&inferencePacer.shouldInfer(now)){
+           freshFrame&&(!slowPreview||now-state.lastInfer>=500)&&inferencePacer.shouldInfer(now)){
           state.lastInfer=now;
           try{
             if(fileMode){
@@ -2148,6 +2149,7 @@ html{min-height:100%;background:var(--background)}
         if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
         state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
         state.testA=0;state.testB=0;state.testStartedAt=performance.now();state.testEndedAt=0;
+        inferencePacer.reset();
         state.phase='testing';zeroTracks();renderState();lockScreen();
       }
       function finishTest(cancelled=false){
@@ -2187,6 +2189,7 @@ html{min-height:100%;background:var(--background)}
           directionLabels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
           line:line.map(p=>({...p})),reversed:state.reverse,
           modelVersion:'EfficientDet-Lite0-int8-1'});
+        inferencePacer.reset();
         state.lastActive=performance.now();state.phase='counting';
         transitionSession('counting');zeroTracks();renderState();renderTimeline();
         if(isFileMode()){
