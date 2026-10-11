@@ -20,9 +20,13 @@ input[type=file]{width:100%;font:inherit;min-height:44px;overflow-wrap:anywhere}
 .stage{width:100%;aspect-ratio:16/9;background:#101815;position:relative;border-radius:11px;overflow:hidden}
 .stage video{width:100%;height:100%;position:absolute;inset:0;display:block;object-fit:fill}
 .stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.stage svg .handle{pointer-events:auto;cursor:grab;touch-action:none}
 .line{stroke:#fff;stroke-width:3;filter:drop-shadow(0 1px 3px #000)}
-.handle{fill:var(--green);stroke:#fff;stroke-width:5}
+/* 44px transparent pointer target avoids tiny distorted SVG hit areas
+   on narrow portrait devices while preserving the visual endpoint marker. */
+.line-handle{position:absolute;z-index:2;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;transform:translate(-50%,-50%);touch-action:none;cursor:grab}
+.line-handle::after{content:'';position:absolute;width:16px;height:16px;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:50%;background:var(--green);box-shadow:0 1px 4px #0008}
+.line-handle:disabled{cursor:not-allowed}
+.line-handle:focus-visible{outline:3px solid #4489ce;outline-offset:0}
 .cover{position:absolute;inset:0;display:grid;place-items:center;color:#fff;padding:18px;text-align:center;pointer-events:none}
 .badge{display:inline-block;border-radius:999px;background:#e7f1ec;color:var(--green);padding:3px 9px;font-size:12px;font-weight:750}
 .note{font-size:13px;color:#58685f;overflow-wrap:anywhere}
@@ -47,9 +51,9 @@ input[type=file]{width:100%;font:inherit;min-height:44px;overflow-wrap:anywhere}
 <video id="movie" controls playsinline preload="metadata" aria-label="正解ラベル用動画"></video>
 <svg id="lineOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="通過判定線">
 <line id="line" class="line" x1="120" y1="500" x2="880" y2="500"/>
-<circle class="handle" data-endpoint="0" cx="120" cy="500" r="15"/>
-<circle class="handle" data-endpoint="1" cx="880" cy="500" r="15"/>
 </svg>
+<button class="line-handle" type="button" data-endpoint="0" aria-label="判定線の始点を移動" style="left:12%;top:50%" disabled></button>
+<button class="line-handle" type="button" data-endpoint="1" aria-label="判定線の終点を移動" style="left:88%;top:50%" disabled></button>
 <div class="cover" id="cover">動画を選ぶとここに表示されます</div>
 </div>
 <p class="note">白い線の両端を動かして、Passage Counter本体の判定線と同じ位置に合わせます。映像の有効範囲だけを扱います。カメラ映像の前後反転・A/B設定を必ず一致させてください。</p>
@@ -98,12 +102,13 @@ const moveLine=()=>{
  $('#line').setAttribute('y1',String(line[0].y*1000));
  $('#line').setAttribute('x2',String(line[1].x*1000));
  $('#line').setAttribute('y2',String(line[1].y*1000));
- stage.querySelectorAll('.handle').forEach((h,i)=>{
-   h.setAttribute('cx',String(line[i].x*1000));h.setAttribute('cy',String(line[i].y*1000));
+ stage.querySelectorAll('.line-handle').forEach((h,i)=>{
+   h.style.left=(line[i].x*100)+'%';h.style.top=(line[i].y*100)+'%';
  });
 };
 function render(){
  $('#rewind').disabled=!ready;$('#forward').disabled=!ready;$('#play').disabled=!ready;
+ stage.querySelectorAll('.line-handle').forEach(h=>{h.disabled=!ready;});
  $('#addA').disabled=!ready;$('#addB').disabled=!ready;
  $('#undo').disabled=!entries.length;$('#save').disabled=!entries.length;$('#clear').disabled=!entries.length;
  $('#counter').textContent='正解ラベル '+entries.length+' 件（A→B '+entries.filter(e=>e.direction==='A_TO_B').length+'／B→A '+entries.filter(e=>e.direction==='B_TO_A').length+'）';
@@ -179,12 +184,21 @@ function coords(event){
  return{x:Math.min(.97,Math.max(.03,(event.clientX-bounds.left)/bounds.width)),
  y:Math.min(.97,Math.max(.03,(event.clientY-bounds.top)/bounds.height))};
 }
-stage.querySelectorAll('.handle').forEach(handle=>{
+stage.querySelectorAll('.line-handle').forEach(handle=>{
  handle.addEventListener('pointerdown',event=>{if(!ready)return;drag=Number(handle.dataset.endpoint);handle.setPointerCapture(event.pointerId);event.preventDefault();});
  handle.addEventListener('pointermove',event=>{if(drag!==Number(handle.dataset.endpoint))return;
    line[drag]=coords(event);moveLine();});
  handle.addEventListener('pointerup',()=>drag=-1);
  handle.addEventListener('pointercancel',()=>drag=-1);
+ handle.addEventListener('keydown',event=>{
+   const delta={ArrowLeft:[-.01,0],ArrowRight:[.01,0],
+     ArrowUp:[0,-.01],ArrowDown:[0,.01]}[event.key];
+   if(!ready||!delta)return;
+   event.preventDefault();const end=Number(handle.dataset.endpoint);
+   line[end]={x:Math.min(.97,Math.max(.03,line[end].x+delta[0])),
+     y:Math.min(.97,Math.max(.03,line[end].y+delta[1]))};
+   moveLine();
+ });
 });
 window.addEventListener('beforeunload',event=>{if(dirty&&entries.length){event.preventDefault();event.returnValue='';}});
 window.addEventListener('pagehide',dispose);
