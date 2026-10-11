@@ -694,7 +694,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           aligned.setMinutes(Math.floor(aligned.getMinutes()/minutes)*minutes);
           let cursor=aligned.getTime(),rows=[];
           const intervals=intervalsUntil(session,at);
-          for(let count=0;cursor<=end&&count<20000;count++){
+          for(let count=0;cursor<end&&count<20000;count++){
             const cursorDate=new Date(cursor);
             const nextDate=new Date(cursor);
             nextDate.setMinutes(cursorDate.getMinutes()+minutes);
@@ -713,7 +713,12 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
               if(segment.type==='missing')row.missingMs+=overlap;
             }
             for(const event of events){
-              const tick=Date.parse(event.occurredAt);
+              const occurred=Date.parse(event.occurredAt);
+              // Adjustments may be entered after the session was finished.
+              // Reconcile bucket totals with final counts by assigning them to
+              // the last observed bucket instead of silently dropping them.
+              const tick=event.kind==='auto'?occurred:
+                Math.min(occurred,Math.max(start,end-1));
               if(tick<cursor||tick>=next||tick>end)continue;
               const key=event.direction==='A_TO_B'?'A':'B';
               if(event.kind==='auto')row['auto'+key]+=event.delta;
