@@ -1319,6 +1319,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const testing=phase==='testing';
         $('#sourceMode').value=state.sourceMode;
         $('#sourceMode').disabled=state.sourceBusy||state.restoring;
+        $('#videoFile').disabled=state.sourceBusy||state.restoring;
         $('#cameraActions').hidden=fileMode;
         $('#videoSourceBox').hidden=!fileMode;
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;

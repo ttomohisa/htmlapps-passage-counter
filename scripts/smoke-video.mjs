@@ -113,6 +113,8 @@ try{
   assert(fixture.length>1000);
   await page.locator('#sourceMode').selectOption('file');
   await page.locator('#videoSourceBox').waitFor({state:'visible'});
+  await page.locator('#videoFile').waitFor({state:'visible'});
+  await page.waitForFunction(()=>!document.querySelector('#videoFile').disabled,null,{timeout:8000});
   assert(await page.locator('#cameraStart').isHidden(),'Camera action must disappear for local video');
   await page.locator('#videoFile').setInputFiles({name:'synthetic-local.webm',mimeType:'video/webm',buffer:fixture});
   await awaitLoaded(page);
@@ -204,6 +206,7 @@ try{
   await local.goto(pathToFileURL(resolve('dist/index.html')).href,{waitUntil:'domcontentloaded'});
   await local.locator('#sourceMode').selectOption('file');
   await local.locator('#videoSourceBox').waitFor({state:'visible'});
+  await local.waitForFunction(()=>!document.querySelector('#videoFile').disabled,null,{timeout:8000});
   await local.locator('#videoFile').setInputFiles({name:'local-file-webm.webm',mimeType:'video/webm',buffer:fixture});
   await awaitLoaded(local);
   await startAnalysis(local);
