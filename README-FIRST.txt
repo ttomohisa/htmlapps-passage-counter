@@ -13,6 +13,9 @@ This repository implements Browser Kitty's Passage Counter, not the starter samp
 - v0.4.0 IndexedDB schema, interval recovery and CSV exports: docs/ADR-003-LOCAL-PERSISTENCE.md
 - v0.5.0 local video input, seek safety and time semantics: docs/ADR-004-LOCAL-VIDEO.md
 - v0.6.0 UI consistency, inference pacing, memory/Wake Lock/visibility gates: docs/ADR-005-PERFORMANCE-AND-UI.md
+- v0.7.0 Windows Chrome/Edge integration and physical-browser matrix: docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md
+- v0.8.0 evidence-scoped accuracy evaluation and local human annotation: docs/ADR-007-ACCURACY-EVALUATION.md
+- v0.9.0 release-preparation audit and unresolved blockers: docs/RELEASE_READINESS_v0.9.0.md
 
 Canonical editable source: src/index.template.html
 Build using: scripts/check-powershell-syntax.ps1, then scripts/check-repository.ps1
