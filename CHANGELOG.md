@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0] — 2026-10-11 (Draft, SIMD-only)
+
+- Added local MP4/WebM/other browser-playable video input by file picker or drag/drop, using revocable local Blob URLs and browser-native decoding; no whole-video buffering, persistence, upload or external libraries.
+- Reused embedded EfficientDet + MediaPipe SIMD and the existing directional crossing tracker, with actual file `sourceTimeMs` stored in event ledger, IndexedDB and CSV.
+- Added preview/play/pause/seek controls, explicit confirmation and full session reset on seek/reanalysis, EOF completion and interrupted-state protection for unexpected seeking.
+- Saved video-derived count sessions without persisting file names or video bytes; restored results can be viewed/exported but not automatically resumed.
+- Preserved v0.4.0 camera, 30-second setup, adjustment/Undo, persistence, missing coverage, 5/15/60-minute *analysis-wall-time* summaries and three CSV exports.
+- Added Chrome E2E tests with browser-encoded WebM (not simulated detection outputs), local `file://`, seek/replay, CSV source times and zero HTTP transfers. New Cloudflare PR Preview workflow configuration supports stacked PRs.
+- Android/iPhone compatibility, large videos, battery/memory behavior and actual person-count precision remain pending.
+
+
 ## [0.4.0] — 2026-10-11 (Draft, SIMD-only)
 
 - Persist named sessions to IndexedDB (versioned session records and append-only event store), writing each new event together with its session checkpoint in a single transaction.

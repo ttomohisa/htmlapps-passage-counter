@@ -165,6 +165,9 @@ v1.0.0: 品質ゲート合格による正式リリース
 
 ### v0.5.0 — Local Video Analysis
 
+*実装状況（2026-10-11）: SIMD専用・v0.4.0をベースにしたDraft PR #5。ブラウザで再生できるローカル動画のFile/Drag&Drop、モデル内包による通過計測、`sourceTimeMs`保存、シーク・再解析確認、CSV・IndexedDB連携、`file://`・Cloudflare Previewを実装／検証。Android/iOS実機と実際の人物精度、動画形式の網羅的互換性は未検証。*
+
+
 **目的:** 同じカウントエンジンを、端末内の既存動画にも使えるようにする。
 
 **実装**

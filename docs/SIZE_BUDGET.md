@@ -32,6 +32,10 @@ We investigated stripping WASM custom sections using a browser-side parser in CI
 
 Do not substitute external model/CDN requests for a smaller HTML. A size improvement is accepted only if browser initialization, checksum, offline, security, and accuracy tests continue to pass.
 
+## v0.5.0 local-video size target (2026-10-11)
+
+The v0.5.0 branch adds browser-native local video decoding, picker/drop/seek controls, media timestamp storage and CSV support **without shipping a media decoder** (no FFmpeg or new WASM). Windows CI after video integration measured **9,215,580 bytes readable** and **9,133,588 bytes self-extract** (vs v0.4.0 at 9,190,008 and 9,125,692 bytes). Actual size may vary slightly with commits; the canonical report remains `dist/build-size-report.json`. Existing SIMD MediaPipe and full int8 model remain intact. [Video design](ADR-004-LOCAL-VIDEO.md).
+
 ## v0.4.0 offline-history size target (2026-10-11)
 
 Adding IndexedDB session persistence, on-device time buckets and three CSV exports keeps the one-file readable HTML near **9.2 MB**, below the 10 MiB warning budget. The exact size is written to `dist/build-size-report.json` on every CI run. No new external runtime libraries were introduced; MediaPipe SIMD, the int8 model and gzip + Base64 asset storage are unchanged. Do not claim measured phone load times from Windows CI.
