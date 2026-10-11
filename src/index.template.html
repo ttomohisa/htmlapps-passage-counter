@@ -1458,7 +1458,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(state.drag===null)return;
         const point=pointerAt(e);line[state.drag]=fromScreen(point.x,point.y);zeroTracks();invalidateTest();draw();renderState();e.preventDefault();
       });
-      function finishDrag(){if(state.drag!==null)saveSetup();state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
+      function finishDrag(){if(state.drag!==null){saveSetup();if(currentSession)queueSnapshot();}state.drag=null;}overlay.addEventListener('pointerup',finishDrag);overlay.addEventListener('pointercancel',finishDrag);
       overlay.addEventListener('keydown',event=>{
         if(!state.stream||state.phase==='counting'||state.phase==='testing')return;
         const step=event.shiftKey?0.02:0.005;
@@ -1473,7 +1473,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           point.x=Math.max(0.03,Math.min(0.97,point.x+dx));
           point.y=Math.max(0.03,Math.min(0.97,point.y+dy));
         }
-        zeroTracks();invalidateTest();saveSetup();draw();renderState();
+        zeroTracks();invalidateTest();saveSetup();if(currentSession)queueSnapshot();draw();renderState();
       });
 
       async function initEmbeddedDetector(){
@@ -1699,7 +1699,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       });
       $('#cameraStart').addEventListener('click',startCamera);
       $('#cameraStop').addEventListener('click',closeCamera);
-      $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();invalidateTest();saveSetup();draw();renderState();});
+      $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();invalidateTest();saveSetup();if(currentSession)queueSnapshot();draw();renderState();});
       $('#testButton').addEventListener('click',()=>{
         if(state.phase==='testing')finishTest();
         else startTest();
@@ -1711,6 +1711,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         saveSetup();invalidateTest();
         if(connected){closeCamera();await startCamera();}
         else renderState();
+        if(currentSession)queueSnapshot();
       });
       for(const id of ['#labelA','#labelB']){
         $(id).addEventListener('input',()=>{saveSetup();renderState();});
@@ -1724,9 +1725,21 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       $('#pauseCount').addEventListener('click',pauseCount);
       $('#finishCount').addEventListener('click',finishCount);
       $('#downloadButton').addEventListener('click',exportCsv);
+      $('#summaryButton').addEventListener('click',exportSummary);
+      $('#intervalsButton').addEventListener('click',exportIntervals);
+      $('#aggregationMinutes').addEventListener('change',renderTimeline);
+      $('#newSession').addEventListener('click',startNewSession);
+      $('#sessionName').addEventListener('change',()=>{
+        if(currentSession)void queueSnapshot().then(refreshSavedSessions);
+      });
+      for(const id of ['#labelA','#labelB']){
+        $(id).addEventListener('change',()=>{
+          if(currentSession)void queueSnapshot();
+        });
+      }
       $('#resetButton').addEventListener('click',async()=>{
         const confirmed=await AppConfirm.ask({title:tr('resetTitle'),message:tr('resetMessage'),confirmLabel:tr('reset'),cancelLabel:tr('cancel')});
-        if(confirmed)resetCounts();
+        if(confirmed)await resetCounts();
       });
       $('#outputFilename').addEventListener('blur',normalizedFilename);
       document.addEventListener('visibilitychange',()=>{
@@ -1745,10 +1758,18 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
           else renderState();
-        }else if(state.phase==='counting')renderState();
+        }else if(state.phase==='counting'){
+          renderState();
+          const now=Date.now();
+          if(now-state.lastTimelineTick>=5000){
+            state.lastTimelineTick=now;
+            queueSnapshot();renderTimeline();
+          }
+        }
       },250);
       $('#outputFilename').value='passage-counter-'+new Date().toISOString().slice(0,10);
-      restoreSetup();localize();
+      $('#sessionName').value='Passage Counter '+new Date().toLocaleDateString('ja-JP');
+      restoreSetup();localize();void initializeSavedSessions();
 
   })();
 </script>
