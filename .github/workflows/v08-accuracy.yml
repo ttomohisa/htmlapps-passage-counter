@@ -27,6 +27,7 @@ jobs:
         shell: pwsh
         run: |
           node scripts/test-tracker.mjs
+          node scripts/test-tracker-stress.mjs
           node scripts/test-ledger.mjs
           node scripts/test-session-model.mjs
           node scripts/test-performance.mjs
