@@ -52,11 +52,16 @@ try{
   assert.match(await page.locator('#counter').textContent(),/3 件/);
   await page.keyboard.press('z');
   assert.match(await page.locator('#counter').textContent(),/2 件/);
-  await page.locator('#lineOverlay .handle').first().evaluate(el=>{
-    const bounds=el.getBoundingClientRect();
-    el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,
-      clientX:bounds.left+bounds.width/2,clientY:bounds.top+bounds.height/2,pointerId:1}));
-  }).catch(()=>{}); // Drag handles are independently covered by human UI tests.
+  const handle=page.locator('#lineOverlay .handle').first();
+  const previousX=Number(await handle.getAttribute('cx'));
+  const bounds=await handle.boundingBox();
+  assert(bounds,'Draggable endpoint not found');
+  await page.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x+bounds.width/2+10,bounds.y+bounds.height/2+3,{steps:3});
+  await page.mouse.up();
+  assert(Number(await handle.getAttribute('cx'))>previousX,
+    'Counting line endpoint cannot be dragged on the annotation helper');
   const download=page.waitForEvent('download');
   await page.locator('#save').click();
   const exported=await readFile(await(await download).path(),'utf8');
