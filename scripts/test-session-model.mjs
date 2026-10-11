@@ -99,6 +99,26 @@ pass('15-minute and 60-minute summaries have expected direction totals',()=>{
  assert.equal(time.aggregation(s,e,15).length,2);
  assert.equal(time.aggregation(s,e,60).reduce((n,r)=>n+r.totalA,0),2);
 });
+pass('post-finish manual correction stays in last bucket',()=>{
+  const s=base();
+  time.transition(s,'counting',at('2026-10-11T10:00:00Z'));
+  time.transition(s,'done',at('2026-10-11T10:07:00Z'));
+  const e=[
+    {occurredAt:'2026-10-11T10:06:58Z',direction:'A_TO_B',kind:'auto',delta:1},
+    {occurredAt:'2026-10-11T10:08:00Z',direction:'A_TO_B',kind:'correction',delta:-1},
+    {occurredAt:'2026-10-11T10:08:04Z',direction:'A_TO_B',kind:'undo',delta:+1}
+  ];
+  const buckets=time.aggregation(s,e,5);
+  assert.equal(buckets.length,2);
+  assert.equal(buckets.at(-1).manualA,0);
+  assert.equal(buckets.reduce((n,r)=>n+r.totalA,0),1);
+});
+pass('boundary finish does not generate a zero-duration bucket',()=>{
+  const s=base();
+  time.transition(s,'counting',at('2026-10-11T10:00:00Z'));
+  time.transition(s,'done',at('2026-10-11T10:05:00Z'));
+  assert.equal(time.aggregation(s,[],5).length,1);
+});
 pass('session never stores face, camera frame or persistent person ID',()=>{
  const s=base();const serialized=JSON.stringify(s);
  assert(!serialized.includes('imageData')&&!serialized.includes('faceVector'));
