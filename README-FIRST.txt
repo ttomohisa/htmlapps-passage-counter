@@ -12,6 +12,7 @@ This repository implements Browser Kitty's Passage Counter, not the starter samp
 - Experimental SIMD-only policy: docs/ADR-002-SIMD-ONLY.md
 - v0.4.0 IndexedDB schema, interval recovery and CSV exports: docs/ADR-003-LOCAL-PERSISTENCE.md
 - v0.5.0 local video input, seek safety and time semantics: docs/ADR-004-LOCAL-VIDEO.md
+- v0.6.0 UI consistency, inference pacing, memory/Wake Lock/visibility gates: docs/ADR-005-PERFORMANCE-AND-UI.md
 
 Canonical editable source: src/index.template.html
 Build using: scripts/check-powershell-syntax.ps1, then scripts/check-repository.ps1

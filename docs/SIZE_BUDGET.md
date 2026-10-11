@@ -32,6 +32,10 @@ We investigated stripping WASM custom sections using a browser-side parser in CI
 
 Do not substitute external model/CDN requests for a smaller HTML. A size improvement is accepted only if browser initialization, checksum, offline, security, and accuracy tests continue to pass.
 
+## v0.6.0 UI and performance budget (2026-10-11)
+
+The fully bundled v0.6.0 still embeds the original EfficientDet int8 and MediaPipe SIMD WASM binary. It adds header/hero consistency and performance/lifecycle logic **without any runtime dependency or removed model**. A CI build prior to the final documentation edits measured **9,230,058 bytes** readable and **9,138,460 bytes** self-extract. Always read the latest CI `dist/build-size-report.json` for exact numbers. The 10 MiB warning budget remains in place and unchanged.
+
 ## v0.5.0 local-video size target (2026-10-11)
 
 The v0.5.0 branch adds browser-native local video decoding, picker/drop/seek controls, media timestamp storage and CSV support **without shipping a media decoder** (no FFmpeg or new WASM). Windows CI after video integration measured **9,215,580 bytes readable** and **9,133,588 bytes self-extract** (vs v0.4.0 at 9,190,008 and 9,125,692 bytes). Actual size may vary slightly with commits; the canonical report remains `dist/build-size-report.json`. Existing SIMD MediaPipe and full int8 model remain intact. [Video design](ADR-004-LOCAL-VIDEO.md).

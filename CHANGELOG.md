@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] — 2026-10-11 (Draft, SIMD-only)
+
+- Updated app header and hero to match the current Browser Kitty PDF Fill & Sign and Wi-Fi Share design: sticky pale header, app icon/name/version, EN/JA quick toggle, SVG Help, concise bilingual title and truthful local-processing indicator.
+- Updated unsupported-browser messages to plain language and added bilingual 320/360/390/820/1280px layout assertions with screenshot artifacts.
+- Added an adaptive CPU-only latest-frame inference pacer (105–225ms interval), no backlog, measured frame-rate and inference latency. Consumer status now reports `Recognizing` / `Processing is slow`; technical diagnostics are collapsed.
+- Added a prolonged very-low-fps fail-safe that interrupts a live session and records missing coverage rather than pretending slow video is a zero count.
+- Released decoded model and SIMD WASM caches plus initialization Blob URLs once the detector is running. Preserved fully embedded offline model and SIMD binary.
+- Decoupled five-second IndexedDB checkpoints from full DOM updates and throttled timeline redraws. Removed copying all existing events on every newly persisted crossing.
+- Fixed asynchronous Screen Wake Lock pause/release handling, foreground tab transition and orientation-change interruption, with resumed counting requiring explicit action.
+- Added deterministic performance tests and 20-second Chrome synthetic-camera endurance/heap diagnostic. **Real midrange phone 8fps and 30-minute endurance are unverified** and remain release gates.
+
+
 ## [0.5.0] — 2026-10-11 (Draft, SIMD-only)
 
 - Added local MP4/WebM/other browser-playable video input by file picker or drag/drop, using revocable local Blob URLs and browser-native decoding; no whole-video buffering, persistence, upload or external libraries.

@@ -1,6 +1,9 @@
 # Security and privacy
 
 - Both camera and selected video frames are processed in memory; no face recognition or identity tracking across sessions.
+- v0.6.0 evicts decoded model/WASM byte caches and revokes MediaPipe initialization Blob URLs after successful detector startup; the compressed model/WASM remain entirely inside the HTML and can be reinflated if a new detector is created. Camera/media Blob URLs are still revoked on close/pagehide.
+- Synchronous SIMD inference uses one latest frame at a time with an adaptive interval; very-low-fps sustained operation interrupts rather than claiming reliable counts. Coverage stores observed, paused and missing time.
+- Screen Wake Lock can resolve after a session was paused; an obsolete lock is immediately released. Unexpected wake-lock release triggers a visible warning. Rotating while counting interrupts until explicit restart.
 - The v0.5.0 video mode uses a Blob URL for the user-selected File and browser-native on-demand video decoding. No whole-file FileReader/arrayBuffer, video content upload, movie storage or remote decoding service is used. The Blob URL is revoked when switching/closing sources or on page exit.
 - Video sessions persist only sourceType=`file`, numerical duration, timed passage/correction/Undo events and existing coverage metadata. Video file name, bytes, temporary Blob URL, image pixels and person IDs are not saved. Saved results can be reviewed after reloading without the source movie; no automatic video or camera restart.
 - Explicit seek/reanalysis confirmation removes the prior indexed session and events to prevent double counting; a browser-initiated seek during counting interrupts rather than guessing crossings.

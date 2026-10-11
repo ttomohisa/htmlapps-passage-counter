@@ -1,8 +1,12 @@
 # Passage Counter
 
-Count **person-crossing events by direction** with a fixed phone or desktop camera and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
+Count **person-crossing events by direction** using a fixed camera or a local video and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.5.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.6.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+
+## Browser Kitty interface and usability
+
+The v0.6.0 header and hero follow the same visible conventions as [PDF Fill & Sign](https://browser-kitty.com/apps/pdf-fill-sign.html) and [Wi-Fi Share](https://browser-kitty.com/apps/wifi-share.html): a compact sticky light header, matching favicon/icon, localized app name with version, EN/JA button, SVG help icon, concise title and **Entirely local processing** badge. The badge describes the processing of camera/video/user data; visiting a hosted page still downloads that HTML. The standalone HTML uses no runtime external CDNs, analytics or telemetry. Browser automation checks Japanese/English, 320/360/390/820/1280px viewports, horizontal overflow, help label and favicon/brand identity. The CI artifacts include Japanese/English mobile/desktop screenshots.
 
 ## Features
 
@@ -20,6 +24,9 @@ Count **person-crossing events by direction** with a fixed phone or desktop came
 - Three UTF-8 BOM CSV exports: session summary, all events and time buckets, with preserved adjustment/Undo audit trails.
 - On storage failure: visible warning and in-memory CSV rescue, without claiming records were saved.
 - Start, pause, resume, finish and elapsed-time display.
+- **Performance-aware counting:** latest-frame inference without a queue, measured frame-rate/latency diagnostics in a collapsed panel, adaptive 105–225 ms scheduling, and accessible **Recognizing / Processing is slow** statuses.
+- **Safer interruptions:** extremely slow sustained processing stops counting rather than guessing missed crossings; background tabs and orientation changes interrupt without auto-resume; Screen Wake Lock late/release events are handled.
+- Event writes keep transactional IndexedDB durability; the 5-second checkpoint timer no longer forces a full page re-render, and the time-bucket UI is throttled independently. Decoded model/WASM byte caches and temporary loader URLs are released after initialization.
 - English / Japanese, mobile-first responsive interface and attempted screen wake lock.
 - No account, runtime CDN, remote inference, telemetry, upload or recording.
 
@@ -63,6 +70,12 @@ CSV fields: `event_id`, `occurred_at` (UTC ISO timestamp), `direction`, `directi
 
 Using the same EfficientDet model and complete counting UI, the generated HTML measured **13,505,896 B** (dual WASM) vs **9,150,133 B** (SIMD only), a **4,355,763 B / 32.25%** reduction on one CI runner. This does **not** imply faster inference: SIMD-capable browsers already selected SIMD in the old build. See [ADR-002](docs/ADR-002-SIMD-ONLY.md).
 
+## Performance, memory and release limitations
+
+The detector is CPU/WebAssembly SIMD and still runs **synchronously on the main browser thread**; no Web Worker/OffscreenCanvas path is claimed. Before moving the model to a Worker, it would be necessary to verify that the current MediaPipe runtime, video frame transfers, one-file Blob loading and mobile browsers actually support that architecture without delaying frames. For this milestone, the tested reliable fallback is the existing main-thread detector with latest-frame selection and dynamic pacing. An inference that takes longer than the interval runs again only after it completes; the tool does not queue old frames. It may still miss crossings on slower phones.
+
+A Windows Chrome **20-second synthetic camera** check measured approximately **8.6 detection fps**, mean inference time **87ms**, and JavaScript heap used around **5.3–5.5 MB** at the two snapshots. These are CI host diagnostics, **not mobile benchmarks, peak process memory, person accuracy tests or a 30-minute endurance pass**. The target of 8 fps on a representative midrange phone and a 30-minute physical-device run remain unverified. If sustained fps becomes very low (~below 2.8 or inference >390ms for 8 seconds), the app interrupts rather than presenting missing time as measured zero.
+
 ## Browser support
 
 **WebAssembly SIMD is required.** Unsupported browsers are blocked before requesting camera permission, with a bilingual message. Desktop/Android Chrome and Edge are primary testing targets; Safari and Firefox need additional real-device verification. A browser must support camera permissions, WebAssembly, and gzip \`DecompressionStream\`. Hidden tabs and locked screens cannot be counted reliably.
@@ -83,7 +96,7 @@ The builder downloads exact dependencies **at build time only**, verifies the np
 
 Generated manifests and a size report are in \`dist/\`. The CI browser smoke test uses a synthetic camera and verifies the AI initializes from the HTML and makes no external HTTP requests. A synthetic-camera test **does not establish counting accuracy**.
 
-See [APP_SPEC.md](APP_SPEC.md), [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md), [local persistence ADR](docs/ADR-003-LOCAL-PERSISTENCE.md) and [local video ADR](docs/ADR-004-LOCAL-VIDEO.md).
+See [APP_SPEC.md](APP_SPEC.md), [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md), [local persistence ADR](docs/ADR-003-LOCAL-PERSISTENCE.md), [local video ADR](docs/ADR-004-LOCAL-VIDEO.md) and [UI/performance ADR](docs/ADR-005-PERFORMANCE-AND-UI.md).
 
 Build size and optimization measurements: [docs/SIZE_BUDGET.md](docs/SIZE_BUDGET.md).
 
