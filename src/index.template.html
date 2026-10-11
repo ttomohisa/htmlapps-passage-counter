@@ -210,7 +210,7 @@ html{min-height:100%;background:var(--background)}
 /* Operational status is human-readable. Model, fps and processing metrics
    are in a native details panel, not the first-view UX. */
 .diagnostic-details{margin:3px 0 5px;font-size:12px;color:var(--muted)}
-.diagnostic-details summary{min-height:42px;display:flex;align-items:center;cursor:pointer;width:max-content;max-width:100%}
+.diagnostic-details summary{min-height:44px;display:flex;align-items:center;cursor:pointer;width:max-content;max-width:100%}
 .diagnostic-details>div{margin:0 0 9px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#f0f0ed;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 #recognitionStatus{display:inline-flex;align-items:center;gap:5px;min-height:26px;font-weight:750;font-size:12px;color:var(--brand-dark)}
 #recognitionStatus[data-kind="slow"]{color:#965122}
@@ -401,7 +401,7 @@ html{min-height:100%;background:var(--background)}
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · v0.6.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · v0.6.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -531,9 +531,9 @@ html{min-height:100%;background:var(--background)}
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
           prototypeNote:'v0.6.0は認識速度の表示・処理負荷の調整・中断時の記録を改善しています。実環境での精度検証は未完了です。',
-          footer:'モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。',
-          helpTitle:'使い方と注意事項',help1:'スマホを固定し、カメラを開始します。',help2:'線を置き、設置テストで通過を確認します。',help3:'計測中は±1で方向別の件数を補正できます。補正は取り消せます。',help4:'計測終了後、補正履歴付きCSVを保存できます。',
-          helpPrivacy:'映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。',
+          footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
+          helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'判定線を置き、カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
+          helpPrivacy:'カメラや選択した動画はアップロードしません。映像・顔・音声は保存せず、計測記録だけをブラウザ内に保存します。',
           helpLimits:'正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。',
           stepSetup:'1 · 設定',stepTest:'2 · テスト',stepMeasure:'3 · 計測',setupProgress:'計測の手順',
           settingsSummary:'カメラ・表示の設定',cameraSelection:'カメラの向き',rearCamera:'背面カメラ',frontCamera:'前面カメラ',
@@ -616,9 +616,9 @@ html{min-height:100%;background:var(--background)}
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
           prototypeNote:'v0.6.0 improves detection status, frame pacing and safe interruption. Real-world counting accuracy remains unverified.',
-          footer:'The AI model and WASM are bundled in the HTML. Camera frames are not uploaded.',
-          helpTitle:'How to use and limitations',help1:'Fix your camera in place and start the preview.',help2:'Position the line and run the setup test.',help3:'Count and make +1/-1 corrections by direction; use Undo for mistakes.',help4:'Finish counting and save CSV with correction events.',
-          helpPrivacy:'Frames, faces and audio are not stored or uploaded. The HTML contains the required AI model and WASM.',
+          footer:'Camera, video and session records are processed on this device and are not uploaded.',
+          helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Place the counting line. For camera input, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
+          helpPrivacy:'Camera and selected video files are not uploaded. Frames, faces and audio are not stored; only counting records are saved in this browser.',
           helpLimits:'Counts are estimates, not guaranteed. Crowds, glare, rapid movement and camera motion can affect results. Counting stops when the tab is hidden.',
           stepSetup:'1 · Setup',stepTest:'2 · Test',stepMeasure:'3 · Count',setupProgress:'Counting steps',
           settingsSummary:'Camera and display settings',cameraSelection:'Camera facing',rearCamera:'Rear camera',frontCamera:'Front camera',
