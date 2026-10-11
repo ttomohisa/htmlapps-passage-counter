@@ -46,8 +46,10 @@ try{
   assert.equal(design.version,'v0.6.0');
   assert(design.scrollWidth<=width+1,'Horizontal overflow at '+width+'px');
   assert(design.brand.right<=design.actions.left+2,'Header action overlaps app name at '+width);
-  assert(design.hero.bottom<=design.badge.bottom+20||width<821,
-    'Badge falls well outside introductory block');
+  assert(design.badge.top>=design.hero.top-1 &&
+    design.badge.right<=design.hero.right+1 &&
+    design.badge.bottom<=design.hero.bottom+1,
+    'Local processing badge escapes the introductory block at '+width);
   for(const lang of ['en','ja']){
     if((await page.locator('html').getAttribute('lang'))!==lang)await page.locator('#languageButton').click();
     assert.equal(await page.locator('html').getAttribute('lang'),lang);

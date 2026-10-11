@@ -123,6 +123,8 @@ try {
   await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
   assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
   console.log('[perf] Synthetic Chrome camera and bundled model ready after '+(Date.now()-cameraStartMs)+'ms; not a mobile benchmark.');
+  assert(await page.locator('#recognitionStatus').isVisible(),'Plain-language recognition status not shown');
+  assert(await page.locator('#diagnosticDetails').count()===1,'Processing metrics details are missing');
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
 
   // Verify real detectForVideo passes with the only bundled SIMD loader,
@@ -395,9 +397,9 @@ try {
   await noSimdPage.goto(origin,{waitUntil:'domcontentloaded'});
   assert(await noSimdPage.locator('#cameraStart').isDisabled(),
     'SIMD-unsupported clients must not start the camera');
-  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/SIMD/);
+  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/ブラウザ|browser/i);
   if((await noSimdPage.locator('html').getAttribute('lang'))!=='en')await noSimdPage.locator('#languageButton').click();
-  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/does not support WebAssembly SIMD/);
+  assert.match(await noSimdPage.locator('#statusDetails').textContent(),/browser lacks a feature/i);
   await noSimdPage.close();
   console.log('[simd] Unsupported browser correctly blocks camera and explains the limitation in both languages.');
   assert.deepEqual(outgoing, [], 'Unexpected external HTTP requests');
