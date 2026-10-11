@@ -36,6 +36,9 @@ jobs:
       - name: Verify actual local WebM, seek safety and offline exports
         shell: pwsh
         run: node scripts/smoke-video.mjs
+      - name: Run 20-second synthetic camera endurance and lifecycle checks
+        shell: pwsh
+        run: node scripts/smoke-endurance.mjs
       - name: Verify PDF Fill Sign and Wi-Fi Share aligned header on small screens
         shell: pwsh
         run: node scripts/smoke-header.mjs
