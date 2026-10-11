@@ -81,7 +81,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 @media(max-width:380px){.header-wrap{gap:8px}.brand small{display:none}.brand img{width:37px;height:37px}.section-head{align-items:flex-start}.camera-stage{min-height:180px}.actions button{flex-basis:44%}}
 @media(max-height:650px) and (max-width:820px){dialog{max-height:92dvh}}
 
-/* v0.4.0: camera setup, test feedback, and near-counter corrections */
+/* v0.5.0: camera setup, test feedback, and near-counter corrections */
 .setup-flow{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 0}
 .setup-flow span{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;background:var(--pale);color:var(--brand-dark);font-size:12px;font-weight:700;border-radius:999px}
 .setup-flow span[aria-current="step"]{background:var(--brand);color:#fff}
@@ -122,7 +122,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 @media(max-width:360px){.setup-options .option-fields{grid-template-columns:1fr}.setup-options .option-fields label.wide{grid-column:auto}}
 
 
-/* v0.4.0 offline sessions, recovery and time-bucket summaries */
+/* v0.5.0 offline sessions, recovery and time-bucket summaries */
 .session-bar,.saved-session,.coverage-mini{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .storage-notice{margin:12px 0;border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;background:#eef7f1;color:var(--brand-dark)}
 .storage-notice[data-kind="error"]{background:#fff4ee;color:#7b3530;border-color:#d9a09b}
@@ -155,6 +155,25 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 .saved-empty{font-size:13px;color:var(--muted);padding:10px 0}
 @media(max-width:520px){.saved-session{align-items:flex-start}.saved-session .row{width:100%}.saved-session .row button{flex:1}.timeline-head label{width:100%;justify-content:space-between}}
 
+
+/* v0.5.0 local video input; no upload or persistent file storage */
+.source-switch{display:grid;gap:5px;margin:0 0 12px}
+.source-switch select{max-width:320px}
+.file-drop{border:2px dashed #a3bdb3;background:var(--pale);border-radius:12px;padding:14px;display:grid;gap:7px;margin:0 0 12px}
+.file-drop[data-active="true"]{border-color:var(--brand);background:#dbf0e3}
+.file-drop input{max-width:100%;background:#fff}
+.file-drop .helper{margin:0;overflow-wrap:anywhere}
+.file-actions{display:grid;gap:10px;margin-top:12px}
+.file-controls{display:grid;gap:8px}
+.file-controls input[type="range"]{min-height:44px;width:100%;padding:0;accent-color:var(--brand)}
+.file-controls .row{justify-content:space-between;gap:9px}
+.file-controls .row button{flex:1;min-height:44px}
+.file-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.file-note{border-left:3px solid var(--brand);padding:6px 9px;background:var(--pale);color:var(--brand-dark);font-size:12px}
+.file-status{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.camera-stage video{background:#121a18}
+@media(max-width:520px){.source-switch select{max-width:none}.file-drop{padding:12px}.file-controls .row{flex-wrap:wrap}}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -163,7 +182,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   <div class="header-wrap">
     <div class="brand">
       <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
-      <div><strong>Passage Counter</strong><small data-i18n="subTitle">通過カウンター · v0.4.0</small></div>
+      <div><strong>Passage Counter</strong><small data-i18n="subTitle">通過カウンター · v0.5.0</small></div>
     </div>
     <label class="sr-only" for="languageSelect" data-i18n="language">言語</label>
     <select id="languageSelect" class="language" aria-label="Language"><option value="ja">日本語</option><option value="en">English</option></select>
@@ -187,6 +206,19 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   <div class="workspace">
     <section class="video-panel" aria-labelledby="cameraHeading">
       <div class="section-head"><h2 id="cameraHeading" data-i18n="camera">カメラ映像</h2><span class="status-pill" id="statusPill" data-kind="idle" role="status" aria-live="polite" data-i18n="idle">未接続</span></div>
+      <label class="source-switch" for="sourceMode">
+        <span data-i18n="sourceModeLabel">入力映像</span>
+        <select id="sourceMode">
+          <option value="camera" data-i18n="sourceCamera">カメラ</option>
+          <option value="file" data-i18n="sourceFile">端末の動画</option>
+        </select>
+      </label>
+      <div class="file-drop" id="videoSourceBox" hidden>
+        <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
+        <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
+        <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
+        <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
+      </div>
       <div class="camera-stage" id="cameraStage">
         <video id="cameraFeed" autoplay muted playsinline aria-label="Camera preview"></video>
         <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：両端をドラッグ、矢印キーで移動できます"></canvas>
@@ -197,10 +229,23 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         </div>
       </div>
       <div class="video-footer"><span data-i18n="lineHelp">白丸をドラッグして判定線を調整できます。</span><span id="detectorInfo">—</span></div>
-      <div class="actions">
+      <div class="actions" id="cameraActions">
         <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
         <button type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
         <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
+      </div>
+      <div class="file-actions" id="videoPlayback" hidden>
+        <div class="file-controls">
+          <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
+          <input id="videoSeek" type="range" min="0" max="1000" step="1" value="0" disabled>
+          <div class="file-time" id="videoTime">00:00 / 00:00</div>
+          <div class="row">
+            <button id="previewVideo" type="button" disabled data-i18n="previewVideo">プレビュー再生</button>
+            <button id="reanalyzeVideo" type="button" disabled data-i18n="reanalyzeVideo">最初から再解析</button>
+            <button id="removeVideo" type="button" disabled data-i18n="removeVideo">動画を閉じる</button>
+          </div>
+        </div>
+        <p class="file-note" data-i18n="videoReminder">計測開始時は先頭から再生します。シーク・再解析は結果を消去する前に確認します。</p>
       </div>
       <details class="setup-options" id="setupOptions">
         <summary data-i18n="settingsSummary">カメラ・表示の設定</summary>
@@ -275,7 +320,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
     <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
     <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
-    <p class="helper" data-i18n="prototypeNote">v0.4.0では人物の短時間追跡と線の横断判定を改善しています。計測用途での精度確認はまだ完了していません。</p>
+    <p class="helper" data-i18n="prototypeNote">v0.5.0では人物の短時間追跡と線の横断判定を改善しています。計測用途での精度確認はまだ完了していません。</p>
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
     <div class="timeline-head"><h2 id="timelineHeading" data-i18n="timelineHeading">時間帯別の通過</h2>
@@ -296,7 +341,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   </section>
 </main>
 <!-- APP:END -->
-<footer>Passage Counter · v0.4.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
+<footer>Passage Counter · v0.5.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -413,7 +458,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.4.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          language:'言語',subTitle:'通過カウンター · v0.5.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           title:'線を横切る人を、カメラで数える。',intro:'スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。',
           camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
@@ -421,7 +466,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.4.0は計測の端末内保存と復帰・欠測表示・時間帯別集計に対応しています。実環境での精度検証は未完了です。',
+          prototypeNote:'v0.5.0は計測の端末内保存と復帰・欠測表示・時間帯別集計に対応しています。実環境での精度検証は未完了です。',
           footer:'モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。',
           helpTitle:'使い方と注意事項',help1:'スマホを固定し、カメラを開始します。',help2:'線を置き、設置テストで通過を確認します。',help3:'計測中は±1で方向別の件数を補正できます。補正は取り消せます。',help4:'計測終了後、補正履歴付きCSVを保存できます。',
           helpPrivacy:'映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。',
@@ -467,7 +512,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.4.0',help:'Help',privacyShort:'No account · On-device processing',
+          language:'Language',subTitle:'People crossing counter · v0.5.0',help:'Help',privacyShort:'No account · On-device processing',
           title:'Count people crossing a line.',intro:'Fix your phone in place, start the camera, and position the counting line. Crossings are counted by direction. Images of people are not saved.',
           camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
@@ -475,7 +520,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.4.0 adds offline session recovery, coverage-aware time buckets and three CSV exports. Real-world counting accuracy has not been validated.',
+          prototypeNote:'v0.5.0 adds offline session recovery, coverage-aware time buckets and three CSV exports. Real-world counting accuracy has not been validated.',
           footer:'The AI model and WASM are bundled in the HTML. Camera frames are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your camera in place and start the preview.',help2:'Position the line and run the setup test.',help3:'Count and make +1/-1 corrections by direction; use Undo for mistakes.',help4:'Finish counting and save CSV with correction events.',
           helpPrivacy:'Frames, faces and audio are not stored or uploaded. The HTML contains the required AI model and WASM.',
@@ -839,7 +884,11 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         detections:[],fps:0,frameHandle:0,startTime:0,elapsedMs:0,lastActive:0,wakeLock:null,
         drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
         testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
-        storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0
+        storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,
+        sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',
+        videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
+        fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
+        previewTargetMs:0
       };
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
@@ -1225,7 +1274,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function zeroTracks(){tracker.reset();state.detections=[];}
       // TRACKER:BEGIN
-      // Pure short-term tracker (introduced v0.2.0, unchanged in v0.4.0). Coordinates use the intrinsic frame, normalized
+      // Pure short-term tracker (introduced v0.2.0, unchanged in v0.5.0). Coordinates use the intrinsic frame, normalized
       // to 0..1. Only transient rectangles and short-lived IDs are retained.
       function createCrossingTracker({
         minimumHits = 3, sideSamples = 2, crossingSamples = 2,
