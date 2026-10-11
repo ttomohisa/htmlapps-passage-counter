@@ -2,7 +2,23 @@
 
 Count **person-crossing events by direction** using a fixed camera or a local video and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.8.0 accuracy-tooling preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.9.0 release-preparation preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+
+## Screenshots — current v0.9.0 interface
+
+These images are genuine browser captures from the built Passage Counter app, showing **the setup screen before any camera or counting**. No faces, fabricated detection counts or personal data were used.
+
+![Passage Counter desktop, English, before counting](assets/screenshot-en.png)
+
+![Passage Counter mobile, English, before counting](assets/screenshot-mobile-en.png)
+
+Japanese screenshots: [desktop](assets/screenshot.png) · [mobile](assets/screenshot-mobile.png). [Capture method and provenance](assets/SCREENSHOTS.md).
+
+## v0.9.0 — release review (not yet approved)
+
+This draft completes the release documentation and asset pipeline: pinned SVG favicon, bilingual live-UI screenshots, standalone and CSV integrity checks, CI regressions, actual dependencies and hashes, and explicit evidence-based release gates. **It is not the production release candidate until the remaining hard gates are closed.**
+
+**Outstanding blockers:** independently labeled 100+ real crossings and the ≥95% per-direction precision/recall target; 30-minute real Android/iPhone fixed-camera tests and heat/memory/fps; definitive redistribution permission for the precise EfficientDet model file and license delivery review; actual deployed response CSP. See [v0.9 release readiness](docs/RELEASE_READINESS_v0.9.0.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Browser Kitty interface and usability
 
