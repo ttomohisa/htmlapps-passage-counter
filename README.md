@@ -1,8 +1,8 @@
 # Passage Counter
 
-Count **person-crossing events by direction** with a fixed phone or desktop camera and one draggable counting line. The complete application—including its AI model, JavaScript loader, SIMD WASM, and non-SIMD WASM—lives inside one HTML file.
+Count **person-crossing events by direction** with a fixed phone or desktop camera and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**v0.3.0 is a technical preview.** Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.3.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
 ## Features
 
@@ -37,9 +37,13 @@ The runtime's CSP uses \`connect-src blob:\` so the WebAssembly loader can read 
 
 CSV fields: `event_id`, `occurred_at` (UTC ISO timestamp), `direction`, `direction_label`, `kind` (`auto`, `correction`, `undo`), `delta`, `elapsed_ms`, and `undo_of` (a correction event ID for Undo). Trial test events are **never exported**. The event list preserves corrections without modifying the auto-count history. Counts represent **crossings**, not unique people.
 
+## SIMD-only size experiment
+
+Using the same EfficientDet model and complete counting UI, the generated HTML measured **13,505,896 B** (dual WASM) vs **9,150,133 B** (SIMD only), a **4,355,763 B / 32.25%** reduction on one CI runner. This does **not** imply faster inference: SIMD-capable browsers already selected SIMD in the old build. See [ADR-002](docs/ADR-002-SIMD-ONLY.md).
+
 ## Browser support
 
-Desktop/Android Chrome and Edge are primary testing targets; Safari and Firefox need additional real-device verification. A browser must support camera permissions, WebAssembly, and gzip \`DecompressionStream\`. Hidden tabs and locked screens cannot be counted reliably.
+**WebAssembly SIMD is required.** Unsupported browsers are blocked before requesting camera permission, with a bilingual message. Desktop/Android Chrome and Edge are primary testing targets; Safari and Firefox need additional real-device verification. A browser must support camera permissions, WebAssembly, and gzip \`DecompressionStream\`. Hidden tabs and locked screens cannot be counted reliably.
 
 ## Fully bundled builds
 

@@ -1,11 +1,13 @@
 # Passage Counter / 通過カウンター — 正式アプリ仕様書
 
 - 文書ID: `PC-SPEC-001`
-- 仕様版: `1.0`（v1.0.0までの実装ベースライン）
+- 仕様版: `1.1`（SIMD専用ブラウザ対応の検証方針を反映）
 - 作成日: 2026-10-11
 - 対象: Browser Kitty 新規アプリ
 - ステータス: 開発用仕様。未検証事項は技術検証ゲートとして明示。
 - 関連文書: [`DEVELOPMENT_PLAN.md`](./DEVELOPMENT_PLAN.md)
+
+> **SIMD専用の検証方針（2026-10-11）:** SIMD対応環境を対象にWASMの非SIMDフォールバックを省いた単一HTMLを試験する。非SIMD環境ではカメラ権限の要求前に利用不可を表示する。正式採用にはスマホ実機での互換性・性能検証が必要。判断記録は [ADR-002](docs/ADR-002-SIMD-ONLY.md)。
 
 > **最上位の非交渉条件:** 正式配布する**1個のHTMLファイルに、実行コード・CSS・必要な画像/SVG・AIモデル・WASM本体・WASMローダー・必要なWorkerコードをすべて内包**する。アプリ実行時のCDN、モデル/WASMダウンロード、外部AI API、自動テレメトリは禁止。**v0.1.0から満たす**。達成できなければライブラリを変更し、単一HTML制約は緩めない。
 
@@ -222,7 +224,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 - 配布物は**必要資産を全て内包した1つの`.html`**。JavaScript、CSS、SVG、AIモデル、WASM、WASMローダー、必要なWorkerのソースをHTML内に埋める。
 - ビルドソースは複数ファイルで構わないが、配布HTMLが外部のJavaScript、`.tflite`、`.onnx`、`.wasm`、`.json`、`.css`、フォントファイルに依存してはならない。
 - モデルはビルド時に適法に入手、版とSHA-256を固定。配布HTML内ではbase64等のバイナリ内包形式から起動時に`Uint8Array`へ展開する。
-- WASM本体と対応ローダーも同様に内包。SIMDの有無で複数WASMが必要な場合は**必要なものを全部内包**する。
+- 推論に必要なWASM本体とローダーはHTML内にすべて内包する。SIMD専用実験版はSIMD対応ブラウザのみを対象とし、非対応時には権限要求前に日英で利用不可を説明する。非対応ブラウザ向けのWASMを実行時に外部取得してはならない。
 - Workerは内包ソースから生成したBlob URL等で起動し、終了時にURLを解放。動作不可な環境での主スレッド代替経路も検討・実機テストする。
 - HTMLの物理サイズ・起動時間・展開メモリ・ピークメモリを実機で計測する。重複デコードや複数モデル保持は回避する。
 - 開発用外部依存やビルド時ダウンロードは許可するが、**実行時は不可**。初回起動時に通信が必要な構造は不合格。
@@ -339,7 +341,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 | モデル | EfficientDet-Lite0 int8 | 内包・ライセンス・人物検出精度・サイズ・端末速度。 |
 | 推論ライブラリ | MediaPipe Tasks Vision | WASM/loader内包・CSP・通信0・スマホ起動の実証。失敗なら代替。 |
 | 推論の実行位置 | Worker優先 | `blob:` Workerの実機成立。非対応環境の代替方法の確認。 |
-| WASM SIMD | 動作時判定 | 必要なSIMD/非SIMD両バイナリを内包。 |
+| WASM SIMD | 必須（実験中） | SIMD版のみ内包し、起動前にSIMD対応を判定。非対応端末ではカメラを起動せず案内する。iOS/Androidの実機テストが正式対応の条件。 |
 | CSP | `connect-src 'none'` 第一候補 | 内部Blob fetchの実挙動を見て、外部通信禁止を維持。 |
 | `file://` | 対応を目指す | OS/ブラウザのカメラ権限・CSP・Workerの実機結果を記載。 |
 | 動画入力 | v0.5.0で検証 | 合格なら1.0搭載、未達は正式に次版へ延期。 |

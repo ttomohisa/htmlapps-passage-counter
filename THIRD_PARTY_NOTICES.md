@@ -5,7 +5,7 @@
 - Package: \`@mediapipe/tasks-vision@0.10.35\`
 - Source: https://github.com/google-ai-edge/mediapipe
 - License: Apache License, Version 2.0 — https://www.apache.org/licenses/LICENSE-2.0
-- Included: browser ES module, SIMD and non-SIMD WASM binaries and loaders.
+- Included in SIMD-only experiment: ES module, SIMD WASM binary and matching loader; non-SIMD binaries are excluded.
 
 ## EfficientDet-Lite0 (int8) model
 

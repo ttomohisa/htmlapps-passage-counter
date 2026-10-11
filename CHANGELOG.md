@@ -1,5 +1,14 @@
 # Changelog
 
+## SIMD-only v0.3.0 experiment — 2026-10-11 (Draft, not released)
+
+- Preserve the complete EfficientDet int8 model, tracking, setup testing, corrections and CSV.
+- Remove non-SIMD MediaPipe loader/WASM (no runtime network fallback).
+- Detect unsupported SIMD environments and explain incompatibility in Japanese and English before camera permissions.
+- Measure same-run size savings: **13,505,896 → 9,150,133 bytes, -32.25%**.
+- Retest live synthetic camera inference, mobile layout, offline `file://`, and external HTTP zero. Mobile field compatibility still pending.
+
+
 ## [0.3.0] - 2026-10-11 (Draft)
 
 - Added a timed **30-second calibration test** with a live trial count, manual stop and automatic finish. Test counts are kept separate from real session totals and CSV history.

@@ -1,7 +1,7 @@
 # ADR-001 — MediaPipe in a fully self-contained Passage Counter HTML
 
 Date: 2026-10-11
-Status: Accepted provisionally for v0.1.0, pending mobile/field validation
+Status: Original dual-WASM baseline; see the newer experimental [SIMD-only proposal](ADR-002-SIMD-ONLY.md).
 
 ## Decision
 
