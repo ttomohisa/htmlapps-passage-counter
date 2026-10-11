@@ -465,6 +465,9 @@ html{min-height:100%;background:var(--background)}
           if (!assetByteCache.has(cacheKey)) assetByteCache.set(cacheKey, inflateAsset(getAsset(dependencyId, assetKey)));
           return new Uint8Array(await assetByteCache.get(cacheKey));
         },
+        releaseCachedBytes(dependencyId, assetKey) {
+          assetByteCache.delete(`${dependencyId}/${assetKey}`);
+        },
         text(dependencyId, assetKey) {
           return new TextDecoder().decode(this.bytes(dependencyId, assetKey));
         },
@@ -554,6 +557,8 @@ html{min-height:100%;background:var(--background)}
           recognitionWaiting:'準備前',recognitionRunning:'認識中',recognitionSlow:'処理が遅い',
           recognitionReady:'認識準備完了',recognitionStopped:'停止中',detailStatus:'処理の詳細',
           recognitionAutoStopped:'認識が大幅に遅いため計測を中断しました。中断中の通過件数は不明です。',
+          wakeReleased:'画面のスリープ防止が解除されました。計測中は画面を表示したままにしてください。',
+          rotationStop:'画面の向きが変わったため、計測を中断しました。判定線を確認して再開してください。',
           sessionName:'計測名',exportSummary:'概要CSV',exportIntervals:'時間帯CSV',
           timelineHeading:'時間帯別の通過',intervalSize:'区切り',coverageHint:'中断や一時停止の時間は欠測として明示します。0件と混同しません。',
           covered:'有効計測',pausedCoverage:'一時停止',missingCoverage:'欠測',coverageObserved:'計測有効',coveragePartial:'一部欠測',coverageMissing:'欠測',
@@ -637,6 +642,8 @@ html{min-height:100%;background:var(--background)}
           recognitionWaiting:'Not ready',recognitionRunning:'Recognizing',recognitionSlow:'Processing is slow',
           recognitionReady:'Ready to recognize',recognitionStopped:'Stopped',detailStatus:'Processing details',
           recognitionAutoStopped:'Detection became too slow to count reliably. Counting stopped; crossings during interruption are unknown.',
+          wakeReleased:'Screen wake lock was released. Keep this page visible while counting.',
+          rotationStop:'The screen orientation changed. Counting stopped; check the line before restarting.',
           sessionName:'Session name',exportSummary:'Summary CSV',exportIntervals:'Time buckets CSV',
           timelineHeading:'Crossings over time',intervalSize:'Bucket',coverageHint:'Paused or interrupted periods are marked partial/missing, never assumed to be zero.',
           covered:'Observed',pausedCoverage:'Paused',missingCoverage:'Missing',coverageObserved:'Observed',coveragePartial:'Partial coverage',coverageMissing:'No coverage',
@@ -2002,6 +2009,12 @@ html{min-height:100%;background:var(--background)}
           baseOptions:{modelAssetBuffer,delegate:'CPU'},runningMode:'VIDEO',
           categoryAllowlist:['person'],scoreThreshold:0.45,maxResults:12
         });
+        // The detector has finished loading model/WASM. The embedded gzip
+        // copies remain in the HTML and can be reinflated on a new session.
+        window.StandaloneAssets.releaseCachedBytes('person-model','tflite');
+        window.StandaloneAssets.releaseCachedBytes('mediapipe','simd-wasm');
+        state.modelUrls.forEach(url=>URL.revokeObjectURL(url));
+        state.modelUrls=[];
         $('#detectorInfo').textContent='EfficientDet-Lite0 · SIMD';
       }
       function closeCamera(){
@@ -2101,11 +2114,28 @@ html{min-height:100%;background:var(--background)}
         state.frameHandle=requestAnimationFrame(loop);
       }
       async function lockScreen(){
+        if(state.wakeLock)return;
         if(!navigator.wakeLock?.request){toast(tr('wakeWarning'));return;}
-        try{state.wakeLock=await navigator.wakeLock.request('screen');}
-        catch{toast(tr('wakeWarning'));}
+        try{
+          const wake=await navigator.wakeLock.request('screen');
+          // A request can resolve after the user paused or switched tabs.
+          if(!['counting','testing'].includes(state.phase)||document.visibilityState!=='visible'){
+            await wake.release().catch(()=>{});return;
+          }
+          state.wakeLock=wake;
+          wake.addEventListener?.('release',()=>{
+            if(state.wakeLock!==wake)return;
+            state.wakeLock=null;
+            if(state.phase==='counting'&&document.visibilityState==='visible')
+              toast(tr('wakeReleased'));
+          },{once:true});
+        }catch{toast(tr('wakeWarning'));}
       }
-      function unlockScreen(){if(state.wakeLock){state.wakeLock.release().catch(()=>{});state.wakeLock=null;}}
+      function unlockScreen(){
+        const wake=state.wakeLock;
+        state.wakeLock=null;
+        if(wake)wake.release().catch(()=>{});
+      }
       function startTest(){
         if(!state.detector||!state.stream||!['ready','paused'].includes(state.phase))return;
         if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
