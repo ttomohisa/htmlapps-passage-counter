@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0] — 2026-10-11 (Draft, accuracy evaluation tooling)
+
+- Replaced the favicon and matching app-header icon with the exact user-supplied Passage Counter SVG (#16624f, 64×64, rx=16). Both standalone editions embed it.
+- Made the header Help SVG action visually consistent with Wi-Fi Share: no background or border, 20px glyph, transparent minimum 44×44px touch target; added CSS/asset assertions.
+- Added the self-contained offline evaluation HTML for human crossing-time labels, with video playback, draggable line endpoints, keyboard A/B and Undo, and BOM CSV output.
+- Added a dependency-free accuracy evaluator with strict event time/CSV parsing, one-to-one direction-specific matching, TP/FP/FN and Precision/Recall by group, synthetic data exclusion and review-only evidence gate.
+- Added automated evaluator regression including duplicate predictions, direction errors, ±1.5s boundary, independent holdout split, correction exclusion and no false release approval.
+- Added ADR-007 field evidence protocol, holdout separation and required annotated 100+ real events. Included a deliberately synthetic fixture; **not a real performance metric**.
+- Preserved all v0.7.0 local camera, local video, CSV and storage behaviors; carried forward browser/standalone/network and wake-lock checks.
+- **Open:** independently annotated 100+ real fixed-camera crossing events and 95% target, Android/iPhone actual device tests and 30-minute performance/heat study.
+
+
 ## [0.7.0] — 2026-10-11 (Draft, integration verification)
 
 - Added bilingual error-state stability for camera permission denial and rejected local video when switching languages. Localized media-preview and aggregation accessibility labels.
