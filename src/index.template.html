@@ -1039,7 +1039,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(!keepStream)closeCamera();
         ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;
         state.sessionStart=null;currentSession=null;zeroTracks();invalidateTest();
-        state.phase=state.stream?'ready':'idle';
+        state.fileNeedsReanalysis=false;state.lastProcessedSourceMs=-1;
+        state.phase=hasActiveSource()?'ready':'idle';
         $('#report').hidden=true;
         $('#sessionName').value='Passage Counter '+new Date().toLocaleDateString(language==='ja'?'ja-JP':'en-US');
         renderTimeline();renderState();
@@ -1074,6 +1075,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           if(session.state==='counting')timeline.recover(session);
           resetActiveView();
           currentSession=session;
+          state.sourceMode=session.sourceType==='file'?'file':'camera';
+          if(isFileMode())video.removeAttribute('autoplay');
+          else video.setAttribute('autoplay','');
           ledger.restore(mapped);
           $('#sessionName').value=session.name||'Passage Counter';
           $('#labelA').value=session.directionLabels?.A_TO_B||'';
@@ -1084,11 +1088,15 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           state.startTime=Date.parse(session.startedAt)||0;
           state.sessionStart=session.startedAt;
           state.elapsedMs=timeline.durations(session).observedMs;
-          state.phase=session.state==='done'?'done':session.state==='paused'?'paused':'interrupted';
+          state.phase=session.state==='done'?'done':
+            session.sourceType==='file'?'interrupted':
+            session.state==='paused'?'paused':'interrupted';
           state.testCompleted=false;
           if(session.state==='interrupted')await queueSnapshot();
-          saveSetup();draw();renderTimeline();renderState();
-          toast(tr(session.state==='done'?'openedSaved':'restoredStopped'));
+          saveSetup();draw();renderTimeline();
+          renderState(session.sourceType==='file'?tr('videoReopenRequired'):undefined);
+          toast(tr(session.sourceType==='file'?'videoReopenRequired':
+            session.state==='done'?'openedSaved':'restoredStopped'));
           await refreshSavedSessions();
         }catch(error){warnStorage(error);toast(tr('restoreFailed'));}
         finally{state.restoring=false;renderSavedSessions();}
@@ -1335,7 +1343,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#testResult').hidden=!(testing||state.testCompleted||state.testCancelled);
         if(!$('#testResult').hidden)formatTestStatus();
         $('#beginCount').disabled=!state.detector||!sourceAvailable||!validLine||
-          (!fileMode&&!state.testCompleted)||testing||phase==='counting'||phase==='loading'||phase==='done'||state.sourceBusy;
+          (!fileMode&&!state.testCompleted)||testing||phase==='counting'||phase==='loading'||phase==='done'||
+          state.sourceBusy||state.fileNeedsReanalysis;
         $('#beginCount').textContent=tr((state.startTime&&phase==='ready')||phase==='paused'||phase==='interrupted'?'resume':'beginCount');
         $('#pauseCount').disabled=phase!=='counting';
         $('#finishCount').disabled=!['counting','paused','interrupted'].includes(phase);
@@ -1641,6 +1650,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         state.videoReady=false;
         state.videoDurationMs=0;
         state.lastProcessedSourceMs=-1;
+        state.fileNeedsReanalysis=false;
         video.removeAttribute('src');
         video.load();
         URL.revokeObjectURL(state.videoUrl);
@@ -1711,6 +1721,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
             throw Error('Invalid or unknown video duration');
           state.videoDurationMs=Math.round(duration*1000);
           state.videoReady=true;
+          state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
           state.lastProcessedSourceMs=-1;
           await initEmbeddedDetector();
@@ -1765,6 +1776,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           const target=Math.max(0,Math.min(video.duration||0,requestedSecond));
           state.fileInternalSeek=true;
           state.lastProcessedSourceMs=-1;
+          state.fileNeedsReanalysis=false;
           zeroTracks();
           video.currentTime=target;
           renderVideoTime();
@@ -1907,11 +1919,23 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         renderState(tr(cancelled?'testCancelled':'testReady'));
       }
       function beginCount(){
-        if(!state.detector||!state.stream){toast(tr('notReady'));return;}
-        if(!state.testCompleted){toast(tr('testRequired'));return;}
+        if(!state.detector||!hasActiveSource()){toast(tr('notReady'));return;}
+        if(!isFileMode()&&!state.testCompleted){toast(tr('testRequired'));return;}
+        if(state.fileNeedsReanalysis){toast(tr('videoSeekingMessage'));return;}
         if(state.phase!=='ready'&&state.phase!=='paused'&&state.phase!=='interrupted')return;
         if(currentSession?.state==='done')return;
         const now=Date.now();
+        if(isFileMode()){
+          if(state.filePreviewing){video.pause();state.filePreviewing=false;}
+          if(!state.startTime){
+            // Always analyze from frame zero; preview seeking never changes the
+            // start of a new analysis.
+            if(video.currentTime>0.001){
+              state.fileInternalSeek=true;video.currentTime=0;
+            }
+            state.lastProcessedSourceMs=-1;
+          }
+        }
         if(!currentSession){
           currentSession=timeline.create({
             sessionId:createSessionId(),name:$('#sessionName').value,createdAt:now,
@@ -1926,26 +1950,36 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           line:line.map(p=>({...p})),reversed:state.reverse,
           modelVersion:'EfficientDet-Lite0-int8-1'});
         state.lastActive=performance.now();state.phase='counting';
-        transitionSession('counting');zeroTracks();renderState();renderTimeline();lockScreen();
+        transitionSession('counting');zeroTracks();renderState();renderTimeline();
+        if(isFileMode()){
+          video.play().catch(err=>{
+            console.warn('[Passage Counter] Local playback was blocked',err);
+            if(state.phase==='counting')interrupt(tr('videoPlaybackFailed'));
+          });
+        }else lockScreen();
         void writeTail.then(refreshSavedSessions);
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
         state.elapsedMs+=performance.now()-state.lastActive;
         state.phase='paused';transitionSession('paused','user-paused');
+        if(isFileMode())video.pause();
         unlockScreen();zeroTracks();renderState();renderTimeline();
       }
       function interrupt(msg){
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting'){state.elapsedMs+=performance.now()-state.lastActive;}
         state.phase='interrupted';transitionSession('interrupted','visibility-camera-or-inference');
+        if(isFileMode())video.pause();
         unlockScreen();zeroTracks();renderState(msg);renderTimeline();
       }
       function finishCount(){
         if(state.phase==='counting')state.elapsedMs+=performance.now()-state.lastActive;
         if(!['counting','paused','interrupted'].includes(state.phase))return;
         state.phase='done';transitionSession('done','finished');
-        unlockScreen();closeCamera();renderState();renderTimeline();
+        if(isFileMode()){video.pause();state.filePreviewing=false;}
+        else closeCamera();
+        unlockScreen();renderState();renderTimeline();
         void writeTail.then(refreshSavedSessions);
       }
       function normalizedFilename(){
@@ -2021,7 +2055,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         ledger.reset();currentSession=null;
         state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
         zeroTracks();invalidateTest();
-        state.phase=state.stream?'ready':'idle';renderState();renderTimeline();
+        state.fileNeedsReanalysis=false;
+        state.lastProcessedSourceMs=-1;
+        state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
       }
       $('#languageSelect').addEventListener('change',e=>{language=e.target.value==='ja'?'ja':'en';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
