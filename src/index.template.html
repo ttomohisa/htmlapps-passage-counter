@@ -330,7 +330,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         </select>
       </label>
     </div>
-    <p class="helper" data-i18n="coverageHint">中断・一時停止を含む時間帯は欠測または一部欠測として表示します。0件とは扱いません。</p>
+    <p class="helper" id="coverageHint" data-i18n="coverageHint">中断・一時停止を含む時間帯は欠測または一部欠測として表示します。0件とは扱いません。</p>
     <div id="timelineRows" class="timeline-list"></div>
   </section>
   <section class="report" aria-labelledby="savedHeading" id="savedSessions">
@@ -528,6 +528,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           videoSeekRejected:'位置の移動は取り消されました。',videoPlaybackFailed:'動画を再生できません。ファイル形式を確認してください。',
           videoEnd:'動画の最後まで解析しました。',videoModeStart:'この動画を先頭から解析します。',
           videoFileStart:'動画の先頭へ戻して計測を開始します。',videoModeHint:'動画はこの端末内で解析します。再生位置を変えると再解析が必要です。',
+          fileCoverageHint:'時間帯別集計は解析中の実時間です。動画内の位置はイベントCSVの source_time_ms を確認してください。欠測を0件とは扱いません。',
+          fileTimelineHeading:'解析時刻別の通過',
           previewOnly:'プレビュー中です。件数は増えません。',fileReadyState:'動画準備完了',
           fileSeekBusy:'ファイルを読み込み中です。',fileSourceSwitch:'入力を切り替えます。',
           close:'閉じる',cancel:'キャンセル',resetTitle:'件数をリセットしますか？',resetMessage:'開いている計測の通過件数・イベント・保存済み履歴を削除します。この操作は取り消せません。',
@@ -605,6 +607,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           videoSeekRejected:'Seeking was cancelled.',videoPlaybackFailed:'Cannot play this video. Check the file format.',
           videoEnd:'Reached the end of the video.',videoModeStart:'Count this video from the beginning.',
           videoFileStart:'Returning to the beginning before counting.',videoModeHint:'The video stays on this device. Seeking during an analysis requires starting again.',
+          fileCoverageHint:'Time buckets use the real time of analysis, not the movie timeline. For positions within the video, use source_time_ms in events CSV. Missing time is never treated as zero.',
+          fileTimelineHeading:'Crossings by analysis time',
           previewOnly:'Preview playback. Crossings are not counted.',fileReadyState:'Video ready',
           fileSeekBusy:'Loading a video file.',fileSourceSwitch:'Switching source.',
           close:'Close',cancel:'Cancel',resetTitle:'Reset all counts?',resetMessage:'Delete current counts, events and the saved session from this device? This cannot be undone.',
@@ -1324,6 +1328,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#videoSourceBox').hidden=!fileMode;
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
+        $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
+        $('#coverageHint').textContent=tr(fileMode?'fileCoverageHint':'coverageHint');
         $('#cameraPlaceholder').querySelector('span').textContent=tr(fileMode?'videoEmpty':'previewEmpty');
         $('#videoFileStatus').textContent=state.videoError||
           (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
