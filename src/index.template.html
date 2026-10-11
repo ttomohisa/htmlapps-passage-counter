@@ -732,6 +732,7 @@ html{min-height:100%;background:var(--background)}
             canUndo:canUndo(),hasEvents:records.length>0};
         }
         function history(){return records.map(entry=>({...entry}));}
+        function size(){return records.length;}
         function reset(){
           records=[];sequence=0;lastCorrection=null;
           total.A_TO_B=0;total.B_TO_A=0;automatic.A_TO_B=0;automatic.B_TO_A=0;
@@ -769,7 +770,7 @@ html{min-height:100%;background:var(--background)}
           sequence=records.length;
           return summary();
         }
-        return Object.freeze({auto,correct,undo,summary,history,reset,restore});
+        return Object.freeze({auto,correct,undo,summary,history,size,reset,restore});
       }
       // LEDGER:END
       const ledger=createCountingLedger();
@@ -1050,7 +1051,7 @@ html{min-height:100%;background:var(--background)}
       }
       function serializeEvent(event){
         return {schemaVersion:1,eventId:event.id,sessionId:currentSession.sessionId,
-          ordinal:ledger.history().length,occurredAt:event.occurredAt,
+          ordinal:ledger.size(),occurredAt:event.occurredAt,
           elapsedMs:event.elapsedMs,sourceTimeMs:event.sourceTimeMs??null,direction:event.direction,
           directionLabel:countName(event.direction),
           kind:({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[event.kind],
@@ -1066,9 +1067,9 @@ html{min-height:100%;background:var(--background)}
         const totals=ledger.summary();
         session.counts={a:totals.a,b:totals.b,autoA:totals.autoA,autoB:totals.autoB,
           manualA:totals.manualA,manualB:totals.manualB};
-        const saved=JSON.parse(JSON.stringify(session));
         if(session.sourceType==='file')
           session.runtimeInfo.sourceDurationMs=state.videoDurationMs||session.runtimeInfo.sourceDurationMs||null;
+        const saved=JSON.parse(JSON.stringify(session));
         const record=event?serializeEvent(event):null;
         writeTail=writeTail.then(()=>sessionStore.write(saved,record))
           .then(()=>{state.storageReady=true;state.storageFailure=null;updateStorageNotice();},
