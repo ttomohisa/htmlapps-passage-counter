@@ -1,0 +1,5 @@
+﻿"event_id","occurred_at","direction","direction_label","kind","delta","elapsed_ms","undo_of","session_id","source_time_ms","event_kind_v1","reference_event_id"
+"auto-1","2026-10-11T06:00:01.200Z","A_TO_B","A to B","auto","1","1000","","session-synthetic","1150","auto",""
+"auto-2","2026-10-11T06:00:04.100Z","B_TO_A","B to A","auto","1","4000","","session-synthetic","4050","auto",""
+"auto-3","2026-10-11T06:00:08.200Z","A_TO_B","A to B","auto","1","8000","","session-synthetic","8050","auto",""
+"correction-1","2026-10-11T06:00:08.300Z","A_TO_B","A to B","correction","1","8200","","session-synthetic","8250","manual_adjustment",""
