@@ -28,10 +28,26 @@ function observe(page,label){
   });
 }
 async function awaitLoaded(page){
-  await page.waitForFunction(()=>/動画準備完了|Video ready/.test(
-    document.querySelector('#statusPill')?.textContent??'') &&
-    !document.querySelector('#beginCount')?.disabled,
-    null,{timeout:90000});
+  try{
+    await page.waitForFunction(()=>/動画準備完了|Video ready/.test(
+      document.querySelector('#statusPill')?.textContent??'') &&
+      !document.querySelector('#beginCount')?.disabled,
+      null,{timeout:30000});
+  }catch(error){
+    const info=await page.evaluate(()=>{
+      const v=document.querySelector('#cameraFeed');
+      return {pill:document.querySelector('#statusPill')?.textContent,
+        details:document.querySelector('#statusDetails')?.textContent,
+        file:document.querySelector('#videoFileStatus')?.textContent,
+        videoReadyState:v?.readyState,videoError:v?.error?.code,
+        videoDuration:v?.duration,videoCurrentTime:v?.currentTime,
+        sourceMode:document.querySelector('#sourceMode')?.value,
+        fileSource:v?.currentSrc?.slice(0,100),
+        countDisabled:document.querySelector('#beginCount')?.disabled};
+    });
+    console.log('[video-diagnostic] '+JSON.stringify(info));
+    throw error;
+  }
 }
 async function startAnalysis(page){
   await page.locator('#beginCount').click();
