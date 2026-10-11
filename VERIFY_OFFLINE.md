@@ -16,3 +16,5 @@ This SIMD-only experimental HTML includes the complete AI model, JavaScript modu
 12. In browser devtools, verify **zero external network requests** from model initialization through counting and export, except the original HTML page load when hosted. Retest with network disabled and a cold cache.
 
 \`connect-src blob:\` grants only local WASM Blob reads; it must not be broadened to \`https:\`, \`http:\`, \`*\` or external hosts. A static scan is not proof of zero runtime requests.
+
+13. For v0.7.0, run the Windows Chrome/Edge dual-CSP integration gate and fresh-context offline file-open checks via `scripts/smoke-v07-integration.mjs`. The browser's simulated camera does not prove phone or physical-camera compatibility; see `docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md` for the required Android/iOS/manual tests and evidence matrix.
