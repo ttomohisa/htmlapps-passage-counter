@@ -465,7 +465,39 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           records=[];sequence=0;lastCorrection=null;
           total.A_TO_B=0;total.B_TO_A=0;automatic.A_TO_B=0;automatic.B_TO_A=0;
         }
-        return Object.freeze({auto,correct,undo,summary,history,reset});
+        function restore(saved){
+          // Accept only the exact event log schema. Never auto-create a new
+          // correction during restore. Index order is the append order.
+          if(!Array.isArray(saved))throw new Error('Invalid saved event list');
+          reset();
+          const validKinds=new Set(['auto','correction','undo']);
+          const undone=new Set();
+          for(const item of saved){
+            if(!item || typeof item.id!=='string'||!valid(item.direction)||
+               !validKinds.has(item.kind)||(item.delta!==1&&item.delta!==-1)||
+               !Number.isFinite(item.elapsedMs)||typeof item.occurredAt!=='string')
+               throw new Error('Invalid saved passage event');
+            if(total[item.direction]+item.delta<0)throw new Error('Negative saved count');
+            if(item.kind==='auto'&&item.delta!==1)throw new Error('Invalid automatic delta');
+            const record={id:item.id,occurredAt:item.occurredAt,direction:item.direction,
+              kind:item.kind,delta:item.delta,elapsedMs:Math.max(0,Math.round(item.elapsedMs)),
+              undoOf:typeof item.undoOf==='string'?item.undoOf:''};
+            if(item.kind==='undo'){
+              if(!record.undoOf || undone.has(record.undoOf))throw new Error('Invalid saved Undo reference');
+              const target=records.find(x=>x.id===record.undoOf&&x.kind==='correction');
+              if(!target || target.direction!==record.direction || target.delta!==-record.delta)
+                throw new Error('Undo is not paired with its correction');
+              undone.add(record.undoOf);
+              if(lastCorrection?.id===record.undoOf)lastCorrection=null;
+            }else if(item.kind==='correction')lastCorrection=record;
+            records.push(record);
+            total[record.direction]+=record.delta;
+            if(record.kind==='auto')automatic[record.direction]++;
+          }
+          sequence=records.length;
+          return summary();
+        }
+        return Object.freeze({auto,correct,undo,summary,history,reset,restore});
       }
       // LEDGER:END
       const ledger=createCountingLedger();
