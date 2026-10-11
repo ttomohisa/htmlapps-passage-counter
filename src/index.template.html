@@ -2136,6 +2136,15 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         });
       });
       video.addEventListener('timeupdate',renderVideoTime);
+      video.addEventListener('seeking',()=>{
+        if(!isFileMode()||state.fileInternalSeek)return;
+        // Guard browser-initiated seeks as well as our explicit slider.
+        // A discontinuity invalidates the tracking timeline immediately.
+        if(state.phase==='counting'){
+          state.fileNeedsReanalysis=true;
+          interrupt(tr('videoSeekingMessage'));
+        }
+      });
       video.addEventListener('seeked',()=>{
         if(!isFileMode())return;
         state.fileInternalSeek=false;state.lastProcessedSourceMs=-1;
@@ -2205,6 +2214,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting')interrupt(tr('hiddenStop'));
         unlockScreen();if(state.stream)state.stream.getTracks().forEach(t=>t.stop());
+        if(state.videoUrl){
+          video.pause();URL.revokeObjectURL(state.videoUrl);state.videoUrl=null;
+        }
       });
       window.addEventListener('resize',draw);
       state.clockTimer=setInterval(()=>{
