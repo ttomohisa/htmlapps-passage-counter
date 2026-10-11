@@ -2,7 +2,7 @@
 
 スマートフォンやPCのカメラ、または端末内に保存された動画から、画面上の一本の線を横切る人物の通過を**方向別に自動カウント**するツールです。AIモデル、JavaScriptローダー、SIMD版WASMとローダーを含むすべての実行ファイルを**単一HTMLに内包**しています。
 
-**このブランチはSIMD専用のv0.7.0統合検証版であり、正式採用版ではありません。** WebAssembly SIMD非対応のブラウザではカメラを起動できず、許可要求前に理由を日英で案内します。 人物追跡と通過判定は改善しましたが、**実環境での精度確認は未完了**です。安全管理、料金計算、法的な報告など、件数の正確さが重要な用途では独立した確認が必要です。
+**このブランチはSIMD専用のv0.8.0精度評価準備版であり、正式採用版ではありません。** WebAssembly SIMD非対応のブラウザではカメラを起動できず、許可要求前に理由を日英で案内します。 人物追跡と通過判定は改善しましたが、**実環境での精度確認は未完了**です。安全管理、料金計算、法的な報告など、件数の正確さが重要な用途では独立した確認が必要です。
 
 ## Browser Kitty共通UI
 
@@ -13,6 +13,23 @@ v0.6.0では[PDF記入・署名](https://browser-kitty.com/apps/pdf-fill-sign.ht
 Windows Chrome／Edgeの疑似カメラを使い、内包モデルの実推論、補正・CSV、外部HTTP遮断、HTML内CSPとHTTPヘッダーCSPの併用、初回相当のオフライン単一HTML起動、日英切替・エラー表示を確認するCIを追加しました。カメラ権限エラーや動画形式エラーは言語切替後も正しい言語で表示します。プレビューと集計間隔の読み上げラベルも日英に対応しました。
 
 **未検証**：Android ChromeとiPhone Safariの実機、30分連続稼働・発熱・バッテリー・メモリ・実機fps、通過件数のPrecision／Recall、実際のCloudflare応答ヘッダーです。CIの疑似カメラを実機の性能・対応確認と混同しません。[互換性表・実機検証チェックリスト](docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md)で状態を管理します。
+
+## v0.8.0 — アイコン・ヘルプUIと精度評価
+
+- 指定いただいた**Passage CounterのSVG**へfaviconとヘッダーアイコンを変更。64×64、背景#16624f／rx=16のSVGが通常版・自己展開版の単一HTMLに内包されます。
+- ヘッダーのヘルプを[Wi-Fi Share](https://browser-kitty.com/apps/wifi-share.html)と同じ**白い四角枠のない「？」アイコン**へ変更。SVGは20px、透明のタップ領域は44×44pxを維持します。
+- 開発用の[正解ラベル作成HTML](evaluation/label-passages.html)を追加。ブラウザだけで端末内動画の線通過時刻・方向を人手で記録し、正解CSVを出力します。動画・ラベルを外部送信・自動保存しません。
+- 精度評価用の[オフラインCLI](scripts/evaluate-accuracy.mjs)を追加。人手の正解とアプリの**自動イベントのみ**を、同じ方向・±1.5秒の一対一マッチングで比較します。手動補正とUndoは精度を水増ししないよう除外。TP・FP・FN、Precision／Recall、方向別・標準／難条件別・調整／独立評価別に出力します。
+- CSVパーサー・時刻・方向違い・重複・未検出・不正な評価サンプルを検証する自動テストと、**実データでないことを明示した3件の人工サンプル**を追加しました。
+
+**重要：v0.8.0で実映像の精度95%が達成されたわけではありません。** 独立した正解ラベル付きの実映像100件以上、両方向の評価、Android Chrome／iPhone Safari実機と30分連続試験は未完了です。合格していない結果を推定値で埋めません。[評価手順・未完了項目](docs/ADR-007-ACCURACY-EVALUATION.md)／[ブラウザ互換性表](docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md)。
+
+検証ツールは次のコマンドで確認できます（人工サンプルは製品精度の証拠にはなりません）。
+
+```sh
+node scripts/test-accuracy-evaluator.mjs
+node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --json=dist/accuracy-example.json --md=dist/accuracy-example.md
+```
 
 ## 主な機能
 
