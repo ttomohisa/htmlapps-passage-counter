@@ -1,0 +1,4 @@
+event_id,direction,source_time_ms,subject_id
+truth-a,A_TO_B,1000,actor-1
+truth-b,B_TO_A,4000,actor-2
+truth-c,A_TO_B,8000,actor-1
