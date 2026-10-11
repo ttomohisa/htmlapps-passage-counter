@@ -1,0 +1,55 @@
+name: Passage Counter v0.4.0 offline session validation
+on:
+  push:
+    branches: [feat/passage-counter-v0.4.0]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  v04:
+    runs-on: windows-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: PowerShell syntax and repository/standalone HTML verification
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Verify tracker and correction ledger
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-ledger.mjs
+      - name: Verify session schema, crash coverage and time buckets
+        shell: pwsh
+        run: node scripts/test-session-model.mjs
+      - name: Install browser runner only for CI
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Run Chromium camera, IndexedDB restore, CSV, accessibility and offline tests
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Show output sizes
+        if: always()
+        shell: pwsh
+        run: |
+          if(Test-Path dist/build-size-report.json) {
+            $r=Get-Content -Raw dist/build-size-report.json|ConvertFrom-Json
+            Write-Host ("[size] readable={0} selfExtract={1} (bytes)" -f $r.readableHtmlBytes,$r.selfExtractHtmlBytes)
+          }
+      - name: Upload generated readable and self-extract HTML
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v0.4.0-draft
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+            passage-counter.html
+          if-no-files-found: warn
+          retention-days: 14
