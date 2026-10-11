@@ -839,7 +839,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
       }
       function warnStorage(error){
-        console.warn('[Passage Counter] Unable to persist session',error);
+        if(!state.storageFailure)console.warn('[Passage Counter] Unable to persist session',error);
         state.storageFailure=String(error?.message||error||'Unknown storage error');
         updateStorageNotice();
       }
@@ -1103,6 +1103,46 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const sec=Math.max(0,Math.floor(ms/1000));
         return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
       }
+      function renderTimeline(){
+        const section=$('#timelineSection'),coverage=$('#coverageSummary');
+        const active=Boolean(currentSession&&state.startTime);
+        section.hidden=!active;coverage.hidden=!active;
+        if(!active){$('#timelineRows').replaceChildren();return;}
+        const info=timeline.durations(currentSession,Date.now());
+        const observed=formatElapsed(info.observedMs),paused=formatElapsed(info.pausedMs),missing=formatElapsed(info.missingMs);
+        const since=currentSession.startedAt?Math.max(0,(currentSession.endedAt?
+          Date.parse(currentSession.endedAt):Date.now())-Date.parse(currentSession.startedAt)):0;
+        coverage.textContent=tr('covered')+': '+observed+' · '+tr('pausedCoverage')+': '+paused+
+          ' · '+tr('missingCoverage')+': '+missing+' · '+tr('wallElapsed')+': '+formatElapsed(since);
+        const step=Number($('#aggregationMinutes').value)||5;
+        const entries=timeline.aggregation(currentSession,ledger.history(),step);
+        const root=$('#timelineRows');root.replaceChildren();
+        if(!entries.length){
+          const empty=document.createElement('p');empty.className='saved-empty';
+          empty.textContent=tr('noIntervalRows');root.append(empty);return;
+        }
+        const last=entries.slice(-16),max=Math.max(1,...last.map(entry=>Math.max(0,entry.totalA+entry.totalB)));
+        for(const item of last){
+          const container=document.createElement('div');container.className='timeline-item';
+          container.dataset.coverage=item.coverageStatus;
+          const heading=document.createElement('strong');
+          heading.textContent=new Date(item.start).toLocaleString(language==='ja'?'ja-JP':'en-US',{
+            month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
+          });
+          const summary=document.createElement('div');summary.className='meta';
+          summary.textContent=countName('A_TO_B')+': '+item.totalA+' · '+countName('B_TO_A')+': '+item.totalB;
+          const bar=document.createElement('div');bar.className='bar';
+          const value=document.createElement('span');value.style.width=
+            Math.max(0,Math.min(100,100*(item.totalA+item.totalB)/max))+'%';bar.append(value);
+          const coverageText=document.createElement('div');coverageText.className='coverage';
+          coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
+            missing:'coverageMissing'})[item.coverageStatus])+
+            ' · '+tr('covered')+' '+formatElapsed(item.observedMs)+
+            ' · '+tr('pausedCoverage')+' '+formatElapsed(item.pausedMs)+
+            ' · '+tr('missingCoverage')+' '+formatElapsed(item.missingMs);
+          container.append(heading,summary,bar,coverageText);root.append(container);
+        }
+      }
       function renderState(message){
         const phase=state.phase;
         const key=({idle:'idle',loading:'loading',ready:'ready',testing:'testing',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
@@ -1149,6 +1189,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#minusA').disabled=!mayCorrect||totals.a===0;$('#minusB').disabled=!mayCorrect||totals.b===0;
         $('#undoCorrection').disabled=!mayCorrect||!totals.canUndo;
         $('#downloadButton').disabled=!state.startTime;
+        $('#summaryButton').disabled=!state.startTime;
+        $('#intervalsButton').disabled=!state.startTime;
         $('#resetButton').disabled=!state.startTime&&!totals.hasEvents;
         $('#report').hidden=phase!=='done';
         $('#cameraPlaceholder').hidden=Boolean(state.stream);
