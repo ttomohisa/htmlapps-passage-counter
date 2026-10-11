@@ -194,6 +194,12 @@ html{min-height:100%;background:var(--background)}
 .icon-button{display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--border);border-radius:10px;background:#fff}
 .icon-button svg{width:19px;height:19px;display:block}
 .icon-button:hover{background:#e9e9e5}
+/* Wi-Fi Share header convention: the Help glyph has no surrounding box.
+   Its transparent 44px hit target remains comfortable on touch screens. */
+.header-icon-button{width:44px;height:44px;min-width:44px;min-height:44px;flex:0 0 44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--muted);transition:color .16s ease,opacity .16s ease}
+.header-icon-button svg{width:20px;height:20px}
+.header-icon-button:hover{border-color:transparent;background:transparent;color:var(--text)}
+.header-icon-button:active{transform:none;opacity:.65}
 .shell.main{padding:22px clamp(14px,2.8vw,30px) 54px}
 .page-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:0 2px 18px}
 .page-intro .hero-copy{min-width:0;flex:1 1 auto}
@@ -227,7 +233,7 @@ html{min-height:100%;background:var(--background)}
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.7.0</span></p>
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.8.0</span></p>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -401,7 +407,7 @@ html{min-height:100%;background:var(--background)}
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · v0.7.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · v0.8.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -521,7 +527,7 @@ html{min-height:100%;background:var(--background)}
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.7.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          language:'言語',subTitle:'通過カウンター · v0.8.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
           title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
           videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
@@ -530,7 +536,7 @@ html{min-height:100%;background:var(--background)}
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.7.0ではブラウザ互換性・日英UI・単一HTML・CSPを横断して検証しています。実機の長時間計測と精度評価は未完了です。',
+          prototypeNote:'v0.8.0では誤カウント対策と通過精度の評価手順を整えています。実映像100件以上の精度確認と実機30分試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'判定線を置き、カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
           helpPrivacy:'カメラや選択した動画はアップロードしません。映像・顔・音声は保存せず、計測記録だけをブラウザ内に保存します。',
@@ -606,7 +612,7 @@ html{min-height:100%;background:var(--background)}
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.7.0',help:'Help',privacyShort:'No account · On-device processing',
+          language:'Language',subTitle:'People crossing counter · v0.8.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Entirely local processing',
           title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
@@ -615,7 +621,7 @@ html{min-height:100%;background:var(--background)}
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.7.0 checks cross-browser behavior, bilingual UI, single-file packaging and CSP. Physical-device endurance and count accuracy remain unverified.',
+          prototypeNote:'v0.8.0 strengthens crossing verification and adds reproducible accuracy evaluation. Independent 100+ real crossings and 30-minute device testing remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Place the counting line. For camera input, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
           helpPrivacy:'Camera and selected video files are not uploaded. Frames, faces and audio are not stored; only counting records are saved in this browser.',
