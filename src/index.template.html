@@ -786,11 +786,188 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         reverse:false,lastInfer:0,lastFrameTime:0,lastTimestamp:0,
         detections:[],fps:0,frameHandle:0,startTime:0,elapsedMs:0,lastActive:0,wakeLock:null,
         drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
-        testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready'
+        testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
+        storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0
       };
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
       function tr(key){return translations[language][key]||translations.en[key]||key;}
+      // PERSIST:BEGIN
+      // The queue serializes a snapshot and each matching event in one IndexedDB
+      // transaction. Errors never masquerade as successful saves; memory data
+      // remains available for CSV export.
+      let currentSession=null,writeTail=Promise.resolve(),savedSessions=[];
+      function createSessionId(){
+        if(crypto.randomUUID)return crypto.randomUUID();
+        const bytes=crypto.getRandomValues(new Uint8Array(16));
+        bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+        const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+        return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+      }
+      function warnStorage(error){
+        console.warn('[Passage Counter] Unable to persist session',error);
+        state.storageFailure=String(error?.message||error||'Unknown storage error');
+        updateStorageNotice();
+      }
+      function updateStorageNotice(){
+        const element=$('#storageNotice');
+        if(state.storageFailure){
+          element.hidden=false;element.dataset.kind='error';element.textContent=tr('storageError');
+        }else if(!state.storageReady){
+          element.hidden=false;element.dataset.kind='idle';element.textContent=tr('storageLoading');
+        }else{
+          element.hidden=true;element.textContent='';
+        }
+      }
+      function serializeEvent(event){
+        return {schemaVersion:1,eventId:event.id,sessionId:currentSession.sessionId,
+          ordinal:ledger.history().length,occurredAt:event.occurredAt,
+          elapsedMs:event.elapsedMs,sourceTimeMs:null,direction:event.direction,
+          directionLabel:countName(event.direction),
+          kind:({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[event.kind],
+          delta:event.delta,referenceEventId:event.undoOf||null};
+      }
+      function queueSnapshot(event=null){
+        if(!currentSession)return writeTail;
+        const session=currentSession;
+        timeline.checkpoint(session);
+        session.name=$('#sessionName').value.trim().slice(0,100)||'Passage Counter';
+        session.directionLabels={A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')};
+        session.line=line.map(p=>({x:p.x,y:p.y}));
+        const saved=JSON.parse(JSON.stringify(session));
+        const record=event?serializeEvent(event):null;
+        writeTail=writeTail.then(()=>sessionStore.write(saved,record))
+          .then(()=>{state.storageReady=true;state.storageFailure=null;updateStorageNotice();},
+            error=>warnStorage(error));
+        return writeTail;
+      }
+      function transitionSession(phase,reason=''){
+        if(!currentSession)return;
+        timeline.transition(currentSession,phase,Date.now(),reason);
+        queueSnapshot();
+      }
+      async function refreshSavedSessions(){
+        if(!state.storageReady)return;
+        try{savedSessions=await sessionStore.list();renderSavedSessions();}
+        catch(error){warnStorage(error);}
+      }
+      function renderSavedSessions(){
+        const root=$('#savedList');
+        root.replaceChildren();
+        if(!savedSessions.length){
+          const note=document.createElement('p');note.className='saved-empty';note.textContent=tr('savedEmpty');root.append(note);return;
+        }
+        for(const session of savedSessions){
+          const row=document.createElement('div');row.className='saved-session';
+          const info=document.createElement('div');info.style.minWidth='0';info.style.flex='1';
+          const name=document.createElement('div');name.className='saved-name';name.textContent=session.name||'Passage Counter';
+          const secondary=document.createElement('small');
+          const tick=Date.parse(session.startedAt||session.createdAt);
+          secondary.textContent=(Number.isFinite(tick)?new Date(tick).toLocaleString(language==='ja'?'ja-JP':'en-US'):'—')+
+            ' · '+tr(({counting:'savedInterrupted',interrupted:'savedInterrupted',
+              done:'savedDone',paused:'savedPaused'})[session.state]||'savedPaused');
+          info.append(name,secondary);
+          const actions=document.createElement('div');actions.className='row';
+          const open=document.createElement('button');open.type='button';open.textContent=tr('openSaved');
+          open.disabled=state.restoring;
+          open.addEventListener('click',()=>loadSavedSession(session.sessionId));
+          const del=document.createElement('button');del.type='button';del.className='danger';del.textContent=tr('deleteSaved');
+          del.disabled=state.restoring;
+          del.addEventListener('click',()=>deleteSavedSession(session.sessionId));
+          actions.append(open,del);row.append(info,actions);root.append(row);
+        }
+      }
+      function resetActiveView({keepStream=false}={}){
+        if(state.phase==='testing')finishTest(true);
+        if(state.phase==='counting')pauseCount();
+        if(!keepStream)closeCamera();
+        ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;
+        state.sessionStart=null;currentSession=null;zeroTracks();invalidateTest();
+        state.phase=state.stream?'ready':'idle';
+        $('#report').hidden=true;
+        $('#sessionName').value='Passage Counter '+new Date().toLocaleDateString(language==='ja'?'ja-JP':'en-US');
+        renderTimeline();renderState();
+      }
+      async function prepareToSwitch(){
+        if(!state.startTime)return true;
+        const ok=await AppConfirm.ask({title:tr('switchTitle'),
+          message:state.storageFailure?tr('switchUnsafe'):tr('switchMessage'),
+          confirmLabel:tr('switchConfirm'),cancelLabel:tr('cancel')});
+        if(!ok)return false;
+        if(state.phase==='counting')pauseCount();
+        await writeTail;
+        return true;
+      }
+      async function loadSavedSession(sessionId){
+        if(state.restoring)return;
+        if(!(await prepareToSwitch()))return;
+        state.restoring=true;renderSavedSessions();
+        try{
+          await writeTail;
+          const saved=await sessionStore.load(sessionId);
+          if(!saved.session)throw Error('Saved session not found');
+          const session=saved.session;
+          if(session.schemaVersion!==1||session.sourceType!=='camera')throw Error('Incompatible session');
+          const mapped=saved.events.map(item=>({
+            id:item.eventId,occurredAt:item.occurredAt,direction:item.direction,
+            kind:({auto:'auto',manual_adjustment:'correction',undo_adjustment:'undo'})[item.kind],
+            delta:item.delta,elapsedMs:item.elapsedMs,undoOf:item.referenceEventId||''
+          }));
+          if(mapped.some(item=>!item.kind))throw Error('Unknown event kind');
+          if(session.state==='counting')timeline.recover(session);
+          resetActiveView();
+          currentSession=session;
+          ledger.restore(mapped);
+          $('#sessionName').value=session.name||'Passage Counter';
+          $('#labelA').value=session.directionLabels?.A_TO_B||'';
+          $('#labelB').value=session.directionLabels?.B_TO_A||'';
+          if(Array.isArray(session.line)&&session.line.length===2){
+            line[0]={...session.line[0]};line[1]={...session.line[1]};
+          }
+          state.startTime=Date.parse(session.startedAt)||0;
+          state.sessionStart=session.startedAt;
+          state.elapsedMs=timeline.durations(session).observedMs;
+          state.phase=session.state==='done'?'done':session.state==='paused'?'paused':'interrupted';
+          state.testCompleted=false;
+          if(session.state==='interrupted')await queueSnapshot();
+          saveSetup();draw();renderTimeline();renderState();
+          toast(tr(session.state==='done'?'openedSaved':'restoredStopped'));
+          await refreshSavedSessions();
+        }catch(error){warnStorage(error);toast(tr('restoreFailed'));}
+        finally{state.restoring=false;renderSavedSessions();}
+      }
+      async function deleteSavedSession(sessionId){
+        if(state.restoring)return;
+        const ok=await AppConfirm.ask({title:tr('deleteTitle'),message:tr('deleteMessage'),
+          confirmLabel:tr('deleteSaved'),cancelLabel:tr('cancel')});
+        if(!ok)return;
+        state.restoring=true;
+        try{
+          if(currentSession?.sessionId===sessionId){
+            if(state.phase==='counting')pauseCount();
+            await writeTail;
+            await sessionStore.deleteSession(sessionId);resetActiveView();
+          }else{
+            await writeTail;await sessionStore.deleteSession(sessionId);
+          }
+          await refreshSavedSessions();
+          toast(tr('deleted'));
+        }catch(error){warnStorage(error);toast(tr('deleteFailed'));}
+        finally{state.restoring=false;renderSavedSessions();}
+      }
+      async function startNewSession(){
+        if(state.restoring)return;
+        if(!(await prepareToSwitch()))return;
+        resetActiveView();await refreshSavedSessions();
+      }
+      async function initializeSavedSessions(){
+        updateStorageNotice();
+        try{
+          await sessionStore.open();state.storageReady=true;state.storageFailure=null;
+          updateStorageNotice();await refreshSavedSessions();
+        }catch(error){warnStorage(error);}
+      }
+      // PERSIST:END
       const SETUP_KEY='passage-counter-setup-v1';
       function effectiveElapsed(){return state.elapsedMs+(state.phase==='counting'?performance.now()-state.lastActive:0);}
       function countName(direction){
