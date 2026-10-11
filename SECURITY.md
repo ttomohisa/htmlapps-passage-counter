@@ -2,7 +2,9 @@
 
 - Camera frames are processed in memory; no face recognition or identity tracking across sessions.
 - Video only: microphone/audio is not requested, and the app does not save or upload frames.
-- In v0.3.0, crossing event history (automatic, correction and Undo) lives in memory until the user chooses CSV; unsaved work is lost on reload.
+- In v0.4.0, indexed on-device IndexedDB stores versioned session metadata, directional event/adjustment/Undo records, the camera line geometry and observed/paused/missing intervals. It stores **no frames, photos, audio, faces, stable person IDs or camera device identifiers**. MediaPipe models/WASM are embedded and never fetched at runtime.
+- New events and their session snapshots are committed transactionally; checkpoints happen around every five seconds while counting. A sudden crash may lose not-yet-committed events. Recovery always starts stopped, marking unobserved time as missing.
+- If IndexedDB cannot open or a write fails, the UI explicitly warns; users may export in-memory events/summaries/intervals as CSV. Browser storage clearing or multiple-tab conflicts can still cause loss.
 - Camera facing preference, normalized line endpoints, optional direction labels, and detection overlay visibility may be saved in localStorage. No camera image, recording, face, or physical device identifier is persisted.
 - The 30-second calibration/test phase stores only temporary counters; its crossings are not entered in the session event log or exported.
 - The generated experimental HTML includes the model, JS, and SIMD WASM with its loader (without the non-SIMD fallback); checksums are pinned at build time. Unsupported browsers cannot request camera permission.

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0] — 2026-10-11 (Draft, SIMD-only)
+
+- Persist named sessions to IndexedDB (versioned session records and append-only event store), writing each new event together with its session checkpoint in a single transaction.
+- Restore finished or interrupted sessions from the local browser list; interrupted counts never restart automatically. Keep camera video and person-track IDs out of persistent records.
+- Record observed, paused and missing coverage intervals, including unobserved time since the last durable checkpoint after a browser crash. Display 5/15/60-minute local-time groupings without equating missing coverage to zero crossings.
+- Add summary, events and time-bucket CSV exports with UTF-8 BOM, formula injection safety, time-zone information, automatic/manual/final counts and undo references.
+- Add local rename/open/delete controls with destructive confirmation, a prominent persistence-error warning and in-memory CSV rescue.
+- Add deterministic session/coverage/ledger tests and full Chrome IndexedDB reload, interrupted recovery, deletion and blocked-storage E2E tests.
+- Preserve the complete SIMD-only MediaPipe / EfficientDet runtime, standalone HTML and external HTTP zero. Mobile field validation remains pending.
+
+
 ## SIMD-only v0.3.0 experiment — 2026-10-11 (Draft, not released)
 
 - Preserve the complete EfficientDet int8 model, tracking, setup testing, corrections and CSV.

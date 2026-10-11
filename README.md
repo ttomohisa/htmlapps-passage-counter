@@ -2,7 +2,7 @@
 
 Count **person-crossing events by direction** with a fixed phone or desktop camera and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.3.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.4.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
 ## Features
 
@@ -12,7 +12,11 @@ Count **person-crossing events by direction** with a fixed phone or desktop came
 - **30-second setup test** with isolated trial counts. The test can be stopped early and never contributes to the measured session.
 - **A→B/B→A manual +1/-1**, zero-floor safety and single-step Undo. Automatic, correction and Undo events stay separate in the CSV.
 - Custom direction labels, front/rear camera selection, person-box overlay toggle and locally remembered settings.
-- Start, pause, resume, finish, elapsed-time display and downloadable UTF-8 CSV.
+- **IndexedDB saved sessions** with event-by-event atomic writes, periodic checkpoints, a saved-session list, deletion confirmation, and interrupted-session recovery without automatic camera restart.
+- Observed/paused/missing time intervals (missing counts are not treated as zero), selectable 5/15/60-minute grouping, with local-time bucket summaries.
+- Three UTF-8 BOM CSV exports: session summary, all events and time buckets, with preserved adjustment/Undo audit trails.
+- On storage failure: visible warning and in-memory CSV rescue, without claiming records were saved.
+- Start, pause, resume, finish and elapsed-time display.
 - English / Japanese, mobile-first responsive interface and attempted screen wake lock.
 - No account, runtime CDN, remote inference, telemetry, upload or recording.
 
@@ -23,19 +27,24 @@ Count **person-crossing events by direction** with a fixed phone or desktop came
 3. Choose **Start camera**, grant permission, and adjust the two line endpoints.
 4. Reverse the direction if necessary. Press **Start 30-second test** and walk across the line. You may stop the test early. Trial counts are excluded from the real session.
 5. Press **Start counting**. Keep the page visible. Use **+1/-1** for either direction to correct misses or false counts, and **Undo** if the last correction was wrong.
-6. Pause/resume if needed, finish, and export crossing events as CSV. You can rename the output file.
+6. Pause/resume if needed; missing coverage is distinguished from zero crossings. Finish and export **events / summary / time buckets** as CSV. You can rename the output file.
+7. Open saved sessions from the **Saved sessions** section after reloading. An interrupted session opens stopped; reconnect the camera, re-run the placement test, and manually start counting to resume.
 
 A person passing back across the line counts as another event. The number is **not a unique visitor count**. Crowding, occlusion, unusual viewpoints, glare, low light or camera motion can cause errors.
 
 ## Privacy and data
 
-The camera requests video only, with audio disabled. Frames and short-term tracking data remain in browser memory. No video, still images, faces or sound are saved or transmitted. In v0.3.0, camera facing, line position, custom direction labels, and overlay preferences are kept in the browser's local storage (without any frames or device identifiers). Crossing records remain in memory until you export CSV. **Reloading or closing the page discards unsaved events**; persistence and recovery are planned for v0.4.0.
+The camera requests video only, with audio disabled. Frames and short-term tracking data remain in browser memory. No video, still images, faces or sound are saved or transmitted. In v0.4.0, camera facing, line position, custom labels, and overlay preferences use localStorage. **Sessions, direction counts, appended correction/Undo events, and observed/paused/missing coverage intervals are saved in IndexedDB** on the same browser origin. Images, audio, video, persistent person IDs, and camera device identifiers are not saved. An event and its session snapshot are committed in one transaction; a five-second checkpoint reduces crash-loss exposure. Browser storage can still be cleared, denied, or exhausted, so no uncommitted event is guaranteed to survive a crash. If storage fails, a visible warning tells you to export CSV before leaving.
 
 The runtime's CSP uses \`connect-src blob:\` so the WebAssembly loader can read *embedded in-memory* bytes through Blob URLs. No remote HTTP(S) origin is allowed. Consult local camera notice and privacy requirements before deploying in public or workplace locations.
 
+## Offline session recovery
+
+When the tab is hidden or camera is lost, the current observed interval ends and the session becomes interrupted. After a hard crash, the last saved checkpoint is treated as the end of confirmed observation; elapsed time beyond it becomes an explicit **missing** interval. Loading the saved session never automatically resumes a camera or count. A fresh placement test is required. Pauses are tracked separately. Saved sessions are per browser and origin: a downloaded `file://` HTML and a hosted `https://` copy do **not** share their IndexedDB records automatically. Concurrent editing of the same session in multiple tabs has not been validated; use one tab per active counter.
+
 ## CSV event format
 
-CSV fields: `event_id`, `occurred_at` (UTC ISO timestamp), `direction`, `direction_label`, `kind` (`auto`, `correction`, `undo`), `delta`, `elapsed_ms`, and `undo_of` (a correction event ID for Undo). Trial test events are **never exported**. The event list preserves corrections without modifying the auto-count history. Counts represent **crossings**, not unique people.
+CSV fields: `event_id`, `occurred_at` (UTC ISO timestamp), `direction`, `direction_label`, `kind` (`auto`, `correction`, `undo`), `delta`, `elapsed_ms`, and `undo_of` (a correction event ID for Undo). Trial test events are **never exported**. Additional event columns: `session_id`, `source_time_ms`, `event_kind_v1` (`auto`/`manual_adjustment`/`undo_adjustment`) and `reference_event_id`. The **summary** CSV includes observed/paused/missing milliseconds and automatic/manual/final counts by direction. The **interval** CSV includes the chosen bucket size, direction counts, valid seconds and coverage status. ISO timestamps are UTC; exports include a time-zone identifier. The event list preserves corrections without modifying the auto-count history. Counts represent **crossings**, not unique people.
 
 ## SIMD-only size experiment
 
@@ -61,7 +70,7 @@ The builder downloads exact dependencies **at build time only**, verifies the np
 
 Generated manifests and a size report are in \`dist/\`. The CI browser smoke test uses a synthetic camera and verifies the AI initializes from the HTML and makes no external HTTP requests. A synthetic-camera test **does not establish counting accuracy**.
 
-See [APP_SPEC.md](APP_SPEC.md), [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) and [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md).
+See [APP_SPEC.md](APP_SPEC.md), [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md) and [local persistence ADR](docs/ADR-003-LOCAL-PERSISTENCE.md).
 
 Build size and optimization measurements: [docs/SIZE_BUDGET.md](docs/SIZE_BUDGET.md).
 

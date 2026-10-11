@@ -1208,7 +1208,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function zeroTracks(){tracker.reset();state.detections=[];}
       // TRACKER:BEGIN
-      // Pure v0.4.0 tracker. Coordinates use the intrinsic frame, normalized
+      // Pure short-term tracker (introduced v0.2.0, unchanged in v0.4.0). Coordinates use the intrinsic frame, normalized
       // to 0..1. Only transient rectangles and short-lived IDs are retained.
       function createCrossingTracker({
         minimumHits = 3, sideSamples = 2, crossingSamples = 2,

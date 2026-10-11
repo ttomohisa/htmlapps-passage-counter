@@ -10,6 +10,7 @@ This repository implements Browser Kitty's Passage Counter, not the starter samp
 - Complete local-only HTML and CSP gate: VERIFY_OFFLINE.md
 - WASM bundling background: docs/ADR-001-EMBEDDED-MEDIAPIPE.md
 - Experimental SIMD-only policy: docs/ADR-002-SIMD-ONLY.md
+- v0.4.0 IndexedDB schema, interval recovery and CSV exports: docs/ADR-003-LOCAL-PERSISTENCE.md
 
 Canonical editable source: src/index.template.html
 Build using: scripts/check-powershell-syntax.ps1, then scripts/check-repository.ps1

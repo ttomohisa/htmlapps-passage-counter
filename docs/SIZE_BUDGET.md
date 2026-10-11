@@ -32,6 +32,10 @@ We investigated stripping WASM custom sections using a browser-side parser in CI
 
 Do not substitute external model/CDN requests for a smaller HTML. A size improvement is accepted only if browser initialization, checksum, offline, security, and accuracy tests continue to pass.
 
+## v0.4.0 offline-history size target (2026-10-11)
+
+Adding IndexedDB session persistence, on-device time buckets and three CSV exports keeps the one-file readable HTML near **9.2 MB**, below the 10 MiB warning budget. The exact size is written to `dist/build-size-report.json` on every CI run. No new external runtime libraries were introduced; MediaPipe SIMD, the int8 model and gzip + Base64 asset storage are unchanged. Do not claim measured phone load times from Windows CI.
+
 ## Experimental SIMD-only size result (2026-10-11)
 
 Full v0.3.0 HTML: **13,505,896 B**, SIMD-only HTML: **9,150,133 B** (save **4,355,763 B / 32.25%**). The self-extract file shrank from **13,481,830 B** to **9,112,468 B**. These are same-run full-UI measurements. Cold-camera timing in a single Chrome CI run was 735 ms versus 686 ms; no statistically significant startup or real-device fps improvement is claimed. Full evidence in [ADR-002](ADR-002-SIMD-ONLY.md).
