@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.0] — 2026-10-11 (Draft, integration verification)
+
+- Added bilingual error-state stability for camera permission denial and rejected local video when switching languages. Localized media-preview and aggregation accessibility labels.
+- Added Windows Chrome/Edge desktop integration smoke for actual embedded-model camera inference, session correction/CSV, mobile dialog Escape cancellation, and JA/EN errors.
+- Added combined HTTP CSP-header plus standalone meta-policy checks, clean offline file-based initialization with service workers blocked, and no-outbound-HTTP assertions.
+- Extended stacked PR Preview trigger to the v0.6.0 base branch; maintained one-HTML model/WASM distribution and inherited regression tests.
+- Added an explicit browser compatibility matrix, manual device checklist and evidence boundaries in ADR-006.
+- **Open:** Android Chrome and iPhone Safari physical testing, real 30-minute endurance/thermals/memory, actual Cloudflare CSP headers, and independently labeled precision/recall. No release approval is implied.
+
+
 ## [0.6.0] — 2026-10-11 (Draft, SIMD-only)
 
 - Updated app header and hero to match the current Browser Kitty PDF Fill & Sign and Wi-Fi Share design: sticky pale header, app icon/name/version, EN/JA quick toggle, SVG Help, concise bilingual title and truthful local-processing indicator.
