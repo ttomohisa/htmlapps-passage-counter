@@ -349,7 +349,7 @@ try {
   if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
   assert.match(await page.locator('#pageTitle').textContent(), /Count people/);
   assert.equal(await page.locator('#brandName').textContent(),'Passage Counter');
-  assert.equal(await page.locator('#versionBadge').textContent(),'v0.7.0');
+  assert.equal(await page.locator('#versionBadge').textContent(),'v0.8.0');
   assert.equal(await page.locator('#languageButton').textContent(),'JA');
   assert.match(await page.locator('#languageButton').getAttribute('aria-label'),/Japanese/);
   assert.match(await page.locator('.local-badge').textContent(),/local processing/i);
