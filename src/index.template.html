@@ -1375,13 +1375,15 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           renderState();return;
         }
         if(state.phase!=='counting')return;
-        ledger.auto(direction,effectiveElapsed());renderState();
+        const entry=ledger.auto(direction,effectiveElapsed());
+        if(entry)queueSnapshot(entry);
+        renderState();renderTimeline();
       }
       function correction(direction,delta){
         if(!state.startTime||state.phase==='testing')return;
         const event=ledger.correct(direction,delta,effectiveElapsed());
         if(!event){toast(tr('negativeBlocked'));return;}
-        renderState();
+        queueSnapshot(event);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
           actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
       }
@@ -1389,7 +1391,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(!state.startTime||state.phase==='testing')return;
         const entry=ledger.undo(effectiveElapsed(),eventId);
         if(!entry){toast(tr('undoUnavailable'));return;}
-        renderState();toast(tr('undone'));
+        queueSnapshot(entry);renderState();renderTimeline();toast(tr('undone'));
       }
       function layoutInfo(){
         const sw=stage.clientWidth,sh=stage.clientHeight;
@@ -1574,23 +1576,42 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(!state.detector||!state.stream){toast(tr('notReady'));return;}
         if(!state.testCompleted){toast(tr('testRequired'));return;}
         if(state.phase!=='ready'&&state.phase!=='paused'&&state.phase!=='interrupted')return;
-        if(!state.startTime){state.startTime=Date.now();state.sessionStart=new Date().toISOString();}
-        state.lastActive=performance.now();state.phase='counting';zeroTracks();renderState();lockScreen();
+        if(currentSession?.state==='done')return;
+        const now=Date.now();
+        if(!currentSession){
+          currentSession=timeline.create({
+            sessionId:createSessionId(),name:$('#sessionName').value,createdAt:now,
+            labels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
+            line,appVersion:APP_CONFIG.version,modelVersion:'EfficientDet-Lite0-int8-1'
+          });
+        }
+        if(!state.startTime){state.startTime=now;state.sessionStart=new Date(now).toISOString();}
+        currentSession.configSegments.push({startedAt:new Date(now).toISOString(),
+          directionLabels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
+          line:line.map(p=>({...p})),reversed:state.reverse,
+          modelVersion:'EfficientDet-Lite0-int8-1'});
+        state.lastActive=performance.now();state.phase='counting';
+        transitionSession('counting');zeroTracks();renderState();renderTimeline();lockScreen();
+        void writeTail.then(refreshSavedSessions);
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
         state.elapsedMs+=performance.now()-state.lastActive;
-        state.phase='paused';unlockScreen();zeroTracks();renderState();
+        state.phase='paused';transitionSession('paused','user-paused');
+        unlockScreen();zeroTracks();renderState();renderTimeline();
       }
       function interrupt(msg){
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting'){state.elapsedMs+=performance.now()-state.lastActive;}
-        state.phase='interrupted';unlockScreen();zeroTracks();renderState(msg);
+        state.phase='interrupted';transitionSession('interrupted','visibility-camera-or-inference');
+        unlockScreen();zeroTracks();renderState(msg);renderTimeline();
       }
       function finishCount(){
         if(state.phase==='counting')state.elapsedMs+=performance.now()-state.lastActive;
         if(!['counting','paused','interrupted'].includes(state.phase))return;
-        state.phase='done';unlockScreen();closeCamera();renderState();
+        state.phase='done';transitionSession('done','finished');
+        unlockScreen();closeCamera();renderState();renderTimeline();
+        void writeTail.then(refreshSavedSessions);
       }
       function normalizedFilename(){
         const input=$('#outputFilename');
@@ -1600,24 +1621,73 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function csvSafe(value){
         let text=String(value??'');
-        if(/^[\s]*[=+\-@]/.test(text))text="'"+text;
+        // Formula guard for USER strings; trusted numeric deltas must remain numeric.
+        if(typeof value!=='number'&&/^[\s]*[=+\-@]/.test(text))text="'"+text;
         return '"'+text.replace(/"/g,'""')+'"';
+      }
+      function downloadRows(rows,filename){
+        const text='\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';
+        const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
+        const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1800);
+      }
+      function csvName(kind){
+        const base=normalizedFilename().replace(/\.csv$/i,'');
+        return kind==='events'?base+'.csv':base+'-'+kind+'.csv';
       }
       function exportCsv(){
         if(!state.startTime){toast(tr('noEvents'));return;}
-        const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of']];
+        const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of',
+          'session_id','source_time_ms','event_kind_v1','reference_event_id']];
         for(const e of ledger.history())rows.push([e.id,e.occurredAt,e.direction,
-          countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf]);
-        const text='\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';
-        const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
-        const a=document.createElement('a');a.href=url;a.download=normalizedFilename();a.click();
-        setTimeout(()=>URL.revokeObjectURL(url),500);
+          countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
+          currentSession?.sessionId||'', '',
+          ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
+        downloadRows(rows,csvName('events'));
       }
-      function resetCounts(){
+      function exportSummary(){
+        if(!currentSession||!state.startTime)return;
+        const counts=ledger.summary(),dur=timeline.durations(currentSession),end=currentSession.endedAt||new Date().toISOString();
+        const wall=Math.max(0,Date.parse(end)-Date.parse(currentSession.startedAt));
+        const rows=[['session_id','session_name','source_type','created_at','started_at','ended_at',
+          'timezone','app_version','model_version','wall_ms','observed_ms','paused_ms','missing_ms',
+          'auto_a','manual_a','final_a','auto_b','manual_b','final_b','total_crossings'],
+          [currentSession.sessionId,currentSession.name,'camera',currentSession.createdAt,
+          currentSession.startedAt,currentSession.endedAt||'',Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',
+          APP_CONFIG.version,'EfficientDet-Lite0-int8-1',wall,dur.observedMs,dur.pausedMs,dur.missingMs,
+          counts.autoA,counts.manualA,counts.a,counts.autoB,counts.manualB,counts.b,counts.a+counts.b]];
+        downloadRows(rows,csvName('summary'));
+      }
+      function exportIntervals(){
+        if(!currentSession||!state.startTime)return;
+        const size=Number($('#aggregationMinutes').value)||5;
+        const buckets=timeline.aggregation(currentSession,ledger.history(),size);
+        const rows=[['session_id','bucket_start','bucket_end','bucket_minutes',
+          'observed_seconds','paused_seconds','missing_seconds','auto_a','manual_a','total_a',
+          'auto_b','manual_b','total_b','coverage_status','timezone']];
+        for(const entry of buckets)rows.push([
+          currentSession.sessionId,entry.start,entry.end,size,
+          Math.round(entry.observedMs/1000),Math.round(entry.pausedMs/1000),Math.round(entry.missingMs/1000),
+          entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
+          entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
+        ]);
+        downloadRows(rows,csvName('intervals'));
+      }
+      async function resetCounts(){
+        const sessionId=currentSession?.sessionId||null;
         if(state.phase==='counting')pauseCount();
-        ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
+        if(state.phase==='testing')finishTest(true);
+        await writeTail;
+        // Deleting a session is explicit and confirmed at the call-site.
+        if(sessionId){
+          try{await sessionStore.deleteSession(sessionId);}
+          catch(error){warnStorage(error);}
+        }
+        ledger.reset();currentSession=null;
+        state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
         zeroTracks();invalidateTest();
-        state.phase=state.stream?'ready':'idle';renderState();
+        state.phase=state.stream?'ready':'idle';renderState();renderTimeline();
+        await refreshSavedSessions();
       }
       $('#languageSelect').addEventListener('change',e=>{language=e.target.value==='ja'?'ja':'en';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
       $('#helpButton').addEventListener('click',()=>$('#helpDialog').showModal());
