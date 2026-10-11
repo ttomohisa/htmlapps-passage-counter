@@ -1684,13 +1684,6 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       async function getFiniteVideoDuration(){
         if(Number.isFinite(video.duration)&&video.duration>0)return video.duration;
-        for(const range of [video.seekable,video.buffered]){
-          try{
-            if(!range.length)continue;
-            const end=range.end(range.length-1);
-            if(Number.isFinite(end)&&end>0)return end;
-          }catch{}
-        }
         // Some browser-playable, locally recorded WebM files omit duration
         // metadata. A high seek resolves to the actual last decodable position
         // in Chromium. Do not read the file into memory or upload it.
@@ -1717,6 +1710,13 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           if(Number.isFinite(last)&&last>0&&last<1e7)return last;
         }catch{
           try{if(video.currentTime>0)await seek(0);}catch{}
+        }
+        for(const range of [video.seekable,video.buffered]){
+          try{
+            if(!range.length)continue;
+            const end=range.end(range.length-1);
+            if(Number.isFinite(end)&&end>0.5)return end;
+          }catch{}
         }
         return 0; // still allow playback and counting, but disable seeking UI
       }

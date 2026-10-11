@@ -123,12 +123,30 @@ try{
   assert(await page.locator('#videoFileStatus').textContent().then(t=>t.includes('synthetic-local.webm')));
   assert(await page.locator('#cameraFeed').evaluate(v=>v.videoWidth===320 && v.videoHeight===240),
     'Browser did not decode local WebM dimensions');
+  const timing=await page.locator('#cameraFeed').evaluate(v=>({
+    duration:v.duration,currentTime:v.currentTime,readyState:v.readyState,
+    seekable:v.seekable.length?v.seekable.end(v.seekable.length-1):null,
+    buffered:v.buffered.length?v.buffered.end(v.buffered.length-1):null
+  }));
+  console.log('[video] Native playback timing: '+JSON.stringify(timing)+
+    ' UI='+await page.locator('#videoTime').textContent());
   console.log('[video] Decoded local file, camera permission not required.');
   // Seeking during setup previews a frame, and starting analysis always
   // resets to t=0. The local file is not retained in IndexedDB.
   await triggerSeek(page,400);
-  await page.waitForFunction(()=>document.querySelector('#cameraFeed')?.currentTime>.5,
-    null,{timeout:15000});
+  try{
+    await page.waitForFunction(()=>document.querySelector('#cameraFeed')?.currentTime>.5,
+      null,{timeout:10000});
+  }catch(error){
+    console.log('[video-seek] '+JSON.stringify(await page.locator('#cameraFeed').evaluate(v=>({
+      nativeDuration:v.duration,time:v.currentTime,seeking:v.seeking,
+      readyState:v.readyState,error:v.error?.code,
+      rangeValue:document.querySelector('#videoSeek').value,
+      status:document.querySelector('#statusDetails').textContent,
+      warning:document.querySelector('#videoFileStatus').textContent
+    }))));
+    throw error;
+  }
   await startAnalysis(page);
   await page.locator('#plusA').click();
   assert(Number(await page.locator('#countA').textContent())>=1);
