@@ -174,27 +174,76 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 .camera-stage video{background:#121a18}
 @media(max-width:520px){.source-switch select{max-width:none}.file-drop{padding:12px}.file-controls .row{flex-wrap:wrap}}
 
+
+/* Browser Kitty app header and intro: shared structure from PDF Fill & Sign / Wi-Fi Share */
+:root{--background:#f5f5f2;--text:#20211f;--muted:#666963;--border:#dadbd6;--pale:#e1f0ea;--focus:#4d8bc7}
+html{min-height:100%;background:var(--background)}
+.app-header{position:sticky;z-index:30;top:0;min-height:66px;background:color-mix(in srgb,var(--background) 92%,transparent);border-bottom:1px solid var(--border);backdrop-filter:blur(16px) saturate(1.2)}
+.header-inner{width:min(1180px,100%);min-height:66px;margin:auto;padding:10px clamp(14px,2.8vw,30px);display:flex;align-items:center;gap:14px;min-width:0}
+.header-inner .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.brand-mark{width:38px;height:38px;flex:0 0 38px;border-radius:11px;overflow:hidden;background:var(--brand);box-shadow:0 1px 6px #19201814}
+.brand-mark img{display:block;width:100%;height:100%}
+.brand-copy{min-width:0;overflow:hidden}
+.brand-name{display:flex;align-items:center;gap:7px;min-width:0;margin:0;font-size:17px;font-weight:750;line-height:1.25;letter-spacing:.01em}
+#brandName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.version-badge{flex:0 0 auto;padding:1px 6px;border:1px solid var(--border);border-radius:999px;background:#f0f0ed;color:var(--muted);font-size:10px;font-weight:650}
+.brand-meta{font-size:12px;margin:2px 0 0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.language-button{min-height:44px;width:42px;padding:5px 1px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:750;letter-spacing:.02em}
+.language-button:hover{color:var(--text);background:transparent}
+.icon-button{display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--border);border-radius:10px;background:#fff}
+.icon-button svg{width:19px;height:19px;display:block}
+.icon-button:hover{background:#e9e9e5}
+.shell.main{padding:22px clamp(14px,2.8vw,30px) 54px}
+.page-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:0 2px 18px}
+.page-intro .hero-copy{min-width:0;flex:1 1 auto}
+.page-intro h1{font-size:clamp(21px,3vw,26px);font-weight:750;letter-spacing:-.025em;line-height:1.3;margin:0;overflow-wrap:anywhere}
+.page-intro p{max-width:760px;margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
+.local-badge{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;margin-top:3px;padding:7px 10px;border:1px solid #b2d1c2;border-radius:999px;color:var(--brand);background:var(--pale);font-size:12px;font-weight:700;white-space:nowrap}
+.local-badge svg{width:15px;height:15px;display:block}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--focus) 60%,transparent);outline-offset:2px}
+@media(max-width:820px){.page-intro{align-items:stretch;flex-direction:column;gap:10px}.local-badge{align-self:flex-start}}
+@media(max-width:520px){.header-inner{gap:10px}.brand-name{font-size:15px}.brand-meta{font-size:11px}.header-actions{gap:7px}.shell.main{padding:18px 14px 36px}.page-intro{padding-bottom:14px}.page-intro h1{font-size:23px}}
+@media(max-width:340px){.brand-meta{max-width:172px}.header-actions{gap:3px}.brand-name{font-size:14px}.version-badge{font-size:9px;padding:1px 4px}}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
 
-<header>
-  <div class="header-wrap">
+<header class="app-header">
+  <div class="header-inner">
     <div class="brand">
-      <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
-      <div><strong>Passage Counter</strong><small data-i18n="subTitle">通過カウンター · v0.5.0</small></div>
+      <div class="brand-mark" aria-hidden="true">
+        <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
+      </div>
+      <div class="brand-copy">
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.6.0</span></p>
+        <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
+      </div>
     </div>
-    <label class="sr-only" for="languageSelect" data-i18n="language">言語</label>
-    <select id="languageSelect" class="language" aria-label="Language"><option value="ja">日本語</option><option value="en">English</option></select>
-    <button id="helpButton" type="button" data-i18n="help">使い方</button>
+    <div class="header-actions">
+      <button class="language-button" id="languageButton" type="button" aria-label="英語に切り替え" title="英語に切り替え">EN</button>
+      <button class="icon-button header-icon-button" id="helpButton" type="button" aria-label="使い方と注意事項" title="使い方と注意事項">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
 <!-- APP:BEGIN -->
-<main class="shell">
-  <section class="intro" aria-labelledby="pageTitle">
-    <span class="eyebrow" data-i18n="privacyShort">登録不要 · 端末内処理</span>
-    <h1 id="pageTitle" data-i18n="title">線を横切る人を、カメラで数える。</h1>
-    <p data-i18n="intro">スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。</p>
+<main class="shell main">
+  <section class="page-intro" aria-labelledby="pageTitle">
+    <div class="hero-copy">
+      <h1 id="pageTitle" data-i18n="title">カメラや動画で、通過した人を数える</h1>
+      <p data-i18n="intro">カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。</p>
+    </div>
+    <div class="local-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/>
+      </svg>
+      <span data-i18n="localBadge">完全ローカル処理</span>
+    </div>
   </section>
 
     <div class="setup-flow" data-i18n-aria-label="setupProgress" aria-label="計測の手順" id="setupFlow">
@@ -341,7 +390,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
   </section>
 </main>
 <!-- APP:END -->
-<footer>Passage Counter · v0.5.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · v0.6.0 · <span data-i18n="footer">モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -458,8 +507,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.5.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
-          title:'線を横切る人を、カメラで数える。',intro:'スマホを固定してカメラを開始し、判定線を配置してください。人物の通過を方向別に記録します。映像や人物画像は保存しません。',
+          language:'言語',subTitle:'通過カウンター · v0.6.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
+          title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
           camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
@@ -537,8 +587,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.5.0',help:'Help',privacyShort:'No account · On-device processing',
-          title:'Count people crossing a line.',intro:'Fix your phone in place, start the camera, and position the counting line. Crossings are counted by direction. Images of people are not saved.',
+          language:'Language',subTitle:'People crossing counter · v0.6.0',help:'Help',privacyShort:'No account · On-device processing',
+          brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Entirely local processing',
+          title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
           camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
@@ -1182,7 +1233,15 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         document.documentElement.lang=language;
         document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n);});
         document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{el.setAttribute('aria-label',tr(el.dataset.i18nAriaLabel));});
-        $('#languageSelect').value=language;
+        $('#languageButton').textContent=language==='ja'?'EN':'JA';
+        $('#languageButton').setAttribute('aria-label',tr('switchLanguage'));
+        $('#languageButton').title=tr('switchLanguage');
+        $('#helpButton').setAttribute('aria-label',tr('helpTitle'));
+        $('#helpButton').title=tr('helpTitle');
+        $('#brandName').textContent=language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
+        $('#footerName').textContent=language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
+        $('#versionBadge').textContent='v'+APP_CONFIG.version;
+        document.title=language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
         $('#labelA').placeholder=tr('directionA');
         $('#labelB').placeholder=tr('directionB');
         updateStorageNotice();renderSavedSessions();renderTimeline();renderState();
@@ -2106,7 +2165,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
       }
-      $('#languageSelect').addEventListener('change',e=>{language=e.target.value==='ja'?'ja':'en';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
+      $('#languageButton').addEventListener('click',()=>{language=language==='ja'?'en':'ja';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
       $('#helpButton').addEventListener('click',()=>$('#helpDialog').showModal());
       $('#helpClose').addEventListener('click',()=>$('#helpDialog').close());
       $('#helpDialog').addEventListener('click',event=>{
