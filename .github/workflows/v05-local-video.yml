@@ -1,0 +1,56 @@
+name: Passage Counter v0.5.0 local video validation
+on:
+  push:
+    branches:
+      - feat/passage-counter-v0.5.0
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  video:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build and check SHA-pinned single HTML
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Tracker, ledger and session model tests
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-ledger.mjs
+          node scripts/test-session-model.mjs
+      - name: Install browser runner for CI only
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Verify existing live camera, storage, i18n, CSP and file://
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Verify real local video playback, seek, replay and time-tagged exports
+        shell: pwsh
+        run: node scripts/smoke-video.mjs
+      - name: Show exact distribution size
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/build-size-report.json) {
+            $size=Get-Content -Raw dist/build-size-report.json|ConvertFrom-Json
+            Write-Host ("[v05-size] readable={0}; selfExtract={1} bytes" -f $size.readableHtmlBytes,$size.selfExtractHtmlBytes)
+          }
+      - name: Upload single HTML builds and report (not user videos)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v0.5.0-test
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+          if-no-files-found: warn
+          retention-days: 14
