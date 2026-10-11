@@ -52,15 +52,17 @@ try{
   assert.match(await page.locator('#counter').textContent(),/3 件/);
   await page.keyboard.press('z');
   assert.match(await page.locator('#counter').textContent(),/2 件/);
-  const handle=page.locator('#lineOverlay .handle').first();
-  const previousX=Number(await handle.getAttribute('cx'));
+  const handle=page.locator('.line-handle').first();
+  const previousX=parseFloat(await handle.evaluate(el=>el.style.left));
+  assert(await handle.evaluate(el=>getComputedStyle(el).width==='44px'),
+    'Labeler line handle must have a 44px touch target');
   const bounds=await handle.boundingBox();
   assert(bounds,'Draggable endpoint not found');
   await page.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
   await page.mouse.down();
   await page.mouse.move(bounds.x+bounds.width/2+10,bounds.y+bounds.height/2+3,{steps:3});
   await page.mouse.up();
-  assert(Number(await handle.getAttribute('cx'))>previousX,
+  assert(parseFloat(await handle.evaluate(el=>el.style.left))>previousX,
     'Counting line endpoint cannot be dragged on the annotation helper');
   const download=page.waitForEvent('download');
   await page.locator('#save').click();
