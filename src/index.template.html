@@ -933,7 +933,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
         testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
         storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,
-        sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',
+        sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',videoError:'',
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
         fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
         previewTargetMs:0
@@ -1314,8 +1314,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
         $('#cameraPlaceholder').querySelector('span').textContent=tr(fileMode?'videoEmpty':'previewEmpty');
-        $('#videoFileStatus').textContent=state.videoReady?
-          tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty');
+        $('#videoFileStatus').textContent=state.videoError||
+          (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
         $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':'previewVideo');
         $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||state.fileSeekingConfirmation;
         $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||Boolean(state.startTime);
@@ -1630,6 +1630,165 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         zeroTracks();invalidateTest();saveSetup();if(currentSession)queueSnapshot();draw();renderState();
       });
 
+      // VIDEO:BEGIN
+      // Use Blob-backed browser-native decoding. Never FileReader/arrayBuffer a
+      // complete movie, never save the File/Blob to IndexedDB, never upload it.
+      function releaseLocalVideo(){
+        if(!state.videoUrl)return;
+        video.pause();
+        state.filePreviewing=false;
+        state.videoReady=false;
+        state.videoDurationMs=0;
+        state.lastProcessedSourceMs=-1;
+        video.removeAttribute('src');
+        video.load();
+        URL.revokeObjectURL(state.videoUrl);
+        state.videoUrl=null;
+        state.videoFilename='';
+        zeroTracks();
+      }
+      async function switchVideoSource(next){
+        if(next!== 'camera'&&next!=='file'||next===state.sourceMode||state.sourceBusy)return;
+        state.sourceBusy=true;
+        renderState();
+        try{
+          if(!(await prepareToSwitch()))return;
+          resetActiveView();
+          state.sourceMode=next;
+          if(next==='camera'){
+            video.setAttribute('autoplay','');
+            video.preload='none';
+          }else{
+            video.removeAttribute('autoplay');
+            video.preload='auto';
+          }
+          state.videoError='';
+          renderState();
+        }finally{
+          state.sourceBusy=false;renderState();
+        }
+      }
+      async function readVideoFile(file){
+        if(!isFileMode()||state.sourceBusy||!file)return;
+        if(!simdAvailable){state.videoError=tr('simdUnsupported');renderState();return;}
+        if(!(String(file.type).startsWith('video/')||/\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name))){
+          state.videoError=tr('videoBadFormat');renderState();return;
+        }
+        state.sourceBusy=true;
+        renderState();
+        let newUrl=null;
+        try{
+          if(!(await prepareToSwitch()))return;
+          resetActiveView();
+          state.sourceMode='file';
+          video.removeAttribute('autoplay');
+          video.muted=true;
+          video.preload='auto';
+          state.phase='loading';renderState();
+          newUrl=URL.createObjectURL(file);
+          state.videoUrl=newUrl;
+          state.videoFilename=String(file.name).slice(0,220);
+          await new Promise((resolve,reject)=>{
+            let complete=false;
+            const end=(error)=>{
+              if(complete)return;complete=true;
+              video.removeEventListener('loadeddata',onLoaded);
+              video.removeEventListener('error',onError);
+              clearTimeout(timeout);
+              if(error)reject(error);else resolve();
+            };
+            const onLoaded=()=>end();
+            const onError=()=>end(new Error('Video decode error'));
+            const timeout=setTimeout(()=>end(new Error('Video metadata timeout')),16000);
+            video.addEventListener('loadeddata',onLoaded);
+            video.addEventListener('error',onError);
+            video.src=newUrl;
+            video.load();
+          });
+          const duration=video.duration;
+          if(!video.videoWidth||!video.videoHeight||!Number.isFinite(duration)||duration<=0)
+            throw Error('Invalid or unknown video duration');
+          state.videoDurationMs=Math.round(duration*1000);
+          state.videoReady=true;
+          state.filePreviewing=false;
+          state.lastProcessedSourceMs=-1;
+          await initEmbeddedDetector();
+          state.phase='ready';
+          state.videoError='';
+          zeroTracks();renderState(tr('videoReady'));draw();
+          loop();
+        }catch(error){
+          console.warn('[Passage Counter] Local video is unsupported',error);
+          if(newUrl&&state.videoUrl===newUrl)releaseLocalVideo();
+          if(state.detector){state.detector.close();state.detector=null;}
+          state.phase='error';
+          state.videoError=tr(error?.message==='Invalid or unknown video duration'?'videoInvalidDuration':'videoLoadFailed');
+          renderState(state.videoError);
+        }finally{
+          state.sourceBusy=false;renderState();
+          $('#videoFile').value='';
+        }
+      }
+      async function toggleFilePreview(){
+        if(!isFileMode()||!state.videoReady||state.startTime||state.sourceBusy)return;
+        if(state.filePreviewing){
+          video.pause();state.filePreviewing=false;renderState();return;
+        }
+        try{
+          if(video.ended||video.currentTime>=video.duration-0.08){
+            state.fileInternalSeek=true;video.currentTime=0;
+          }
+          await video.play();
+          state.filePreviewing=true;renderState(tr('previewOnly'));
+        }catch(error){
+          state.filePreviewing=false;renderState(tr('videoPlaybackFailed'));
+        }
+      }
+      async function confirmFileReanalysis({requestedSecond=0,restart=false}={}){
+        if(!isFileMode()||!state.videoReady||state.fileSeekingConfirmation||state.sourceBusy)return false;
+        state.fileSeekingConfirmation=true;
+        if(state.filePreviewing){video.pause();state.filePreviewing=false;}
+        if(state.phase==='counting')pauseCount();
+        const wasCounting=Boolean(state.startTime);
+        try{
+          if(wasCounting){
+            const accepted=await AppConfirm.ask({
+              title:tr(restart?'videoReanalyzeTitle':'videoSeekingTitle'),
+              message:state.storageFailure?tr('switchUnsafe'):tr(restart?'videoReanalyzeMessage':'videoSeekingMessage'),
+              confirmLabel:tr(restart?'videoReanalyzeConfirm':'videoSeekingConfirm'),
+              cancelLabel:tr('cancel')
+            });
+            if(!accepted){renderState(tr('videoSeekRejected'));return false;}
+            await resetCounts();
+          }
+          const target=Math.max(0,Math.min(video.duration||0,requestedSecond));
+          state.fileInternalSeek=true;
+          state.lastProcessedSourceMs=-1;
+          zeroTracks();
+          video.currentTime=target;
+          renderVideoTime();
+          renderState();
+          return true;
+        }finally{
+          state.fileSeekingConfirmation=false;
+          renderState();
+        }
+      }
+      async function closeVideoAction(){
+        if(!isFileMode()||!state.videoUrl||state.sourceBusy)return;
+        if(state.startTime){
+          const accepted=await AppConfirm.ask({title:tr('videoRemoveTitle'),
+            message:tr('videoRemoveMessage'),
+            confirmLabel:tr('videoRemoveConfirm'),cancelLabel:tr('cancel')});
+          if(!accepted)return;
+          if(state.phase==='counting')interrupt(tr('videoReopenRequired'));
+          await writeTail;
+        }
+        closeCamera();
+        state.phase=state.startTime?'interrupted':'idle';
+        renderState(state.startTime?tr('videoReopenRequired'):tr('videoMissing'));
+      }
+      // VIDEO:END
       async function initEmbeddedDetector(){
         // SIMD-only experiment; model/JS/loader/binary are all embedded in the HTML.
         if(!simdAvailable)throw new Error('WebAssembly SIMD is not available');
@@ -1650,6 +1809,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       }
       function closeCamera(){
         if(state.phase==='testing')finishTest(true);
+        if(state.videoUrl)releaseLocalVideo();
         if(state.phase==='counting')interrupt(tr('lostCamera'));
         cancelAnimationFrame(state.frameHandle);
         if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null;}
@@ -1661,6 +1821,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         draw();renderState();
       }
       async function startCamera(){
+        if(isFileMode())return;
         if(!simdAvailable){state.phase='error';renderState(tr('simdUnsupported'));return;}
         if(!navigator.mediaDevices?.getUserMedia){state.phase='error';renderState(tr('unsupported'));return;}
         if(state.stream)return;
@@ -1853,6 +2014,48 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)$('#helpDialog').close();
       });
       $('#cameraStart').addEventListener('click',startCamera);
+      $('#sourceMode').addEventListener('change',event=>switchVideoSource(event.target.value));
+      $('#videoFile').addEventListener('change',event=>{
+        if(event.target.files?.[0])void readVideoFile(event.target.files[0]);
+      });
+      $('#videoSourceBox').addEventListener('dragover',event=>{
+        if(!isFileMode())return;
+        event.preventDefault();event.dataTransfer.dropEffect='copy';
+        $('#videoSourceBox').dataset.active='true';
+      });
+      $('#videoSourceBox').addEventListener('dragleave',()=>{$('#videoSourceBox').dataset.active='false';});
+      $('#videoSourceBox').addEventListener('drop',event=>{
+        if(!isFileMode())return;
+        event.preventDefault();$('#videoSourceBox').dataset.active='false';
+        const file=Array.from(event.dataTransfer?.files||[]).find(f=>
+          f.type.startsWith('video/')||/.(mp4|webm|mov|m4v|ogv)$/i.test(f.name));
+        if(file)void readVideoFile(file);
+        else{state.videoError=tr('videoBadFormat');renderState();}
+      });
+      $('#previewVideo').addEventListener('click',toggleFilePreview);
+      $('#reanalyzeVideo').addEventListener('click',()=>void confirmFileReanalysis({requestedSecond:0,restart:true}));
+      $('#removeVideo').addEventListener('click',()=>void closeVideoAction());
+      $('#videoSeek').addEventListener('change',event=>{
+        if(state.videoReady)void confirmFileReanalysis({
+          requestedSecond:state.videoDurationMs*(Number(event.target.value)/1000)/1000
+        });
+      });
+      video.addEventListener('timeupdate',renderVideoTime);
+      video.addEventListener('seeked',()=>{
+        if(!isFileMode())return;
+        state.fileInternalSeek=false;state.lastProcessedSourceMs=-1;
+        zeroTracks();renderVideoTime();
+      });
+      video.addEventListener('ended',()=>{
+        if(!isFileMode())return;
+        state.filePreviewing=false;
+        if(state.phase==='counting')finishCount();
+        renderState();
+      });
+      video.addEventListener('pause',()=>{
+        if(isFileMode()&&state.phase==='counting'&&!video.ended)interrupt(tr('videoPlaybackFailed'));
+        if(isFileMode()&&state.filePreviewing){state.filePreviewing=false;renderState();}
+      });
       $('#cameraStop').addEventListener('click',closeCamera);
       $('#reverseLine').addEventListener('click',()=>{state.reverse=!state.reverse;zeroTracks();invalidateTest();saveSetup();if(currentSession)queueSnapshot();draw();renderState();});
       $('#testButton').addEventListener('click',()=>{
