@@ -515,7 +515,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           videoCameraHeading:'動画プレビュー',videoReady:'動画の準備完了。線を置いて計測を開始できます。',
           videoFileLoaded:'選択中: {name}',videoLoadFailed:'この動画を再生できません。ブラウザで再生できるMP4/WebM等を選んでください。',
           videoBadFormat:'動画ファイルを選んでください。',videoMissing:'動画を選択してください。',
-          videoInvalidDuration:'再生時間を取得できない動画には対応していません。',
+          videoInvalidDuration:'動画の大きさや再生時間を読み取れませんでした。',videoUnknownDuration:'時間不明',
           videoSeekingTitle:'現在の計測を破棄して移動しますか？',
           videoSeekingMessage:'動画の再生位置を移動すると、現在の件数・補正履歴・時間帯集計を削除して最初から計測し直す必要があります。',
           videoSeekingConfirm:'破棄して移動',
@@ -592,7 +592,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           videoCameraHeading:'Video preview',videoReady:'Video ready. Place the line and start counting.',
           videoFileLoaded:'Selected: {name}',videoLoadFailed:'Cannot play this video. Choose MP4/WebM or another format your browser can decode.',
           videoBadFormat:'Choose a video file.',videoMissing:'Choose a video first.',
-          videoInvalidDuration:'Videos without a readable finite duration are not supported.',
+          videoInvalidDuration:'Unable to read video dimensions or duration.',videoUnknownDuration:'Duration unknown',
           videoSeekingTitle:'Discard counts and move to a different position?',
           videoSeekingMessage:'Seeking invalidates the current count, corrections and time buckets. To avoid duplicate crossings, these records must be discarded before reanalysis.',
           videoSeekingConfirm:'Discard and seek',
@@ -1282,7 +1282,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         if(!isFileMode())return;
         const elapsed=Math.max(0,Number(video.currentTime)||0);
         const duration=Math.max(0,state.videoDurationMs/1000);
-        $('#videoTime').textContent=formatElapsed(elapsed*1000)+' / '+formatElapsed(duration*1000);
+        $('#videoTime').textContent=formatElapsed(elapsed*1000)+' / '+
+          (state.videoDurationMs>0?formatElapsed(duration*1000):tr('videoUnknownDuration'));
         $('#videoSeek').value=String(duration>0?Math.min(1000,Math.max(0,Math.round(elapsed/duration*1000))):0);
       }
       function renderState(message){
@@ -1326,7 +1327,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         $('#videoFileStatus').textContent=state.videoError||
           (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
         $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':'previewVideo');
-        $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||state.fileSeekingConfirmation;
+        $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||
+          state.fileSeekingConfirmation||!(state.videoDurationMs>0);
         $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||Boolean(state.startTime);
         $('#reanalyzeVideo').disabled=!state.videoReady||!state.startTime||state.sourceBusy;
         $('#removeVideo').disabled=!state.videoReady||state.sourceBusy;
@@ -1679,6 +1681,44 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           state.sourceBusy=false;renderState();
         }
       }
+      async function getFiniteVideoDuration(){
+        if(Number.isFinite(video.duration)&&video.duration>0)return video.duration;
+        for(const range of [video.seekable,video.buffered]){
+          try{
+            if(!range.length)continue;
+            const end=range.end(range.length-1);
+            if(Number.isFinite(end)&&end>0)return end;
+          }catch{}
+        }
+        // Some browser-playable, locally recorded WebM files omit duration
+        // metadata. A high seek resolves to the actual last decodable position
+        // in Chromium. Do not read the file into memory or upload it.
+        const seek=target=>new Promise((resolve,reject)=>{
+          let settled=false;
+          const stop=(err)=>{
+            if(settled)return;settled=true;clearTimeout(timer);
+            video.removeEventListener('seeked',onSeek);
+            video.removeEventListener('error',onError);
+            if(err)reject(err);else resolve();
+          };
+          const onSeek=()=>stop();
+          const onError=()=>stop(Error('Seek failed'));
+          const timer=setTimeout(()=>stop(Error('Seek timeout')),4500);
+          video.addEventListener('seeked',onSeek);
+          video.addEventListener('error',onError);
+          try{video.currentTime=target;}
+          catch(err){stop(err);}
+        });
+        try{
+          await seek(1e7);
+          const last=video.currentTime;
+          if(video.currentTime!==0)await seek(0);
+          if(Number.isFinite(last)&&last>0&&last<1e7)return last;
+        }catch{
+          try{if(video.currentTime>0)await seek(0);}catch{}
+        }
+        return 0; // still allow playback and counting, but disable seeking UI
+      }
       async function readVideoFile(file){
         if(!isFileMode()||state.sourceBusy||!file)return;
         if(!simdAvailable){state.videoError=tr('simdUnsupported');renderState();return;}
@@ -1716,10 +1756,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
             video.src=newUrl;
             video.load();
           });
-          const duration=video.duration;
-          if(!video.videoWidth||!video.videoHeight||!Number.isFinite(duration)||duration<=0)
-            throw Error('Invalid or unknown video duration');
-          state.videoDurationMs=Math.round(duration*1000);
+          if(!video.videoWidth||!video.videoHeight)throw Error('Video dimensions unavailable');
+          const duration=await getFiniteVideoDuration();
+          state.videoDurationMs=Math.max(0,Math.round(duration*1000));
           state.videoReady=true;
           state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
@@ -1773,7 +1812,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
             if(!accepted){renderState(tr('videoSeekRejected'));return false;}
             await resetCounts();
           }
-          const target=Math.max(0,Math.min(video.duration||0,requestedSecond));
+          const target=Math.max(0,Math.min(state.videoDurationMs>0?state.videoDurationMs/1000:0,requestedSecond));
           state.fileInternalSeek=true;
           state.lastProcessedSourceMs=-1;
           state.fileNeedsReanalysis=false;
