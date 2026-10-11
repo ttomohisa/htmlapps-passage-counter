@@ -232,6 +232,118 @@ try {
   assert(csv.includes('"correction"') && csv.includes('"undo"'), 'CSV must include adjustments and Undo');
   assert(!csv.includes('"test"'), 'Calibration rows must never appear in session export');
   assert(csv.includes('"Entry"') && csv.includes('"Exit"'), 'CSV includes custom direction labels');
+
+  await page.waitForFunction(()=>document.querySelectorAll('#savedList .saved-session').length>=1,
+    null,{timeout:15000});
+  const summaryPromise=page.waitForEvent('download');
+  await page.locator('#summaryButton').click();
+  const summaryCsv=await readFile(await (await summaryPromise).path(),'utf8');
+  assert(summaryCsv.includes('"observed_ms"')&&summaryCsv.includes('"missing_ms"'));
+  assert(summaryCsv.includes('"total_crossings"')&&summaryCsv.includes('"final_a"'));
+  const intervalPromise=page.waitForEvent('download');
+  await page.locator('#intervalsButton').click();
+  const intervalsCsv=await readFile(await (await intervalPromise).path(),'utf8');
+  assert(intervalsCsv.includes('"coverage_status"')&&intervalsCsv.includes('"bucket_minutes"'));
+  assert(intervalsCsv.includes('"observed_seconds"')&&intervalsCsv.includes('"missing_seconds"'));
+  assert(await page.locator('#timelineSection').isVisible(),'Time aggregation should be visible');
+  await page.locator('#aggregationMinutes').selectOption('15');
+  assert.equal(await page.locator('#aggregationMinutes').inputValue(),'15');
+
+  // Completed session remains available after a fresh reload.
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.querySelectorAll('#savedList .saved-session').length>=1,
+    null,{timeout:15000});
+  await page.locator('#savedList .saved-session').first().locator('button').first().click();
+  await page.waitForFunction(()=>document.querySelector('#report')?.hidden===false,null,{timeout:15000});
+  assert.equal((await page.locator('#reportTotal').textContent()).trim(),'0');
+  assert(await page.locator('#timelineSection').isVisible(),'Timeline restored from IndexedDB');
+  console.log('[persistence] Completed session and time aggregation survived page reload.');
+
+  // Crash-recovery: an unfinished session must not restart live counting.
+  const crashPage=await context.newPage();
+  crashPage.on('pageerror',error=>errors.push('recovery: '+error.message));
+  crashPage.on('request',request=>{
+    const url=request.url();
+    if(/^https?:\/\//.test(url)&&!url.startsWith(origin+'/'))outgoing.push('recovery: '+url);
+  });
+  await crashPage.goto(origin,{waitUntil:'domcontentloaded'});
+  await crashPage.locator('#cameraStart').click();
+  await crashPage.waitForFunction(()=>
+    /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent??''),
+    null,{timeout:90000});
+  await crashPage.locator('#testButton').click();
+  await crashPage.locator('#testButton').click();
+  await crashPage.locator('#beginCount').click();
+  await crashPage.locator('#plusA').click();
+  assert.equal((await crashPage.locator('#countA').textContent()).trim(),'1');
+  // Save queue commits session and adjustment before simulating reload.
+  await crashPage.waitForFunction(async()=>{
+    const db=await new Promise((resolve,reject)=>{
+      const req=indexedDB.open('passage-counter-sessions-v1',1);
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+    });
+    try{
+      return await new Promise(resolve=>{
+        const tx=db.transaction(['sessions','events'],'readonly');
+        const sessions=tx.objectStore('sessions').getAll();
+        const events=tx.objectStore('events').getAll();
+        tx.oncomplete=()=>resolve(sessions.result?.length>=2 && events.result?.some(e=>e.kind==='manual_adjustment'&&e.delta===1));
+        tx.onerror=()=>resolve(false);
+      });
+    }finally{db.close();}
+  },null,{timeout:15000});
+  await crashPage.reload({waitUntil:'domcontentloaded'});
+  await crashPage.waitForFunction(()=>document.querySelectorAll('#savedList .saved-session').length>=2,
+    null,{timeout:15000});
+  await crashPage.locator('#savedList .saved-session').first().locator('button').first().click();
+  await crashPage.waitForFunction(()=>document.querySelector('#countA')?.textContent==='1',
+    null,{timeout:15000});
+  assert.match(await crashPage.locator('#statusPill').textContent(),/中断|Interrupted/);
+  assert(await crashPage.locator('#beginCount').isDisabled(),'Interrupted session cannot silently resume');
+  assert.equal((await crashPage.locator('#countA').textContent()).trim(),'1');
+  const recoveryDl=crashPage.waitForEvent('download');
+  await crashPage.locator('#downloadButton').click();
+  const recoveredCsv=await readFile(await (await recoveryDl).path(),'utf8');
+  assert(recoveredCsv.includes('"manual_adjustment"')&&recoveredCsv.includes('"correction"'),
+    'Restored manual adjustment remains in the auditable CSV');
+  assert(await crashPage.locator('#coverageSummary').isVisible());
+  console.log('[persistence] Interrupted session recovered stopped with saved adjustment.');
+
+  // Deleting a finished session removes its IndexedDB record and events.
+  await crashPage.locator('#savedList .saved-session').first().locator('button.danger').click();
+  await crashPage.locator('#confirmReset').click();
+  await crashPage.waitForFunction(()=>document.querySelectorAll('#savedList .saved-session').length===1,
+    null,{timeout:15000});
+  console.log('[persistence] Confirmed deletion removed saved session from the list.');
+  await crashPage.close();
+
+  // IndexedDB-disabled browsers must warn and still allow in-memory CSV rescue.
+  const failedContext=await browser.newContext({permissions:['camera']});
+  await failedContext.addInitScript(()=>{
+    Object.defineProperty(window,'indexedDB',{value:undefined,configurable:true});
+  });
+  const failedPage=await failedContext.newPage();
+  failedPage.on('pageerror',error=>errors.push('storage blocked: '+error.message));
+  await failedPage.goto(origin,{waitUntil:'domcontentloaded'});
+  await failedPage.waitForFunction(()=>/保存できません|Cannot save/.test(
+    document.querySelector('#storageNotice')?.textContent??''),null,{timeout:10000});
+  await failedPage.locator('#cameraStart').click();
+  await failedPage.waitForFunction(()=>
+    /計測準備完了|Ready to count/.test(document.querySelector('#statusPill')?.textContent??''),
+    null,{timeout:90000});
+  await failedPage.locator('#testButton').click();
+  await failedPage.locator('#testButton').click();
+  await failedPage.locator('#beginCount').click();
+  await failedPage.locator('#plusB').click();
+  assert.equal((await failedPage.locator('#countB').textContent()).trim(),'1');
+  const rescue=failedPage.waitForEvent('download');
+  await failedPage.locator('#downloadButton').click();
+  const rescueCsv=await readFile(await (await rescue).path(),'utf8');
+  assert(rescueCsv.includes('"correction"'),'CSV rescue unavailable when IndexedDB is blocked');
+  assert(await failedPage.locator('#storageNotice').isVisible(),'Storage failure warning disappeared');
+  await failedContext.close();
+  console.log('[persistence] IndexedDB-disabled client retains memory counts and exports CSV.');
+
   await page.locator('#languageSelect').selectOption('en');
   assert.match(await page.locator('#pageTitle').textContent(), /Count people/);
   await page.setViewportSize({ width: 360, height: 740 });
