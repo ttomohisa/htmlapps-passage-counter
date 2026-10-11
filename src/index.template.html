@@ -227,7 +227,7 @@ html{min-height:100%;background:var(--background)}
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.6.0</span></p>
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.7.0</span></p>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -279,7 +279,7 @@ html{min-height:100%;background:var(--background)}
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
       </div>
       <div class="camera-stage" id="cameraStage">
-        <video id="cameraFeed" autoplay muted playsinline aria-label="Camera preview"></video>
+        <video id="cameraFeed" autoplay muted playsinline data-i18n-aria-label="videoPreviewAria" aria-label="カメラ・動画のプレビュー"></video>
         <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：両端をドラッグ、矢印キーで移動できます"></canvas>
         <div class="mini-counts" id="mobileCounts" hidden aria-hidden="true"><span><span id="miniLabelA">A→B</span><strong id="miniA">0</strong></span><span><span id="miniLabelB">B→A</span><strong id="miniB">0</strong></span></div>
         <div class="camera-placeholder" id="cameraPlaceholder">
@@ -385,7 +385,7 @@ html{min-height:100%;background:var(--background)}
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
     <div class="timeline-head"><h2 id="timelineHeading" data-i18n="timelineHeading">時間帯別の通過</h2>
       <label for="aggregationMinutes"><span data-i18n="intervalSize">区切り</span>
-        <select id="aggregationMinutes" aria-label="Aggregation interval">
+        <select id="aggregationMinutes" data-i18n-aria-label="aggregationAria" aria-label="集計の時間間隔">
           <option value="5">5 min</option><option value="15">15 min</option><option value="60">60 min</option>
         </select>
       </label>
@@ -401,7 +401,7 @@ html{min-height:100%;background:var(--background)}
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · v0.6.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · v0.7.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -521,16 +521,16 @@ html{min-height:100%;background:var(--background)}
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.6.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          language:'言語',subTitle:'通過カウンター · v0.7.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
           title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
-          camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
+          videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.6.0は認識速度の表示・処理負荷の調整・中断時の記録を改善しています。実環境での精度検証は未完了です。',
+          prototypeNote:'v0.7.0ではブラウザ互換性・日英UI・単一HTML・CSPを横断して検証しています。実機の長時間計測と精度評価は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'判定線を置き、カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
           helpPrivacy:'カメラや選択した動画はアップロードしません。映像・顔・音声は保存せず、計測記録だけをブラウザ内に保存します。',
@@ -606,16 +606,16 @@ html{min-height:100%;background:var(--background)}
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.6.0',help:'Help',privacyShort:'No account · On-device processing',
+          language:'Language',subTitle:'People crossing counter · v0.7.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Entirely local processing',
           title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
-          camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
+          videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.6.0 improves detection status, frame pacing and safe interruption. Real-world counting accuracy remains unverified.',
+          prototypeNote:'v0.7.0 checks cross-browser behavior, bilingual UI, single-file packaging and CSP. Physical-device endurance and count accuracy remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Place the counting line. For camera input, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
           helpPrivacy:'Camera and selected video files are not uploaded. Frames, faces and audio are not stored; only counting records are saved in this browser.',
@@ -1013,7 +1013,7 @@ html{min-height:100%;background:var(--background)}
         drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
         testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
         storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,lastCheckpointTick:0,
-        sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',videoError:'',
+        sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',videoErrorKey:null,errorKey:null,
         fileNeedsReanalysis:false,
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
         fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
@@ -1397,7 +1397,7 @@ html{min-height:100%;background:var(--background)}
         pill.dataset.kind=!simdAvailable||phase==='error'||phase==='interrupted'?'error':phase==='counting'?'active':'idle';
         const defaultMessage={
           idle:'instruction',loading:'loading',ready:'settingLine',testing:'testingMessage',counting:'counting',
-          paused:'pausedText',done:'finished',error:'modelFailed',interrupted:'hiddenStop'
+          paused:'pausedText',done:'finished',error:(fileMode?state.videoErrorKey:state.errorKey)||'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
         const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
         $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
@@ -1430,7 +1430,7 @@ html{min-height:100%;background:var(--background)}
         $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
         $('#coverageHint').textContent=tr(fileMode?'fileCoverageHint':'coverageHint');
         $('#cameraPlaceholder').querySelector('span').textContent=tr(fileMode?'videoEmpty':'previewEmpty');
-        $('#videoFileStatus').textContent=state.videoError||
+        $('#videoFileStatus').textContent=(state.videoErrorKey?tr(state.videoErrorKey):'')||
           (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
         $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':'previewVideo');
         $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||
@@ -1834,7 +1834,7 @@ html{min-height:100%;background:var(--background)}
             video.removeAttribute('autoplay');
             video.preload='auto';
           }
-          state.videoError='';
+          state.videoErrorKey=null;
           renderState();
         }finally{
           state.sourceBusy=false;renderState();
@@ -1880,9 +1880,9 @@ html{min-height:100%;background:var(--background)}
       }
       async function readVideoFile(file){
         if(!isFileMode()||state.sourceBusy||!file)return;
-        if(!simdAvailable){state.videoError=tr('simdUnsupported');renderState();return;}
+        if(!simdAvailable){state.videoErrorKey='simdUnsupported';renderState();return;}
         if(!(String(file.type).startsWith('video/')||/\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name))){
-          state.videoError=tr('videoBadFormat');renderState();return;
+          state.videoErrorKey='videoBadFormat';renderState();return;
         }
         state.sourceBusy=true;
         renderState();
@@ -1924,7 +1924,7 @@ html{min-height:100%;background:var(--background)}
           state.lastProcessedSourceMs=-1;
           await initEmbeddedDetector();
           state.phase='ready';
-          state.videoError='';inferencePacer.reset();
+          state.videoErrorKey=null;inferencePacer.reset();
           zeroTracks();renderState(tr('videoReady'));draw();
           loop();
         }catch(error){
@@ -1932,8 +1932,8 @@ html{min-height:100%;background:var(--background)}
           if(newUrl&&state.videoUrl===newUrl)releaseLocalVideo();
           if(state.detector){state.detector.close();state.detector=null;}
           state.phase='error';
-          state.videoError=tr(error?.message==='Invalid or unknown video duration'?'videoInvalidDuration':'videoLoadFailed');
-          renderState(state.videoError);
+          state.videoErrorKey=error?.message==='Invalid or unknown video duration'?'videoInvalidDuration':'videoLoadFailed';
+          renderState();
         }finally{
           state.sourceBusy=false;renderState();
           $('#videoFile').value='';
@@ -2040,10 +2040,10 @@ html{min-height:100%;background:var(--background)}
       }
       async function startCamera(){
         if(isFileMode())return;
-        if(!simdAvailable){state.phase='error';renderState(tr('simdUnsupported'));return;}
-        if(!navigator.mediaDevices?.getUserMedia){state.phase='error';renderState(tr('unsupported'));return;}
+        if(!simdAvailable){state.phase='error';state.errorKey='simdUnsupported';renderState();return;}
+        if(!navigator.mediaDevices?.getUserMedia){state.phase='error';state.errorKey='unsupported';renderState();return;}
         if(state.stream)return;
-        state.phase='loading';renderState();
+        state.errorKey=null;state.phase='loading';renderState();
         try{
           const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:$('#cameraFacing').value},width:{ideal:1280},height:{ideal:720}}});
           state.stream=stream;
@@ -2057,12 +2057,12 @@ html{min-height:100%;background:var(--background)}
           });
           video.srcObject=stream;await video.play();
           if(!state.detector)await initEmbeddedDetector();
-          state.phase='ready';state.lastInfer=0;inferencePacer.reset();zeroTracks();renderState();
+          state.phase='ready';state.errorKey=null;state.lastInfer=0;inferencePacer.reset();zeroTracks();renderState();
           loop();
         }catch(err){
           console.error('[Passage Counter] Camera / embedded runtime error',err);
           const permission=err?.name==='NotAllowedError'||err?.name==='NotFoundError'||err?.name==='NotReadableError'||err?.name==='OverconstrainedError';
-          closeCamera();state.phase='error';renderState(tr(permission?'cameraBlocked':'modelFailed'));
+          closeCamera();state.phase='error';state.errorKey=permission?'cameraBlocked':'modelFailed';renderState();
         }
       }
       function loop(now=performance.now()){
@@ -2326,7 +2326,7 @@ html{min-height:100%;background:var(--background)}
         const file=Array.from(event.dataTransfer?.files||[]).find(f=>
           f.type.startsWith('video/')||/.(mp4|webm|mov|m4v|ogv)$/i.test(f.name));
         if(file)void readVideoFile(file);
-        else{state.videoError=tr('videoBadFormat');renderState();}
+        else{state.videoErrorKey='videoBadFormat';renderState();}
       });
       $('#previewVideo').addEventListener('click',toggleFilePreview);
       $('#reanalyzeVideo').addEventListener('click',()=>void confirmFileReanalysis({requestedSecond:0,restart:true}));
