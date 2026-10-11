@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#16624f">
-  <meta name="description" content="Count people crossing a line using a fixed camera. AI model and WASM are embedded in one offline-capable HTML.">
+  <meta name="theme-color" content="#f5f5f2">
+  <meta name="description" content="Count people crossing a line using a live camera or a local video. No uploads, accounts or runtime AI downloads.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none';">
   <link rel="icon" href="__APP_ICON_DATA_URI__">
   <title>Passage Counter / 通過カウンター</title>
@@ -530,7 +530,7 @@ html{min-height:100%;background:var(--background)}
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.5.0は計測の端末内保存と復帰・欠測表示・時間帯別集計に対応しています。実環境での精度検証は未完了です。',
+          prototypeNote:'v0.6.0は認識速度の表示・処理負荷の調整・中断時の記録を改善しています。実環境での精度検証は未完了です。',
           footer:'モデルとWASMは配布HTMLに内包されています。カメラ映像は送信しません。',
           helpTitle:'使い方と注意事項',help1:'スマホを固定し、カメラを開始します。',help2:'線を置き、設置テストで通過を確認します。',help3:'計測中は±1で方向別の件数を補正できます。補正は取り消せます。',help4:'計測終了後、補正履歴付きCSVを保存できます。',
           helpPrivacy:'映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。',
@@ -615,7 +615,7 @@ html{min-height:100%;background:var(--background)}
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.5.0 adds offline session recovery, coverage-aware time buckets and three CSV exports. Real-world counting accuracy has not been validated.',
+          prototypeNote:'v0.6.0 improves detection status, frame pacing and safe interruption. Real-world counting accuracy remains unverified.',
           footer:'The AI model and WASM are bundled in the HTML. Camera frames are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your camera in place and start the preview.',help2:'Position the line and run the setup test.',help3:'Count and make +1/-1 corrections by direction; use Undo for mistakes.',help4:'Finish counting and save CSV with correction events.',
           helpPrivacy:'Frames, faces and audio are not stored or uploaded. The HTML contains the required AI model and WASM.',

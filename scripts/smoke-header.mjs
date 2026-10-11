@@ -2,7 +2,7 @@
 // and Wi-Fi Share pages: compact sticky header, brand/version, language toggle,
 // SVG help, single local badge and a responsive intro.
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
 const html=await readFile('dist/index.html');
@@ -15,6 +15,7 @@ let browser;
 const http='http://127.0.0.1:'+server.address().port;
 try{
  browser=await chromium.launch({channel:'chrome',headless:true});
+ await mkdir('dist/screenshots',{recursive:true});
  for(const width of [320,360,390,820,1280]){
   const context=await browser.newContext({viewport:{width,height:750}});
   const page=await context.newPage();
@@ -61,6 +62,8 @@ try{
     assert(await page.locator('#languageButton').getAttribute('aria-label'));
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),
       'Language switch caused overflow at '+width);
+    if(width===320||width===1280)
+      await page.screenshot({path:'dist/screenshots/'+lang+'-'+width+'.png',fullPage:true});
   }
   assert.deepEqual(errors,[],'Browser errors at width '+width);
   console.log('[header] '+width+'px bilingual/brand/help/hero/overflow passed');
