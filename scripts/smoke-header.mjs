@@ -44,7 +44,7 @@ try{
   assert.equal(design.sticky,'sticky','Non-sticky BK header at '+width);
   assert.equal(design.iconMatches,true,'Favicon/header icon mismatch');
   assert.equal(design.helpSvg,1,'Header help icon is missing');
-  assert.equal(design.version,'v0.6.0');
+  assert.equal(design.version,'v0.7.0');
   assert(design.scrollWidth<=width+1,'Horizontal overflow at '+width+'px');
   assert(design.brand.right<=design.actions.left+2,'Header action overlaps app name at '+width);
   assert(design.badge.top>=design.hero.top-1 &&
