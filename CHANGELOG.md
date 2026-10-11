@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0] — 2026-10-11 (Draft, release preparation; NOT approved RC)
+
+- Promoted application and generated standalone version metadata to v0.9.0, without changing the main camera/video/tracking logic.
+- Added reproducible README screenshot capture from the genuine built HTML for Japanese/English and desktop/mobile, with provenance that counts and camera footage are not fabricated.
+- Added offline package/version, embedded icon, model hash, runtime lock, CSV/asset and distribution checks for release QA.
+- Added complete Apache 2.0 license text and documented fixed dependency and model SHA-256 plus the outstanding model-specific redistribution permission question.
+- Added a release decision checklist and machine-readable hard-gate statuses. Automated checks and physical-device/field-accuracy evidence are reported **separately**.
+- Retained all existing v0.8.0 accuracy tools and v0.7.0 browser/CSV/IndexedDB/dual-CSP test suites.
+- **Still No-Go for stable release:** independently labeled 100+ real passages and required precision/recall, Android/iPhone physical 30-minute testing, and model-specific redistribution license approval.
+
+
 ## [0.8.0] — 2026-10-11 (Draft, accuracy evaluation tooling)
 
 - Replaced the favicon and matching app-header icon with the exact user-supplied Passage Counter SVG (#16624f, 64×64, rx=16). Both standalone editions embed it.
