@@ -1011,7 +1011,7 @@ html{min-height:100%;background:var(--background)}
         detections:[],fps:0,frameHandle:0,startTime:0,elapsedMs:0,lastActive:0,wakeLock:null,
         drag:null,clockTimer:null,sessionStart:null,testA:0,testB:0,testStartedAt:0,testEndedAt:0,
         testDurationMs:30000,testCompleted:false,testCancelled:false,testReturnPhase:'ready',
-        storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,
+        storageReady:false,storageFailure:null,restoring:false,lastTimelineTick:0,lastCheckpointTick:0,
         sourceMode:'camera',videoUrl:null,videoReady:false,videoFilename:'',videoError:'',
         fileNeedsReanalysis:false,
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
@@ -1687,6 +1687,12 @@ html{min-height:100%;background:var(--background)}
         const events=tracker.update(boxes,now,line,state.reverse);
         if(state.phase==='counting'||state.phase==='testing') for(const event of events) recordCrossing(event.direction);
       }
+      function refreshTimelineIfDue(){
+        const now=Date.now();
+        if(state.phase==='counting'&&now-state.lastTimelineTick<5000)return;
+        state.lastTimelineTick=now;
+        renderTimeline();
+      }
       function recordCrossing(direction){
         if(state.phase==='testing'){
           if(direction==='A_TO_B')state.testA++;else state.testB++;
@@ -1695,7 +1701,7 @@ html{min-height:100%;background:var(--background)}
         if(state.phase!=='counting')return;
         const entry=ledger.auto(direction,effectiveElapsed(),fileMediaTimeMs());
         if(entry)queueSnapshot(entry);
-        renderState();renderTimeline();
+        renderState();refreshTimelineIfDue();
       }
       function correction(direction,delta){
         if(!state.startTime||state.phase==='testing')return;
@@ -2415,20 +2421,33 @@ html{min-height:100%;background:var(--background)}
           video.pause();URL.revokeObjectURL(state.videoUrl);state.videoUrl=null;
         }
       });
-      window.addEventListener('resize',draw);
+      let previousViewportOrientation=innerWidth>=innerHeight?'landscape':'portrait';
+      window.addEventListener('resize',()=>{
+        draw();
+        const orientation=innerWidth>=innerHeight?'landscape':'portrait';
+        if(orientation!==previousViewportOrientation&&state.phase==='counting')
+          interrupt(tr('rotationStop'));
+        previousViewportOrientation=orientation;
+      });
       state.clockTimer=setInterval(()=>{
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
-          else renderState();
+          else formatTestStatus();
         }else if(state.phase==='counting'){
-          renderState();
+          const elapsed=formatElapsed(effectiveElapsed());
+          $('#elapsedText').textContent=elapsed;
+          $('#reportElapsed').textContent=elapsed;
           const now=Date.now();
-          if(now-state.lastTimelineTick>=5000){
+          if(now-state.lastCheckpointTick>=5000){
+            state.lastCheckpointTick=now;
+            queueSnapshot();
+          }
+          if(now-state.lastTimelineTick>=15000){
             state.lastTimelineTick=now;
-            queueSnapshot();renderTimeline();
+            renderTimeline();
           }
         }
-      },250);
+      },500);
       $('#outputFilename').value='passage-counter-'+new Date().toISOString().slice(0,10);
       $('#sessionName').value='Passage Counter '+new Date().toLocaleDateString('ja-JP');
       restoreSetup();localize();void initializeSavedSessions();
