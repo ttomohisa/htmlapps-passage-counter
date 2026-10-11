@@ -623,26 +623,27 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         let records=[],sequence=0,lastCorrection=null;
         const total={A_TO_B:0,B_TO_A:0},automatic={A_TO_B:0,B_TO_A:0};
         const valid=d=>d==='A_TO_B'||d==='B_TO_A';
-        function add(direction,delta,kind,elapsedMs,undoOf=''){
+        function add(direction,delta,kind,elapsedMs,undoOf='',sourceTimeMs=null){
           if(!valid(direction)||!Number.isInteger(delta)||!['auto','correction','undo'].includes(kind))return null;
           if(total[direction]+delta<0)return null;
           const event={id:'pc-'+Date.now()+'-'+(++sequence),occurredAt:new Date().toISOString(),
-            direction,kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf};
+            direction,kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf,
+            sourceTimeMs:Number.isFinite(sourceTimeMs)?Math.max(0,Math.round(sourceTimeMs)):null};
           records.push(event);total[direction]+=delta;
           if(kind==='auto')automatic[direction]+=delta;
           return event;
         }
-        function auto(d,elapsed){return add(d,1,'auto',elapsed);}
-        function correct(d,delta,elapsed){
+        function auto(d,elapsed,sourceTimeMs=null){return add(d,1,'auto',elapsed,'',sourceTimeMs);}
+        function correct(d,delta,elapsed,sourceTimeMs=null){
           if(delta!==1&&delta!==-1)return null;
-          const event=add(d,delta,'correction',elapsed);
+          const event=add(d,delta,'correction',elapsed,'',sourceTimeMs);
           if(event)lastCorrection=event;
           return event;
         }
         function canUndo(){return Boolean(lastCorrection && total[lastCorrection.direction]>=lastCorrection.delta);}
-        function undo(elapsed,expectedId=null){
+        function undo(elapsed,expectedId=null,sourceTimeMs=null){
           if(!canUndo()||(expectedId!==null&&expectedId!==lastCorrection.id))return null;
-          const entry=lastCorrection,event=add(entry.direction,-entry.delta,'undo',elapsed,entry.id);
+          const entry=lastCorrection,event=add(entry.direction,-entry.delta,'undo',elapsed,entry.id,sourceTimeMs);
           if(event)lastCorrection=null;
           return event;
         }
@@ -672,7 +673,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
             if(item.kind==='auto'&&item.delta!==1)throw new Error('Invalid automatic delta');
             const record={id:item.id,occurredAt:item.occurredAt,direction:item.direction,
               kind:item.kind,delta:item.delta,elapsedMs:Math.max(0,Math.round(item.elapsedMs)),
-              undoOf:typeof item.undoOf==='string'?item.undoOf:''};
+              undoOf:typeof item.undoOf==='string'?item.undoOf:'',
+              sourceTimeMs:Number.isFinite(item.sourceTimeMs)?Math.max(0,Math.round(item.sourceTimeMs)):null};
             if(item.kind==='undo'){
               if(!record.undoOf || undone.has(record.undoOf))throw new Error('Invalid saved Undo reference');
               const target=records.find(x=>x.id===record.undoOf&&x.kind==='correction');
@@ -712,11 +714,11 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const typeOf = phase => ({
           counting:'observed',paused:'paused',interrupted:'missing'
         })[phase]||null;
-        function create({sessionId,name,createdAt,labels,line,modelVersion,appVersion}){
+        function create({sessionId,name,createdAt,labels,line,modelVersion,appVersion,sourceType='camera'}){
           if(!sessionId||!Number.isFinite(createdAt))throw Error('Missing session identity');
           const now=new Date(createdAt).toISOString();
           return {schemaVersion:1,sessionId,name:String(name||'Passage Counter').slice(0,100),
-            sourceType:'camera',createdAt:now,startedAt:null,endedAt:null,updatedAt:now,
+            sourceType:sourceType==='file'?'file':'camera',createdAt:now,startedAt:null,endedAt:null,updatedAt:now,
             lastCheckpointAt:now,state:'idle',
             directionLabels:{A_TO_B:String(labels?.A_TO_B||'A → B'),B_TO_A:String(labels?.B_TO_A||'B → A')},
             line:line.map(p=>({x:p.x,y:p.y})),configSegments:[],
@@ -969,7 +971,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
       function serializeEvent(event){
         return {schemaVersion:1,eventId:event.id,sessionId:currentSession.sessionId,
           ordinal:ledger.history().length,occurredAt:event.occurredAt,
-          elapsedMs:event.elapsedMs,sourceTimeMs:null,direction:event.direction,
+          elapsedMs:event.elapsedMs,sourceTimeMs:event.sourceTimeMs??null,direction:event.direction,
           directionLabel:countName(event.direction),
           kind:({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[event.kind],
           delta:event.delta,referenceEventId:event.undoOf||null};
@@ -985,6 +987,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         session.counts={a:totals.a,b:totals.b,autoA:totals.autoA,autoB:totals.autoB,
           manualA:totals.manualA,manualB:totals.manualB};
         const saved=JSON.parse(JSON.stringify(session));
+        if(session.sourceType==='file')
+          session.runtimeInfo.sourceDurationMs=state.videoDurationMs||session.runtimeInfo.sourceDurationMs||null;
         const record=event?serializeEvent(event):null;
         writeTail=writeTail.then(()=>sessionStore.write(saved,record))
           .then(()=>{state.storageReady=true;state.storageFailure=null;updateStorageNotice();},
@@ -1058,11 +1062,12 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           const saved=await sessionStore.load(sessionId);
           if(!saved.session)throw Error('Saved session not found');
           const session=saved.session;
-          if(session.schemaVersion!==1||session.sourceType!=='camera')throw Error('Incompatible session');
+          if(session.schemaVersion!==1||!['camera','file'].includes(session.sourceType))throw Error('Incompatible session');
           const mapped=saved.events.map(item=>({
             id:item.eventId,occurredAt:item.occurredAt,direction:item.direction,
             kind:({auto:'auto',manual_adjustment:'correction',undo_adjustment:'undo'})[item.kind],
-            delta:item.delta,elapsedMs:item.elapsedMs,undoOf:item.referenceEventId||''
+            delta:item.delta,elapsedMs:item.elapsedMs,undoOf:item.referenceEventId||'',
+            sourceTimeMs:Number.isFinite(item.sourceTimeMs)?item.sourceTimeMs:null
           }));
           if(mapped.some(item=>!item.kind))throw Error('Unknown event kind');
           if(session.state==='counting')timeline.recover(session);
@@ -1699,7 +1704,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           currentSession=timeline.create({
             sessionId:createSessionId(),name:$('#sessionName').value,createdAt:now,
             labels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
-            line,appVersion:APP_CONFIG.version,modelVersion:'EfficientDet-Lite0-int8-1'
+            line,appVersion:APP_CONFIG.version,modelVersion:'EfficientDet-Lite0-int8-1',
+            sourceType:state.sourceMode
           });
         }
         if(!state.startTime){state.startTime=now;state.sessionStart=new Date(now).toISOString();}
@@ -1758,7 +1764,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           'session_id','source_time_ms','event_kind_v1','reference_event_id']];
         for(const e of ledger.history())rows.push([e.id,e.occurredAt,e.direction,
           countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
-          currentSession?.sessionId||'', '',
+          currentSession?.sessionId||'',e.sourceTimeMs??'',
           ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
         downloadRows(rows,csvName('events'));
       }
@@ -1769,7 +1775,7 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         const rows=[['session_id','session_name','source_type','created_at','started_at','ended_at',
           'timezone','app_version','model_version','wall_ms','observed_ms','paused_ms','missing_ms',
           'auto_a','manual_a','final_a','auto_b','manual_b','final_b','total_crossings'],
-          [currentSession.sessionId,currentSession.name,'camera',currentSession.createdAt,
+          [currentSession.sessionId,currentSession.name,currentSession.sourceType,currentSession.createdAt,
           currentSession.startedAt,currentSession.endedAt||'',Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',
           APP_CONFIG.version,'EfficientDet-Lite0-int8-1',wall,dur.observedMs,dur.pausedMs,dur.missingMs,
           counts.autoA,counts.manualA,counts.a,counts.autoB,counts.manualB,counts.b,counts.a+counts.b]];
