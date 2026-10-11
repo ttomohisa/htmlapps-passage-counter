@@ -1910,7 +1910,7 @@ html{min-height:100%;background:var(--background)}
           state.lastProcessedSourceMs=-1;
           await initEmbeddedDetector();
           state.phase='ready';
-          state.videoError='';
+          state.videoError='';inferencePacer.reset();
           zeroTracks();renderState(tr('videoReady'));draw();
           loop();
         }catch(error){
@@ -2009,6 +2009,7 @@ html{min-height:100%;background:var(--background)}
         if(state.videoUrl)releaseLocalVideo();
         if(state.phase==='counting')interrupt(tr('lostCamera'));
         cancelAnimationFrame(state.frameHandle);
+        inferencePacer.reset();
         if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null;}
         video.srcObject=null;
         if(state.detector){state.detector.close();state.detector=null;}
@@ -2036,7 +2037,7 @@ html{min-height:100%;background:var(--background)}
           });
           video.srcObject=stream;await video.play();
           if(!state.detector)await initEmbeddedDetector();
-          state.phase='ready';state.lastInfer=0;zeroTracks();renderState();
+          state.phase='ready';state.lastInfer=0;inferencePacer.reset();zeroTracks();renderState();
           loop();
         }catch(err){
           console.error('[Passage Counter] Camera / embedded runtime error',err);
@@ -2046,14 +2047,17 @@ html{min-height:100%;background:var(--background)}
       }
       function loop(now=performance.now()){
         if(!hasActiveSource())return;
-        const fileMode=isFileMode(),sourceMs=fileMode?fileMediaTimeMs():null;
+        const fileMode=isFileMode();
+        if(fileMode&&video.paused){state.frameHandle=0;return;}
+        const sourceMs=fileMode?fileMediaTimeMs():null;
         const freshFrame=!fileMode||(
-          state.videoReady&&!video.paused&&!video.seeking&&
+          state.videoReady&&!video.seeking&&
           Number.isFinite(sourceMs)&&sourceMs>state.lastProcessedSourceMs+8);
-        // MediaPipe requires monotonic VIDEO timestamps; tracking and CSV
-        // use video-source milliseconds for local video instead.
+        let analyzed=false;
+        // This callback keeps no frame queue: detect only the latest decoded
+        // video element frame when the synchronous CPU detector is available.
         if(state.detector&&video.readyState>=2&&document.visibilityState==='visible'&&
-           now-state.lastInfer>=160&&freshFrame){
+           freshFrame&&inferencePacer.shouldInfer(now)){
           state.lastInfer=now;
           try{
             if(fileMode){
@@ -2061,27 +2065,40 @@ html{min-height:100%;background:var(--background)}
               if(previous>=0&&(sourceMs<previous-5||sourceMs-previous>1200)){
                 zeroTracks();
                 if(state.phase==='counting'){
-                  state.fileNeedsReanalysis=true;
-                  interrupt(tr('videoSeekingMessage'));
+                  state.fileNeedsReanalysis=true;interrupt(tr('videoSeekingMessage'));
                 }
               }
               state.lastProcessedSourceMs=sourceMs;
             }
             const timestamp=Math.max(now,state.lastTimestamp+0.1);
             state.lastTimestamp=timestamp;
+            const started=performance.now();
             const result=state.detector.detectForVideo(video,timestamp);
+            const elapsed=performance.now()-started;
+            inferencePacer.record(now,elapsed);
+            const quality=inferencePacer.snapshot(now);
             const detections=(result.detections||[])
               .filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person'))
               .map(d=>d.boundingBox);
             state.detections=detections;
-            if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis))
+            state.fps=quality.fps;
+            $('#detectorInfo').textContent='EfficientDet-Lite0 · '+
+              quality.fps+' fps · '+quality.meanMs+' ms · '+detections.length+
+              ' boxes · '+quality.skipped+' frames skipped · '+quality.gaps+' gaps';
+            if(quality.mustInterrupt&&state.phase==='counting'){
+              interrupt(tr('recognitionAutoStopped'));
+            }else if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis)){
               trackPeople(detections,fileMode?sourceMs:now);
-            if(state.lastFrameTime>0)state.fps=Math.round(1000/(now-state.lastFrameTime));
-            state.lastFrameTime=now;
-            $('#detectorInfo').textContent='EfficientDet · '+state.fps+' fps · '+detections.length;
-          }catch(err){console.error('[Passage Counter] Inference failed',err);interrupt(tr('modelFailed'));return;}
+            }
+            updateRecognitionStatus();
+            analyzed=true;
+          }catch(err){
+            console.error('[Passage Counter] Inference failed',err);
+            interrupt(tr('modelFailed'));return;
+          }
         }
-        draw();state.frameHandle=requestAnimationFrame(loop);
+        if(analyzed)draw();
+        state.frameHandle=requestAnimationFrame(loop);
       }
       async function lockScreen(){
         if(!navigator.wakeLock?.request){toast(tr('wakeWarning'));return;}
@@ -2280,6 +2297,12 @@ html{min-height:100%;background:var(--background)}
         });
       });
       video.addEventListener('timeupdate',renderVideoTime);
+      video.addEventListener('play',()=>{
+        if(isFileMode()&&state.videoReady){
+          cancelAnimationFrame(state.frameHandle);
+          state.frameHandle=requestAnimationFrame(loop);
+        }
+      });
       video.addEventListener('seeking',()=>{
         if(!isFileMode()||state.fileInternalSeek)return;
         // Guard browser-initiated seeks as well as our explicit slider.
@@ -2292,7 +2315,7 @@ html{min-height:100%;background:var(--background)}
       video.addEventListener('seeked',()=>{
         if(!isFileMode())return;
         state.fileInternalSeek=false;state.lastProcessedSourceMs=-1;
-        zeroTracks();renderVideoTime();
+        zeroTracks();renderVideoTime();draw();
       });
       video.addEventListener('ended',()=>{
         if(!isFileMode())return;
