@@ -2,11 +2,17 @@
 
 Count **person-crossing events by direction** using a fixed camera or a local video and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.6.0 technical preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.7.0 integration preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
 ## Browser Kitty interface and usability
 
 The v0.6.0 header and hero follow the same visible conventions as [PDF Fill & Sign](https://browser-kitty.com/apps/pdf-fill-sign.html) and [Wi-Fi Share](https://browser-kitty.com/apps/wifi-share.html): a compact sticky light header, matching favicon/icon, localized app name with version, EN/JA button, SVG help icon, concise title and **Entirely local processing** badge. The badge describes the processing of camera/video/user data; visiting a hosted page still downloads that HTML. The standalone HTML uses no runtime external CDNs, analytics or telemetry. Browser automation checks Japanese/English, 320/360/390/820/1280px viewports, horizontal overflow, help label and favicon/brand identity. The CI artifacts include Japanese/English mobile/desktop screenshots.
+
+## v0.7.0 cross-browser integration and evidence
+
+v0.7.0 adds an evidence-scoped desktop Windows Chrome/Edge CI target: real embedded-model inference using a simulated camera, adjustment/CSV export, blocked outbound HTTP, combined meta+header CSP checks, cold-cache offline single-HTML startup, and bilingual error/dialog regression. Camera permission and rejected-video error messages now stay translated when switching between EN and JA; video-preview and aggregation accessibility labels are localized.
+
+**Not yet verified:** real Android Chrome, iOS Safari, 30-minute mobile heat/battery/memory/fps, live counting accuracy, and the actual Cloudflare response CSP header. Desktop simulated-camera and file tests are not a claim of physical-device compatibility. See the [v0.7.0 compatibility matrix and physical-device checklist](docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md).
 
 ## Features
 
