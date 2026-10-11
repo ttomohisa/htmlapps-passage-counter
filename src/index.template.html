@@ -712,22 +712,35 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
               if(segment.type==='paused')row.pausedMs+=overlap;
               if(segment.type==='missing')row.missingMs+=overlap;
             }
-            for(const event of events){
-              const occurred=Date.parse(event.occurredAt);
-              // Adjustments may be entered after the session was finished.
-              // Reconcile bucket totals with final counts by assigning them to
-              // the last observed bucket instead of silently dropping them.
-              const tick=event.kind==='auto'?occurred:
-                Math.min(occurred,Math.max(start,end-1));
-              if(tick<cursor||tick>=next||tick>end)continue;
-              const key=event.direction==='A_TO_B'?'A':'B';
-              if(event.kind==='auto')row['auto'+key]+=event.delta;
-              else row['manual'+key]+=event.delta;
+            rows.push(row);cursor=next;
+          }
+          // Group events once instead of scanning the whole log for every
+          // bucket. This matters for an all-day foot-traffic counter.
+          for(const event of events){
+            const occurred=Date.parse(event.occurredAt);
+            if(!Number.isFinite(occurred))continue;
+            // After-finish corrections belong to the last real bucket; the
+            // raw event still retains its true occurredAt timestamp.
+            const tick=event.kind==='auto'?occurred:
+              Math.min(occurred,Math.max(start,end-1));
+            if(tick<start||tick>=end)continue;
+            let lo=0,hi=rows.length-1,target=null;
+            while(lo<=hi){
+              const mid=(lo+hi)>>1,entry=rows[mid];
+              const a=Date.parse(entry.start),b=Date.parse(entry.end);
+              if(tick<a)hi=mid-1;
+              else if(tick>=b)lo=mid+1;
+              else{target=entry;break;}
             }
+            if(!target)continue;
+            const key=event.direction==='A_TO_B'?'A':'B';
+            if(event.kind==='auto')target['auto'+key]+=event.delta;
+            else target['manual'+key]+=event.delta;
+          }
+          for(const row of rows){
             row.totalA=row.autoA+row.manualA;row.totalB=row.autoB+row.manualB;
             row.coverageStatus=row.observedMs>0
               ?(row.pausedMs+row.missingMs>0?'partial':'observed'):'missing';
-            rows.push(row);cursor=next;
           }
           return rows;
         }
@@ -873,6 +886,9 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         session.name=$('#sessionName').value.trim().slice(0,100)||'Passage Counter';
         session.directionLabels={A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')};
         session.line=line.map(p=>({x:p.x,y:p.y}));
+        const totals=ledger.summary();
+        session.counts={a:totals.a,b:totals.b,autoA:totals.autoA,autoB:totals.autoB,
+          manualA:totals.manualA,manualB:totals.manualB};
         const saved=JSON.parse(JSON.stringify(session));
         const record=event?serializeEvent(event):null;
         writeTail=writeTail.then(()=>sessionStore.write(saved,record))
@@ -904,7 +920,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
           const tick=Date.parse(session.startedAt||session.createdAt);
           secondary.textContent=(Number.isFinite(tick)?new Date(tick).toLocaleString(language==='ja'?'ja-JP':'en-US'):'—')+
             ' · '+tr(({counting:'savedInterrupted',interrupted:'savedInterrupted',
-              done:'savedDone',paused:'savedPaused'})[session.state]||'savedPaused');
+              done:'savedDone',paused:'savedPaused'})[session.state]||'savedPaused')+
+            ' · A→B '+(session.counts?.a??0)+' / B→A '+(session.counts?.b??0);
           info.append(name,secondary);
           const actions=document.createElement('div');actions.className='row';
           const open=document.createElement('button');open.type='button';open.textContent=tr('openSaved');
