@@ -219,7 +219,7 @@ try{
   await page.setViewportSize({width:320,height:640});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),
     'Horizontal overflow on phone layout');
-  await page.locator('#languageSelect').selectOption('en');
+  if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
   assert.match(await page.locator('#savedHeading').textContent(),/Saved sessions/);
   await page.close();
 

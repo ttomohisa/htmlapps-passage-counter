@@ -344,8 +344,14 @@ try {
   await failedContext.close();
   console.log('[persistence] IndexedDB-disabled client retains memory counts and exports CSV.');
 
-  await page.locator('#languageSelect').selectOption('en');
+  if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
   assert.match(await page.locator('#pageTitle').textContent(), /Count people/);
+  assert.equal(await page.locator('#brandName').textContent(),'Passage Counter');
+  assert.equal(await page.locator('#versionBadge').textContent(),'v0.6.0');
+  assert.equal(await page.locator('#languageButton').textContent(),'JA');
+  assert.match(await page.locator('#languageButton').getAttribute('aria-label'),/Japanese/);
+  assert.match(await page.locator('.local-badge').textContent(),/local processing/i);
+  assert.equal(await page.locator('#helpButton svg').count(),1);
   await page.setViewportSize({ width: 360, height: 740 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow on mobile');
   await page.setViewportSize({ width: 320, height: 640 });
@@ -390,7 +396,7 @@ try {
   assert(await noSimdPage.locator('#cameraStart').isDisabled(),
     'SIMD-unsupported clients must not start the camera');
   assert.match(await noSimdPage.locator('#statusDetails').textContent(),/SIMD/);
-  await noSimdPage.locator('#languageSelect').selectOption('en');
+  if((await noSimdPage.locator('html').getAttribute('lang'))!=='en')await noSimdPage.locator('#languageButton').click();
   assert.match(await noSimdPage.locator('#statusDetails').textContent(),/does not support WebAssembly SIMD/);
   await noSimdPage.close();
   console.log('[simd] Unsupported browser correctly blocks camera and explains the limitation in both languages.');
