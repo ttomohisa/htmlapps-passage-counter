@@ -53,6 +53,9 @@ try{
   await page.keyboard.press('z');
   assert.match(await page.locator('#counter').textContent(),/2 件/);
   const handle=page.locator('.line-handle').first();
+  // Label buttons are below the video; scrolling to them can move the handle
+  // outside a short mobile viewport. Bring it back before physical pointer input.
+  await handle.scrollIntoViewIfNeeded();
   const previousX=parseFloat(await handle.evaluate(el=>el.style.left));
   assert(await handle.evaluate(el=>getComputedStyle(el).width==='44px'),
     'Labeler line handle must have a 44px touch target');
