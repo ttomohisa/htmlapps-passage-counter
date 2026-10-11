@@ -167,6 +167,10 @@ try{
   await page.locator('#plusB').click();
   assert(Number(await page.locator('#countB').textContent())>=1);
   await page.locator('#pauseCount').click();
+  await page.locator('#beginCount').click();
+  await page.waitForFunction(()=>document.querySelector('#report')?.hidden===false,
+    null,{timeout:15000});
+  console.log('[video] Reaching EOF automatically finalized counting without looping.');
   const evtDownload=page.waitForEvent('download');
   await page.locator('#downloadButton').click();
   const csv=await readFile(await(await evtDownload).path(),'utf8');
@@ -232,6 +236,30 @@ try{
   assert(Number(await local.locator('#countA').textContent())>=1);
   console.log('[video] file:// HTML decoded local WebM and initialized the embedded SIMD detector.');
   await local.close();
+
+  // Verify drag/drop and unsupported file choices without ever uploading.
+  const dropPage=await context.newPage();observe(dropPage,'drop');
+  await dropPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
+  await dropPage.locator('#sourceMode').selectOption('file');
+  await dropPage.locator('#videoSourceBox').waitFor({state:'visible'});
+  await dropPage.waitForFunction(()=>!document.querySelector('#videoFile').disabled);
+  await dropPage.locator('#videoFile').setInputFiles({
+    name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('not a video')
+  });
+  await dropPage.waitForFunction(()=>/動画ファイルを選んでください|Choose a video file/.test(
+    document.querySelector('#videoFileStatus')?.textContent??''));
+  await dropPage.evaluate(value=>{
+    const bytes=Uint8Array.from(atob(value),c=>c.charCodeAt(0));
+    const transfer=new DataTransfer();
+    transfer.items.add(new File([bytes],'dropped-movie.webm',{type:'video/webm'}));
+    document.querySelector('#videoSourceBox').dispatchEvent(
+      new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:transfer}));
+  },base64);
+  await awaitLoaded(dropPage);
+  assert((await dropPage.locator('#videoFileStatus').textContent()).includes('dropped-movie.webm'));
+  console.log('[video] Drag/drop worked, unsupported file displayed an error first.');
+  await dropPage.close();
+
   assert.deepEqual(external,[],'Unexpected external HTTP requests');
   assert.deepEqual(incomingErrors,[],'Unhandled browser or console errors');
   console.log('[video] PASS: local decode, seek/reset, persistence, CSV, file:// and HTTP zero');
