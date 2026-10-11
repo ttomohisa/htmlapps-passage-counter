@@ -2104,7 +2104,7 @@ html{min-height:100%;background:var(--background)}
             state.fps=quality.fps;
             $('#detectorInfo').textContent='EfficientDet-Lite0 · '+
               quality.fps+' fps · '+quality.meanMs+' ms · '+detections.length+
-              ' boxes · '+quality.skipped+' frames skipped · '+quality.gaps+' gaps';
+              ' boxes · '+quality.skipped+' inference attempts deferred · '+quality.gaps+' gaps';
             if(quality.mustInterrupt&&state.phase==='counting'){
               interrupt(tr('recognitionAutoStopped'));
             }else if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis)){

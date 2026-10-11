@@ -62,7 +62,7 @@ try{
  assert(info.sessions.some(x=>x.state==='counting'&&x.intervals>=1),'Active counting was not checkpointed');
  assert(/00:00:1[5-9]|00:00:2[0-9]/.test(elapsed),'Elapsed time did not progress: '+elapsed);
  const diag=await page.locator('#detectorInfo').textContent();
- assert.match(diag,/EfficientDet-Lite0.*fps.*ms.*frames skipped/);
+ assert.match(diag,/EfficientDet-Lite0.*fps.*ms.*inference attempts deferred/);
  console.log('[endurance] elapsed='+(Date.now()-since)+'ms, '+elapsed+
    ', memory='+JSON.stringify({startMemory,endMemory})+
    ', diag='+diag.slice(0,240));
