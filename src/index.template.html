@@ -1433,6 +1433,53 @@ html{min-height:100%;background:var(--background)}
           else $('#'+id).removeAttribute('aria-current');
         }
       }
+      // PERF:BEGIN
+      // Statelessly testable frame scheduler. Do not queue camera frames:
+      // process only the latest video element frame when the main thread is ready.
+      function createInferencePacer({minMs=105,maxMs=225}={}){
+        let count=0,emaMs=0,emaFps=0,lastStart=-1,skipped=0,gaps=0;
+        let slowSince=-1,criticalSince=-1;
+        function interval(){
+          // No added wait if inference itself is slower than this interval.
+          // Fast devices can target ~9 fps without raising the model size.
+          return Math.max(minMs,Math.min(maxMs,Math.round(emaMs*1.08+8)||minMs));
+        }
+        function shouldInfer(now){
+          if(!Number.isFinite(now))return false;
+          if(lastStart<0||now-lastStart>=interval())return true;
+          skipped++;return false;
+        }
+        function record(start,duration){
+          if(!Number.isFinite(start)||!Number.isFinite(duration))return;
+          const ms=Math.max(0,duration),gap=lastStart<0?0:start-lastStart;
+          if(gap>850)gaps++;
+          if(gap>0&&gap<60000){
+            const instant=1000/gap;
+            emaFps=emaFps>0?emaFps*.68+instant*.32:instant;
+          }
+          emaMs=count?emaMs*.72+ms*.28:ms;
+          lastStart=start;count++;
+          const slow=count>=5&&(emaFps>0&&emaFps<5.5||emaMs>230);
+          const critical=count>=6&&(emaFps>0&&emaFps<2.8||emaMs>390);
+          slowSince=slow?(slowSince<0?start:slowSince):-1;
+          criticalSince=critical?(criticalSince<0?start:criticalSince):-1;
+        }
+        function snapshot(now=lastStart){
+          const slow=slowSince>=0,critical=criticalSince>=0;
+          return {samples:count,meanMs:Math.round(emaMs),
+            fps:Math.round(emaFps*10)/10,intervalMs:interval(),skipped,gaps,slow,critical,
+            slowForMs:slow?Math.max(0,now-slowSince):0,
+            criticalForMs:critical?Math.max(0,now-criticalSince):0,
+            mustInterrupt:critical&&now-criticalSince>=8000};
+        }
+        function reset(){
+          count=0;emaMs=0;emaFps=0;lastStart=-1;skipped=0;gaps=0;
+          slowSince=-1;criticalSince=-1;
+        }
+        return Object.freeze({shouldInfer,record,snapshot,reset});
+      }
+      // PERF:END
+      const inferencePacer=createInferencePacer();
       function zeroTracks(){tracker.reset();state.detections=[];}
       // TRACKER:BEGIN
       // Pure short-term tracker (introduced v0.2.0, unchanged in v0.5.0). Coordinates use the intrinsic frame, normalized
