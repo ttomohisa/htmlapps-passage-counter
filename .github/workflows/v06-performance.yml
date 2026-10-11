@@ -1,0 +1,60 @@
+name: Passage Counter v0.6.0 performance and Browser Kitty visual regression
+on:
+  push:
+    branches:
+      - feat/passage-counter-v0.6.0
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Validate PowerShell and generate compressed single-HTML editions
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Run deterministic tracker, ledger, session and performance tests
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-ledger.mjs
+          node scripts/test-session-model.mjs
+          node scripts/test-performance.mjs
+      - name: Install browser automation dependency for CI only
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Verify actual camera, SIMD, storage and file:// behavior
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Verify actual local WebM, seek safety and offline exports
+        shell: pwsh
+        run: node scripts/smoke-video.mjs
+      - name: Verify PDF Fill Sign and Wi-Fi Share aligned header on small screens
+        shell: pwsh
+        run: node scripts/smoke-header.mjs
+      - name: Log compressed HTML bytes
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/build-size-report.json) {
+            $r=Get-Content -Raw dist/build-size-report.json | ConvertFrom-Json
+            Write-Host ("[v06-size] readable={0} selfExtract={1}" -f $r.readableHtmlBytes,$r.selfExtractHtmlBytes)
+          }
+      - name: Upload full offline builds and size evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v0.6.0-draft
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+          if-no-files-found: warn
+          retention-days: 14
