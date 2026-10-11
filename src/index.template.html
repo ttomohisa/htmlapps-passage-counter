@@ -513,6 +513,206 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
         catch { return false; }
       }
       const simdAvailable=supportsWasmSimd();
+
+      // SESSION:BEGIN
+      // Session/timeline helpers are pure except the returned session mutations.
+      // Time values are persisted ISO UTC strings. UI buckets use local clock time.
+      function createSessionTimeline() {
+        const typeOf = phase => ({
+          counting:'observed',paused:'paused',interrupted:'missing'
+        })[phase]||null;
+        function create({sessionId,name,createdAt,labels,line,modelVersion,appVersion}){
+          if(!sessionId||!Number.isFinite(createdAt))throw Error('Missing session identity');
+          const now=new Date(createdAt).toISOString();
+          return {schemaVersion:1,sessionId,name:String(name||'Passage Counter').slice(0,100),
+            sourceType:'camera',createdAt:now,startedAt:null,endedAt:null,updatedAt:now,
+            lastCheckpointAt:now,state:'idle',
+            directionLabels:{A_TO_B:String(labels?.A_TO_B||'A → B'),B_TO_A:String(labels?.B_TO_A||'B → A')},
+            line:line.map(p=>({x:p.x,y:p.y})),configSegments:[],
+            coverageIntervals:[],
+            runtimeInfo:{appVersion,modelVersion,
+              scoreThreshold:0.45,wasmFlavor:'simd',tracking:'prediction-iou-v0.2'}};
+        }
+        function transition(session,phase,at=Date.now(),reason=''){
+          const iso=new Date(at).toISOString(),intervals=session.coverageIntervals;
+          const tail=intervals[intervals.length-1];
+          if(tail&&!tail.endedAt){
+            const start=Date.parse(tail.startedAt);
+            tail.endedAt=new Date(Math.max(at,start)).toISOString();
+          }
+          const type=typeOf(phase);
+          if(type)intervals.push({
+            intervalId:session.sessionId+'-c'+(intervals.length+1),
+            type,startedAt:iso,endedAt:null,reason:String(reason||'')
+          });
+          if(phase==='counting'&&!session.startedAt)session.startedAt=iso;
+          if(phase==='done')session.endedAt=iso;
+          session.state=phase;session.updatedAt=iso;session.lastCheckpointAt=iso;
+          return session;
+        }
+        function checkpoint(session,now=Date.now()){
+          if(!session)return;
+          const iso=new Date(now).toISOString();
+          session.lastCheckpointAt=iso;session.updatedAt=iso;
+        }
+        function recover(session,now=Date.now()){
+          if(!session || !session.sessionId || !Array.isArray(session.coverageIntervals))
+            throw Error('Invalid saved session');
+          if(session.state!=='counting')return session;
+          const open=session.coverageIntervals.at(-1);
+          if(!open||open.type!=='observed'||open.endedAt)throw Error('Bad observed interval');
+          const tick=Date.parse(session.lastCheckpointAt);
+          const since=Date.parse(open.startedAt);
+          const crashPoint=Math.min(now,Math.max(since,Number.isFinite(tick)?tick:since));
+          transition(session,'interrupted',crashPoint,'unobserved-after-reload');
+          session.updatedAt=new Date(now).toISOString();
+          return session;
+        }
+        function intervalsUntil(session,at=Date.now()){
+          return (session.coverageIntervals||[]).map(i=>({
+            ...i,endedAt:i.endedAt||new Date(Math.max(at,Date.parse(i.startedAt))).toISOString()
+          }));
+        }
+        function durations(session,at=Date.now()){
+          const value={observedMs:0,pausedMs:0,missingMs:0};
+          for(const i of intervalsUntil(session,at)){
+            const duration=Math.max(0,Date.parse(i.endedAt)-Date.parse(i.startedAt));
+            if(i.type==='observed')value.observedMs+=duration;
+            if(i.type==='paused')value.pausedMs+=duration;
+            if(i.type==='missing')value.missingMs+=duration;
+          }
+          return value;
+        }
+        function aggregation(session,events,minutes=5,at=Date.now()){
+          if(![5,15,60].includes(minutes))throw Error('Invalid interval size');
+          if(!session.startedAt)return [];
+          const start=Date.parse(session.startedAt);
+          const end=session.endedAt?Date.parse(session.endedAt):at;
+          if(!Number.isFinite(start)||!Number.isFinite(end)||end<start)return [];
+          const aligned=new Date(start);
+          aligned.setSeconds(0,0);
+          aligned.setMinutes(Math.floor(aligned.getMinutes()/minutes)*minutes);
+          let cursor=aligned.getTime(),rows=[];
+          const intervals=intervalsUntil(session,at);
+          for(let count=0;cursor<=end&&count<20000;count++){
+            const cursorDate=new Date(cursor);
+            const nextDate=new Date(cursor);
+            nextDate.setMinutes(cursorDate.getMinutes()+minutes);
+            const next=Math.max(cursor+60_000,nextDate.getTime());
+            const row={start:new Date(cursor).toISOString(),
+              end:new Date(Math.min(next,end)).toISOString(),minutes,
+              observedMs:0,pausedMs:0,missingMs:0,
+              autoA:0,autoB:0,manualA:0,manualB:0,totalA:0,totalB:0,
+              coverageStatus:'missing'};
+            for(const segment of intervals){
+              const a=Math.max(cursor,Date.parse(segment.startedAt),start);
+              const b=Math.min(next,Date.parse(segment.endedAt),end);
+              const overlap=Math.max(0,b-a);
+              if(segment.type==='observed')row.observedMs+=overlap;
+              if(segment.type==='paused')row.pausedMs+=overlap;
+              if(segment.type==='missing')row.missingMs+=overlap;
+            }
+            for(const event of events){
+              const tick=Date.parse(event.occurredAt);
+              if(tick<cursor||tick>=next||tick>end)continue;
+              const key=event.direction==='A_TO_B'?'A':'B';
+              if(event.kind==='auto')row['auto'+key]+=event.delta;
+              else row['manual'+key]+=event.delta;
+            }
+            row.totalA=row.autoA+row.manualA;row.totalB=row.autoB+row.manualB;
+            row.coverageStatus=row.observedMs>0
+              ?(row.pausedMs+row.missingMs>0?'partial':'observed'):'missing';
+            rows.push(row);cursor=next;
+          }
+          return rows;
+        }
+        return Object.freeze({create,transition,checkpoint,recover,intervalsUntil,durations,aggregation});
+      }
+      // SESSION:END
+      const timeline=createSessionTimeline();
+      // STORE:BEGIN
+      function createSessionStore(){
+        let opened=null;
+        function open(){
+          if(!opened)opened=new Promise((resolve,reject)=>{
+            if(typeof indexedDB==='undefined')return reject(Error('IndexedDB is unavailable'));
+            let request;
+            try{request=indexedDB.open('passage-counter-sessions-v1',1);}
+            catch(error){reject(error);return;}
+            request.onupgradeneeded=()=>{
+              const db=request.result;
+              if(!db.objectStoreNames.contains('sessions'))
+                db.createObjectStore('sessions',{keyPath:'sessionId'});
+              if(!db.objectStoreNames.contains('events')){
+                const events=db.createObjectStore('events',{keyPath:'eventId'});
+                events.createIndex('bySession','sessionId',{unique:false});
+              }
+            };
+            request.onsuccess=()=>{
+              const db=request.result;
+              db.onversionchange=()=>db.close();
+              resolve(db);
+            };
+            request.onerror=()=>reject(request.error||Error('IndexedDB open failed'));
+            request.onblocked=()=>reject(Error('IndexedDB upgrade blocked by another tab'));
+          });
+          return opened;
+        }
+        async function list(){
+          const db=await open();
+          return new Promise((resolve,reject)=>{
+            const tx=db.transaction('sessions','readonly');
+            const request=tx.objectStore('sessions').getAll();
+            request.onsuccess=()=>resolve(request.result
+              .sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))));
+            request.onerror=()=>reject(request.error||Error('Session list failed'));
+          });
+        }
+        async function load(sessionId){
+          const db=await open();
+          return new Promise((resolve,reject)=>{
+            const tx=db.transaction(['sessions','events'],'readonly');
+            let session=null,events=[];
+            tx.objectStore('sessions').get(sessionId).onsuccess=e=>{session=e.target.result||null;};
+            tx.objectStore('events').index('bySession').getAll(sessionId).onsuccess=e=>{
+              events=e.target.result.sort((a,b)=>a.ordinal-b.ordinal);
+            };
+            tx.oncomplete=()=>resolve({session,events});
+            tx.onabort=()=>reject(tx.error||Error('Read aborted'));
+            tx.onerror=()=>reject(tx.error||Error('Read failed'));
+          });
+        }
+        async function write(session,event=null){
+          const db=await open();
+          return new Promise((resolve,reject)=>{
+            const tx=db.transaction(event?['sessions','events']:['sessions'],'readwrite');
+            tx.objectStore('sessions').put(session);
+            if(event)tx.objectStore('events').put(event);
+            tx.oncomplete=resolve;
+            tx.onabort=()=>reject(tx.error||Error('Write aborted'));
+            tx.onerror=()=>reject(tx.error||Error('Write failed'));
+          });
+        }
+        async function deleteSession(sessionId){
+          const db=await open();
+          return new Promise((resolve,reject)=>{
+            const tx=db.transaction(['sessions','events'],'readwrite');
+            tx.objectStore('sessions').delete(sessionId);
+            const cursor=tx.objectStore('events').index('bySession')
+              .openCursor(IDBKeyRange.only(sessionId));
+            cursor.onsuccess=()=>{
+              const row=cursor.result;
+              if(row){row.delete();row.continue();}
+            };
+            tx.oncomplete=resolve;
+            tx.onabort=()=>reject(tx.error||Error('Delete aborted'));
+            tx.onerror=()=>reject(tx.error||Error('Delete failed'));
+          });
+        }
+        return Object.freeze({open,list,load,write,deleteSession});
+      }
+      // STORE:END
+      const sessionStore=createSessionStore();
       const STORAGE_KEY = 'passage-counter-language-v1';
       const line = [{x:0.12,y:0.52},{x:0.88,y:0.52}];
       const state = {
