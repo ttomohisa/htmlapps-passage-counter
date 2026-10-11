@@ -3,7 +3,7 @@
   "name": "Passage Counter",
   "nameJa": "通過カウンター",
   "slug": "passage-counter",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Count people crossing a line in a camera feed or local video. Processing stays on this device.",
   "descriptionJa": "カメラや端末内の動画で、判定線を横切る人物の通過を方向別に数えます。",
   "defaultLanguage": "auto",
