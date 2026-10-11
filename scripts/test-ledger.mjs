@@ -69,4 +69,25 @@ testCase('external mutation cannot edit stored records',()=>{
   const history=ledger.history();history[0].delta=300;
   assert.equal(ledger.history()[0].delta,1);
 });
+testCase('restoration preserves correction and Undo audit rows',()=>{
+  const ledger=factory();ledger.auto('A_TO_B',12);
+  const adjustment=ledger.correct('B_TO_A',+1,20);
+  ledger.undo(35,adjustment.id);
+  const saved=ledger.history();
+  const second=factory();second.restore(saved);
+  assert.equal(second.history().length,3);
+  assert.equal(second.summary().a,1);
+  assert.equal(second.summary().b,0);
+  assert.equal(second.summary().manualB,0);
+  assert.equal(second.summary().canUndo,false);
+  second.correct('A_TO_B',+1,100);
+  assert.equal(second.history().length,4);
+  assert.equal(second.summary().a,2);
+});
+testCase('reject malformed persisted events instead of corrupting counters',()=>{
+  const ledger=factory();ledger.auto('A_TO_B',10);
+  const wrong=[{id:'x',direction:'A_TO_B',kind:'auto',delta:-1,
+    occurredAt:new Date().toISOString(),elapsedMs:10}];
+  assert.throws(()=>ledger.restore(wrong));
+});
 console.log('[ledger] All '+checks+' deterministic ledger checks passed');
