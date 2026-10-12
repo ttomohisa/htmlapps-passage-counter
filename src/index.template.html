@@ -541,6 +541,43 @@ footer{max-width:1240px;padding-top:3px}
   .workspace>.support-panel{display:block}
 }
 
+
+/* Correction actions live in the counting card, immediately after the live
+   controls. Export remains the separate secondary card. */
+.workspace>.measure-console .correction-panel{
+  margin-top:16px;padding:16px 0 0;border-top:1px solid var(--border);min-width:0;
+}
+.workspace>.measure-console .correction-panel .support-header{margin-bottom:7px}
+.workspace>.measure-console .correction-panel .support-header h2{font-size:14px;margin:0;line-height:1.4}
+.workspace>.measure-console .correction-panel .support-header p{font-size:11px;line-height:1.55}
+.workspace>.measure-console .correction-panel .workspace-eyebrow{margin-bottom:3px}
+.workspace>.measure-console .correction-panel .correction-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;
+  align-items:center;padding:9px 0;min-width:0;
+}
+.workspace>.measure-console .correction-panel .correction-row strong{
+  min-width:0;font-size:12px;line-height:1.4;overflow-wrap:anywhere;
+}
+.workspace>.measure-console .correction-panel .correction-row .row{
+  flex-wrap:nowrap;justify-content:flex-end;gap:6px;min-width:0;
+}
+.workspace>.measure-console .correction-panel .correction-row button{
+  min-width:48px;min-height:44px;padding:7px 9px;font-size:14px;
+}
+.workspace>.measure-console .correction-panel .undo-row{display:flex;justify-content:flex-end;padding-top:10px}
+.workspace>.measure-console .correction-panel .undo-row button{
+  min-height:44px;padding:9px 12px;font-size:12px;white-space:normal;
+}
+.workspace>.support-panel .export-panel{border:0;background:#fbfcfa}
+@media(max-width:820px){
+  .workspace>.support-panel{display:block;min-width:0}
+  .workspace>.support-panel .export-panel{border:0}
+}
+@media(max-width:610px){
+  .workspace>.measure-console .correction-panel{margin-top:14px;padding-top:14px}
+  .workspace>.measure-console .correction-panel .correction-row{padding:9px 0}
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
