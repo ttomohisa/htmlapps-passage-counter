@@ -27,7 +27,7 @@ async function ready(page){
  await page.waitForFunction(()=>/計測準備完了|Ready to count/.test(
   document.querySelector('#statusPill')?.textContent??''),
   null,{timeout:90_000});
- await page.waitForFunction(()=>document.querySelector('#lineGestureLayer')?.hidden===false);
+ await page.waitForFunction(()=>document.querySelector('#lineGestureLayer')?.hasAttribute('hidden')===false);
 }
 async function frame(page){
  return await page.evaluate(()=>{
@@ -74,7 +74,7 @@ try{
        name,pointerId:e.pointerId,buttons:e.buttons,target:e.target?.id||e.target?.className?.baseVal||e.target?.tagName
      }),true);
    return {hit:el?.id||el?.tagName||null,hitClass:el?.getAttribute('class'),
-     gestureHidden:gesture.hidden,gesturePointerEvents:getComputedStyle(gesture).pointerEvents,
+     gestureHidden:gesture.hasAttribute('hidden'),gesturePointerEvents:getComputedStyle(gesture).pointerEvents,
      linePointerEvents:getComputedStyle(line).pointerEvents,
      lineStroke:getComputedStyle(line).stroke,lineBox:line.getBoundingClientRect().toJSON(),
      stageBox:document.querySelector('#cameraStage').getBoundingClientRect().toJSON()};
