@@ -270,49 +270,75 @@ html{min-height:100%;background:var(--background)}
   <div class="storage-notice" id="storageNotice" data-kind="idle" role="status" aria-live="polite" hidden></div>
   <div class="workspace">
     <section class="video-panel" aria-labelledby="cameraHeading">
-      <div class="section-head"><h2 id="cameraHeading" data-i18n="camera">カメラ映像</h2><span class="status-pill" id="statusPill" data-kind="idle" role="status" aria-live="polite" data-i18n="idle">未接続</span></div>
-      <label class="source-switch" for="sourceMode">
-        <span data-i18n="sourceModeLabel">入力映像</span>
-        <select id="sourceMode">
-          <option value="camera" data-i18n="sourceCamera">カメラ</option>
-          <option value="file" data-i18n="sourceFile">端末の動画</option>
-        </select>
-      </label>
+      <div class="workspace-topline">
+        <div class="workspace-title">
+          <span class="workspace-eyebrow" data-i18n="workspaceEyebrow">映像と判定線</span>
+          <h2 id="cameraHeading" data-i18n="camera">カメラ映像</h2>
+        </div>
+        <span class="status-pill" id="statusPill" data-kind="idle" role="status" aria-live="polite" data-i18n="idle">未接続</span>
+      </div>
+
+      <div class="source-bar">
+        <label class="source-switch" for="sourceMode">
+          <span data-i18n="sourceModeLabel">入力映像</span>
+          <select id="sourceMode">
+            <option value="camera" data-i18n="sourceCamera">カメラ</option>
+            <option value="file" data-i18n="sourceFile">端末の動画</option>
+          </select>
+        </label>
+        <p class="source-caption" data-i18n="sourceHint">カメラで計測するか、端末の動画を解析します。</p>
+      </div>
       <div class="file-drop" id="videoSourceBox" hidden>
         <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
         <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
         <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
       </div>
+
       <div class="camera-stage" id="cameraStage">
         <video id="cameraFeed" autoplay muted playsinline data-i18n-aria-label="videoPreviewAria" aria-label="カメラ・動画のプレビュー"></video>
-        <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：両端をドラッグ、矢印キーで移動できます"></canvas>
+        <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：線をドラッグして移動、両端で角度や長さを調整"></canvas>
         <div class="mini-counts" id="mobileCounts" hidden aria-hidden="true"><span><span id="miniLabelA">A→B</span><strong id="miniA">0</strong></span><span><span id="miniLabelB">B→A</span><strong id="miniB">0</strong></span></div>
         <div class="camera-placeholder" id="cameraPlaceholder">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="12" width="40" height="28" rx="5"/><circle cx="24" cy="26" r="8"/><path d="M15 12l3-5h12l3 5"/></svg>
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="12" width="40" height="28" rx="5"/><circle cx="24" cy="26" r="8"/><path d="M15 12l3-5h12l3 5"/></svg>
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
         </div>
       </div>
-      <div class="video-footer"><span data-i18n="lineHelp">白丸をドラッグして判定線を調整できます。</span><span id="recognitionStatus" role="status" aria-live="polite">準備前</span></div>
-      <details class="diagnostic-details" id="diagnosticDetails"><summary data-i18n="detailStatus">処理の詳細</summary><div id="detectorInfo">—</div></details>
-      <div class="actions" id="cameraActions">
-        <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
-        <button type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
-        <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
-      </div>
-      <div class="file-actions" id="videoPlayback" hidden>
-        <div class="file-controls">
-          <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
-          <input id="videoSeek" type="range" min="0" max="1000" step="1" value="0" disabled>
-          <div class="file-time" id="videoTime">00:00 / 00:00</div>
-          <div class="row">
-            <button id="previewVideo" type="button" disabled data-i18n="previewVideo">プレビュー再生</button>
-            <button id="reanalyzeVideo" type="button" disabled data-i18n="reanalyzeVideo">最初から再解析</button>
-            <button id="removeVideo" type="button" disabled data-i18n="removeVideo">動画を閉じる</button>
-          </div>
+      <div class="line-toolbar">
+        <div class="line-instruction">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m12 2-3 3m3-3 3 3M12 2v20m0 0-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M2 12h20m0 0-3-3m3 3-3 3"/>
+          </svg>
+          <span data-i18n="lineHelp">線の途中をドラッグして移動。両端の丸で角度・長さを調整。</span>
         </div>
-        <p class="file-note" data-i18n="videoReminder">計測開始時は先頭から再生します。シーク・再解析は結果を消去する前に確認します。</p>
+        <button class="minor reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
       </div>
+      <div class="context-message" id="statusDetails" role="status" aria-live="polite" data-i18n="instruction">カメラを開始すると、判定線を調整できます。</div>
+      <div class="video-footer">
+        <span id="recognitionStatus" role="status" aria-live="polite">準備前</span>
+        <details class="diagnostic-details" id="diagnosticDetails"><summary data-i18n="detailStatus">処理の詳細</summary><div id="detectorInfo">—</div></details>
+      </div>
+
+      <div class="media-controls">
+        <div class="actions" id="cameraActions">
+          <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
+          <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
+        </div>
+        <div class="file-actions" id="videoPlayback" hidden>
+          <div class="file-controls">
+            <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
+            <input id="videoSeek" type="range" min="0" max="1000" step="1" value="0" disabled>
+            <div class="file-time" id="videoTime">00:00 / 00:00</div>
+            <div class="row">
+              <button id="previewVideo" type="button" disabled data-i18n="previewVideo">プレビュー再生</button>
+              <button id="reanalyzeVideo" type="button" disabled data-i18n="reanalyzeVideo">最初から再解析</button>
+              <button id="removeVideo" type="button" disabled data-i18n="removeVideo">動画を閉じる</button>
+            </div>
+          </div>
+          <p class="file-note" data-i18n="videoReminder">計測開始時は先頭から再生します。シーク・再解析は結果を消去する前に確認します。</p>
+        </div>
+      </div>
+
       <details class="setup-options" id="setupOptions">
         <summary data-i18n="settingsSummary">カメラ・表示の設定</summary>
         <div class="option-fields">
@@ -325,34 +351,50 @@ html{min-height:100%;background:var(--background)}
         </div>
         <p class="helper" data-i18n="cameraOrientationNote">画面の鏡像反転は行いません。判定線と映像の向きを一致させます。</p>
       </details>
-    </section>
-    <aside class="panel" aria-labelledby="counterHeading">
-      <div><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2><p class="status-text" id="statusDetails" aria-live="polite" data-i18n="instruction">カメラを開始すると、判定線を調整できます。</p></div>
-      <label class="inline-field" for="sessionName"><span data-i18n="sessionName">計測名</span>
-        <input id="sessionName" maxlength="100" type="text" autocomplete="off" value="Passage Counter">
-      </label>
-      <div>
-        <div class="counter-grid">
-          <div class="counter"><div class="label" id="displayLabelA" data-i18n="directionA">A → B</div><strong id="countA">0</strong><small data-i18n="passed">通過</small></div>
-          <div class="counter"><div class="label" id="displayLabelB" data-i18n="directionB">B → A</div><strong id="countB">0</strong><small data-i18n="passed">通過</small></div>
-        </div>
-        <div class="total"><span data-i18n="total">延べ通過件数</span><strong id="countTotal">0</strong></div>
-      </div>
 
+      <div class="precount-row">
+        <label class="inline-field" for="sessionName"><span data-i18n="sessionName">計測名</span>
+          <input id="sessionName" maxlength="100" type="text" autocomplete="off" value="Passage Counter">
+        </label>
+      </div>
       <section class="test-card" id="testCard" aria-labelledby="testHeading">
-        <h2 id="testHeading" data-i18n="testHeading">設置をテスト</h2>
-        <p data-i18n="testInstructions">30秒間、人が線を横切る様子を試せます。テスト件数は本計測へ加えません。</p>
+        <div class="test-copy">
+          <h2 id="testHeading" data-i18n="testHeading">設置をテスト</h2>
+          <p data-i18n="testInstructions">30秒間、人が線を横切る様子を試せます。テスト件数は本計測へ加えません。</p>
+        </div>
         <button type="button" id="testButton" class="minor" disabled data-i18n="startTest">30秒テストを開始</button>
         <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
           <strong id="testRemaining" role="timer" aria-live="off"></strong>
           <span id="testMessage"></span>
         </div>
       </section>
-      <div class="box"><h2 data-i18n="session">計測</h2><div class="row"><button class="primary" id="beginCount" disabled data-i18n="beginCount">計測を開始</button><button id="pauseCount" disabled data-i18n="pause">一時停止</button><button id="finishCount" disabled data-i18n="finish">終了</button></div><p data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p></div>
 
-      <section class="box correction-panel" aria-labelledby="correctHeading">
-        <h2 id="correctHeading" data-i18n="correctionHeading">件数を補正</h2>
-        <p class="helper" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
+      <section class="measure-console" aria-labelledby="counterHeading">
+        <div class="section-head measure-heading">
+          <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
+          <span class="clock" id="elapsedText">00:00:00</span>
+        </div>
+        <div class="counter-grid">
+          <div class="counter"><div class="label" id="displayLabelA" data-i18n="directionA">A → B</div><strong id="countA">0</strong><small data-i18n="passed">通過</small></div>
+          <div class="counter"><div class="label" id="displayLabelB" data-i18n="directionB">B → A</div><strong id="countB">0</strong><small data-i18n="passed">通過</small></div>
+        </div>
+        <div class="total"><span data-i18n="total">延べ通過件数</span><strong id="countTotal">0</strong></div>
+        <div class="session-controls" id="sessionControls">
+          <button class="primary" id="beginCount" disabled data-i18n="beginCount">計測を開始</button>
+          <button id="pauseCount" disabled data-i18n="pause">一時停止</button>
+          <button id="finishCount" disabled data-i18n="finish">終了</button>
+        </div>
+        <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
+      </section>
+    </section>
+
+    <aside class="panel support-panel" aria-labelledby="correctHeading">
+      <section class="correction-panel" aria-labelledby="correctHeading">
+        <div class="support-header">
+          <span class="workspace-eyebrow" data-i18n="correctionEyebrow">結果の確認</span>
+          <h2 id="correctHeading" data-i18n="correctionHeading">件数を補正</h2>
+          <p class="helper" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
+        </div>
         <div class="correction-row">
           <strong id="correctLabelA">A → B</strong>
           <div class="row">
@@ -369,8 +411,13 @@ html{min-height:100%;background:var(--background)}
         </div>
         <div class="undo-row"><button type="button" id="undoCorrection" disabled data-i18n="undoCorrection">直前の補正を取り消す</button></div>
       </section>
-      <section class="box" aria-labelledby="exportHeading">
-        <div class="section-head"><h2 id="exportHeading" data-i18n="exportHeading">計測記録</h2><span id="elapsedText" class="muted">00:00:00</span></div>
+
+      <section class="export-panel" aria-labelledby="exportHeading">
+        <div class="support-header">
+          <span class="workspace-eyebrow" data-i18n="exportEyebrow">データ保存</span>
+          <h2 id="exportHeading" data-i18n="exportHeading">計測記録</h2>
+          <p class="helper" data-i18n="exportHint">終了前でもCSVを保存できます。</p>
+        </div>
         <div id="coverageSummary" class="coverage-mini" aria-live="off" hidden></div>
         <label class="inline-field" for="outputFilename"><span data-i18n="outputFilename">出力ファイル名</span><input id="outputFilename" type="text" maxlength="100" spellcheck="false" autocomplete="off" value="passage-counter" aria-describedby="fileHint"></label>
         <p class="helper" id="fileHint" data-i18n="fileHint">CSVにはファイルの種類を付けて保存します。</p>
@@ -379,7 +426,7 @@ html{min-height:100%;background:var(--background)}
           <button id="summaryButton" disabled data-i18n="exportSummary">概要CSV</button>
           <button id="intervalsButton" disabled data-i18n="exportIntervals">時間帯CSV</button>
         </div>
-        <div class="actions"><button class="danger" id="resetButton" disabled data-i18n="reset">件数をリセット</button></div>
+        <div class="destructive-actions"><button class="danger" id="resetButton" disabled data-i18n="reset">件数をリセット</button></div>
       </section>
     </aside>
   </div>
