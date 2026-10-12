@@ -415,6 +415,132 @@ footer{max-width:1240px;padding-top:3px}
   .counter strong{font-size:35px}
 }
 
+
+/* v0.10 UX refinement — counts at the top beside the preview; the test is
+   contextual, not a remote-looking secondary step after advanced settings. */
+.workspace{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(280px,.9fr);
+  grid-template-areas:"video measure" "setup support";
+  align-items:start;
+  gap:16px;
+}
+.workspace>.video-panel{grid-area:video}
+.workspace>.measure-console{grid-area:measure;min-width:0;border:1px solid var(--border);border-radius:18px;background:#fff;box-shadow:0 5px 24px rgba(23,54,38,.035);padding:19px 19px 20px}
+.workspace>.setup-extras{grid-area:setup;min-width:0;padding:18px 20px;display:block}
+.workspace>.support-panel{grid-area:support}
+.workspace .setup-extras .setup-options{margin:0 0 13px;padding:7px 13px;border-radius:11px}
+.workspace .setup-extras .precount-row{padding:0;margin:0}
+.workspace .setup-extras .precount-row input{font-size:13px}
+.workspace>.measure-console .measure-heading{margin:0 0 15px}
+.workspace>.measure-console .measure-heading h2{font-size:17px}
+.workspace>.measure-console .counter-grid{gap:9px}
+.workspace>.measure-console .counter{padding:11px 12px 10px;background:#f8faf8;border-radius:12px}
+.workspace>.measure-console .counter .label{font-size:12px}
+.workspace>.measure-console .counter strong{font-size:clamp(35px,4vw,51px)}
+.workspace>.measure-console .counter small{display:none}
+.workspace>.measure-console .total{border-bottom:1px solid var(--border);padding:12px 0 14px;margin-bottom:15px}
+.workspace>.measure-console .total strong{font-size:24px}
+.workspace>.measure-console .setup-flow{gap:6px;margin:0 0 11px}
+.workspace>.measure-console .setup-flow span{padding:6px 8px;font-size:10px;flex:1 1 auto;text-align:center;justify-content:center}
+.next-action{border-left:3px solid #accdb9;background:#f4f8f4;border-radius:0 10px 10px 0;padding:11px 12px;margin:0 0 12px;display:grid;gap:2px;min-width:0}
+.next-kicker{font-size:10px;font-weight:800;color:#496a59;letter-spacing:.08em}
+.next-action strong{font-size:13px;font-weight:800;color:var(--brand-dark);line-height:1.4;overflow-wrap:anywhere}
+.next-action p{font-size:11px;color:#53695a;line-height:1.6;margin:2px 0 0;overflow-wrap:anywhere}
+#appMain[data-next="test"] .next-action,
+#appMain[data-next="count"] .next-action{border-color:var(--brand);background:#eaf4ed}
+#appMain[data-next="testing"] .next-action{border-color:#a88148;background:#fff7eb}
+#appMain[data-next="error"] .next-action{border-color:#bb685b;background:#fff2ee}
+.workspace>.measure-console .test-card{margin:0 0 13px;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:12px 13px;background:#fbfdfb;border-radius:11px}
+.workspace>.measure-console .test-card[hidden]{display:none!important}
+.workspace>.measure-console .test-card h2{font-size:12px}
+.workspace>.measure-console .test-card p{font-size:11px;line-height:1.55;max-width:none}
+.workspace>.measure-console .test-card button{width:100%;max-width:none;min-height:46px;font-weight:750}
+#appMain[data-next="test"] .test-card{border-color:#aacbb8;background:#f1f8f3}
+#appMain[data-next="test"] #testButton:enabled{color:#fff;background:var(--brand);border-color:var(--brand)}
+#appMain[data-next="testing"] #testButton:enabled{background:#fff;border-color:#caa273;color:#915822}
+#appMain[data-next="count"] #testButton:enabled{color:var(--brand);background:transparent;border-color:#bad4c4}
+#appMain[data-next="count"] .next-action{margin-top:3px}
+.workspace>.measure-console .test-result{background:#edf6ef;font-size:11px}
+.workspace>.measure-console .session-controls{margin:0;gap:8px}
+.workspace>.measure-console .session-controls button{min-height:46px}
+#appMain[data-next="camera"] #beginCount,
+#appMain[data-next="test"] #beginCount,
+#appMain[data-next="testing"] #beginCount,
+#appMain[data-next="error"] #beginCount,
+#appMain[data-next="loading"] #beginCount{display:none}
+#appMain[data-next="counting"] #beginCount,
+#appMain[data-next="counting"] .test-card,
+#appMain[data-next="done"] .test-card{display:none!important}
+#appMain[data-next="done"] .session-controls{display:none}
+#appMain[data-next="counting"] .session-controls{grid-template-columns:1fr 1fr}
+#appMain[data-next="counting"] #pauseCount,
+#appMain[data-next="counting"] #finishCount{display:block;min-height:50px}
+#appMain[data-next="count"] .session-controls #beginCount{background:var(--brand);border-color:var(--brand);color:#fff;display:block;min-height:52px;font-size:14px}
+.workspace>.measure-console .count-footnote{margin:12px 0 0;line-height:1.6;font-size:11px}
+.camera-launch{padding:0 22px 14px}
+.camera-launch .actions{margin:0;display:flex;gap:9px}
+.camera-launch #cameraStart{flex:1 1 auto;min-height:46px;font-size:13px}
+.camera-launch #cameraStop{flex:0 1 auto;min-height:44px;font-size:12px}
+#appMain[data-source="camera"][data-phase="ready"] #cameraStart:disabled,
+#appMain[data-source="camera"][data-phase="counting"] #cameraStart:disabled,
+#appMain[data-source="camera"][data-phase="testing"] #cameraStart:disabled,
+#appMain[data-source="camera"][data-phase="paused"] #cameraStart:disabled,
+#appMain[data-source="camera"][data-phase="interrupted"] #cameraStart:disabled{display:none}
+.camera-launch #cameraStop:disabled{display:none}
+.workspace .video-panel .media-controls:has(#videoPlayback[hidden]){display:none}
+.workspace .video-panel .media-controls:has(#videoPlayback:not([hidden])){padding-top:12px}
+.workspace .video-panel .context-message{margin-top:11px}
+.workspace .video-panel .video-footer{padding-top:4px}
+.workspace>.support-panel{align-self:start}
+@media(max-width:900px){
+  .workspace{grid-template-columns:minmax(0,1.4fr) minmax(245px,.95fr);gap:11px}
+  .workspace>.measure-console{padding:15px 13px}
+  .workspace>.setup-extras{padding:15px}
+  .camera-launch{padding:0 16px 12px}
+}
+@media(max-width:820px){
+  .workspace{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"video" "measure" "setup" "support";
+    gap:12px;
+  }
+  .workspace>.measure-console{padding:16px 15px}
+  .workspace>.measure-console .measure-heading{margin-bottom:12px}
+  .workspace>.measure-console .counter-grid{gap:12px}
+  .workspace>.measure-console .counter strong{font-size:43px}
+  .workspace>.measure-console .test-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.7fr);align-items:center}
+  .workspace>.measure-console .test-result{grid-column:1/-1}
+  .workspace>.measure-console .test-card button{width:100%;max-width:none}
+  .workspace>.setup-extras{padding:15px}
+  .workspace>.support-panel{display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:610px){
+  .shell.main{padding-top:13px}
+  .page-intro{padding-bottom:11px}
+  .workspace{gap:10px}
+  .workspace>.video-panel .workspace-topline{padding-bottom:10px}
+  .workspace>.video-panel .source-bar{padding-bottom:9px}
+  .camera-launch{padding:0 13px 10px}
+  .camera-launch .actions{margin:0}
+  .camera-stage{min-height:155px}
+  .line-toolbar{padding-top:8px;padding-bottom:7px}
+  .line-instruction{font-size:11px}
+  .workspace .video-panel .context-message{margin-top:8px}
+  .workspace .video-panel .video-footer{padding-top:2px}
+  .workspace>.measure-console{padding:15px 13px}
+  .workspace>.measure-console .measure-heading{margin-bottom:10px}
+  .workspace>.measure-console .counter-grid{gap:8px}
+  .workspace>.measure-console .counter{padding:10px 11px}
+  .workspace>.measure-console .counter strong{font-size:39px}
+  .workspace>.measure-console .total{padding:9px 0 11px;margin-bottom:12px}
+  .workspace>.measure-console .setup-flow span{font-size:10px;padding:6px 5px}
+  .workspace>.measure-console .test-card{display:block;padding:12px;margin-bottom:11px}
+  .workspace>.measure-console .test-card button{margin-top:10px}
+  .next-action{padding:10px 11px}
+  .workspace>.support-panel{display:block}
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
