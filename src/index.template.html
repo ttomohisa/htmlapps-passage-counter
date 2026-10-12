@@ -426,7 +426,7 @@ footer{max-width:1240px;padding-top:3px}
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.9.0</span></p>
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v0.10.0</span></p>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -631,7 +631,7 @@ footer{max-width:1240px;padding-top:3px}
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
     <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
     <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
-    <p class="helper" data-i18n="prototypeNote">v0.5.0では人物の短時間追跡と線の横断判定を改善しています。計測用途での精度確認はまだ完了していません。</p>
+    <p class="helper" data-i18n="prototypeNote">判定線を移動しやすくしました。実環境の精度確認はまだ完了していません。</p>
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
     <div class="timeline-head"><h2 id="timelineHeading" data-i18n="timelineHeading">時間帯別の通過</h2>
@@ -652,7 +652,7 @@ footer{max-width:1240px;padding-top:3px}
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · v0.9.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · v0.10.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
@@ -772,16 +772,16 @@ footer{max-width:1240px;padding-top:3px}
 
       const translations = {
         ja: {
-          language:'言語',subTitle:'通過カウンター · v0.9.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
+          language:'言語',subTitle:'通過カウンター · v0.10.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
           title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
           videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
-          lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。白丸をドラッグ、矢印キーで線全体を移動できます。',lineHelp:'白丸をドラッグして判定線を調整できます。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
+          lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。線の途中をドラッグすると形を保ったまま移動し、端の丸をドラッグすると角度と長さを調整できます。矢印キーでも移動できます。',lineHelp:'線の途中をドラッグして移動。両端の丸で角度・長さを調整。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v0.9.0はリリース準備中です。実映像100件以上の精度確認、スマホ実機・30分連続稼働、モデル再配布条件の確認が完了するまで正式公開しません。',
+          prototypeNote:'v0.10.0では判定線の移動操作と画面構成を改善しました。実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'判定線を置き、カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
           helpPrivacy:'カメラや選択した動画はアップロードしません。映像・顔・音声は保存せず、計測記録だけをブラウザ内に保存します。',
@@ -827,7 +827,7 @@ footer{max-width:1240px;padding-top:3px}
           deleted:'計測を削除しました。',deleteFailed:'削除できませんでした。',
           noIntervalRows:'まだ表示できる時間帯集計がありません。',
           rescueName:'計測記録を保存',wallElapsed:'開始からの経過',sessionSave:'保存済み',
-          sourceModeLabel:'入力映像',sourceCamera:'カメラ',sourceFile:'端末の動画',
+          workspaceEyebrow:'映像と判定線',sourceHint:'カメラで計測するか、端末の動画を解析します。',measureEyebrow:'計測パネル',correctionEyebrow:'結果の確認',exportEyebrow:'データ保存',exportHint:'終了前でもCSVを保存できます。',sourceModeLabel:'入力映像',sourceCamera:'カメラ',sourceFile:'端末の動画',
           videoSelect:'端末から動画を選ぶ',videoFileHint:'動画は送信・永続保存しません。MP4/WebMなどブラウザが再生できる形式のみ対応します。ここへドラッグ＆ドロップも可能です。',
           videoEmpty:'動画が未選択です。',videoPosition:'動画の位置',previewVideo:'プレビュー再生',
           pausePreview:'プレビューを停止',reanalyzeVideo:'最初から再解析',removeVideo:'動画を閉じる',
@@ -857,16 +857,16 @@ footer{max-width:1240px;padding-top:3px}
           modelFailed:'内包AIの初期化に失敗しました。再読み込みしてお試しください。',settingLine:'判定線を調整し、設置テストをしてください。',counting:'計測中です。画面を表示したままにしてください。',pausedText:'一時停止中です。再開すると追跡を初期化します。',hiddenStop:'画面が非表示になったため計測を中断しました。非表示中の通過件数は不明です。',lostCamera:'カメラが停止しました。計測を再開するには接続し直してください。',notReady:'カメラとAIがまだ準備できていません。',noEvents:'まだ通過イベントがありません。',wakeWarning:'画面のスリープを防止できません。画面が消えると計測が止まることがあります。'
         },
         en: {
-          language:'Language',subTitle:'People crossing counter · v0.9.0',help:'Help',privacyShort:'No account · On-device processing',
+          language:'Language',subTitle:'People crossing counter · v0.10.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Entirely local processing',
           title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
-          lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag an endpoint, or use arrow keys to move the line.',lineHelp:'Drag the white end points to adjust the line.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
+          lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag anywhere along the line to move it without changing its angle or length. Drag an end handle to adjust it. Arrow keys move the whole line.',lineHelp:'Drag the line itself to move it. Drag an end circle to change the angle or length.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v0.9.0 is preparing for release. Real 100+ crossings, mobile field/endurance tests and model redistribution verification remain open, so the release is not approved.',
+          prototypeNote:'v0.10.0 improves counting-line interaction and the workflow layout. Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Place the counting line. For camera input, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
           helpPrivacy:'Camera and selected video files are not uploaded. Frames, faces and audio are not stored; only counting records are saved in this browser.',
@@ -912,7 +912,7 @@ footer{max-width:1240px;padding-top:3px}
           deleted:'Session deleted.',deleteFailed:'Could not delete the session.',
           noIntervalRows:'No time buckets to display yet.',
           rescueName:'Save a CSV copy',wallElapsed:'Wall time',sessionSave:'Saved',
-          sourceModeLabel:'Video source',sourceCamera:'Camera',sourceFile:'Local video',
+          workspaceEyebrow:'Video and counting line',sourceHint:'Count from a live camera or analyze a video from this device.',measureEyebrow:'Counting',correctionEyebrow:'Review',exportEyebrow:'Save your data',exportHint:'You can export CSV before finishing your session.',sourceModeLabel:'Video source',sourceCamera:'Camera',sourceFile:'Local video',
           videoSelect:'Choose a video on this device',videoFileHint:'Video is never uploaded or saved. Only formats playable by this browser (e.g., MP4/WebM) work. You can also drag and drop here.',
           videoEmpty:'No video selected.',videoPosition:'Video position',previewVideo:'Preview playback',
           pausePreview:'Pause preview',reanalyzeVideo:'Reanalyze from start',removeVideo:'Close video',
