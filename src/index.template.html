@@ -682,7 +682,7 @@ footer{max-width:1240px;padding-top:3px}
       <section class="test-card" id="testCard" aria-labelledby="testHeading">
         <div class="test-copy">
           <h2 id="testHeading" data-i18n="testHeading">30秒の設置チェック</h2>
-          <p data-i18n="testInstructions">判定線をまたいで通過し、A→BとB→Aの認識方向を確認します。この件数は本計測に入りません。</p>
+          <p data-i18n="testInstructions">人が線を横切るか、A/Bの方向が合っているかを確認します。テスト件数は本計測に加算しません。</p>
         </div>
         <button type="button" id="testButton" class="minor" disabled data-i18n="startTest">30秒テストを開始</button>
         <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
@@ -1773,6 +1773,40 @@ footer{max-width:1240px;padding-top:3px}
         const label=tr(key);
         if(status.textContent!==label)status.textContent=label;
       }
+      // A single, translated "what to do next" cue. This follows the actual
+      // model/camera and calibration gates; no decorative mock progress.
+      function renderNextAction(phase,fileMode,sourceAvailable,validLine){
+        let next='camera';
+        if(!simdAvailable)next='unsupported';
+        else if(phase==='loading'||state.sourceBusy)next='loading';
+        else if(phase==='error')next='error';
+        else if(phase==='done')next='done';
+        else if(phase==='counting')next='counting';
+        else if(phase==='testing')next='testing';
+        else if(!sourceAvailable)next=fileMode?'file':'camera';
+        else if(!validLine)next='line';
+        else if(fileMode||state.testCompleted)next='count';
+        else next='test';
+        const copy={
+          unsupported:['nextUnsupported','nextUnsupportedDesc'],
+          loading:['nextLoading','nextLoadingDesc'],
+          error:['nextError','nextErrorDesc'],
+          camera:['nextStartCamera','nextStartCameraDesc'],
+          file:['nextChooseFile','nextChooseFileDesc'],
+          line:['nextAdjustLine','nextAdjustLineDesc'],
+          test:['nextTest','nextTestDesc'],
+          testing:['nextTesting','nextTestingDesc'],
+          count:['nextCount',!fileMode&&state.testA+state.testB===0?
+            'nextCountNoTrial':'nextCountDesc'],
+          counting:['nextCounting','nextCountingDesc'],
+          done:['nextDone','nextDoneDesc']
+        }[next];
+        $('#appMain').dataset.next=next;
+        $('#nextAction').dataset.next=next;
+        $('#nextActionTitle').textContent=tr(copy[0]);
+        $('#nextActionDescription').textContent=tr(copy[1]);
+        return next;
+      }
       function renderState(message){
         const phase=state.phase,sourceAvailable=hasActiveSource(),fileMode=isFileMode();
         $('#appMain').dataset.phase=phase;
@@ -1825,8 +1859,10 @@ footer{max-width:1240px;padding-top:3px}
         $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||Boolean(state.startTime);
         $('#reanalyzeVideo').disabled=!state.videoReady||!state.startTime||state.sourceBusy;
         $('#removeVideo').disabled=!state.videoReady||state.sourceBusy;
-        $('#testCard').hidden=fileMode;
+        $('#testCard').hidden=fileMode||!sourceAvailable||!state.detector||
+          ['counting','loading','done'].includes(phase);
         $('#flowTest').hidden=fileMode;
+        $('#flowMeasure').textContent=tr(fileMode?'stepMeasureFile':'stepMeasure');
         renderVideoTime();
         $('#cameraStart').disabled=!simdAvailable||phase==='loading'||phase==='done'||Boolean(state.stream)||fileMode;
         $('#cameraStop').disabled=!state.stream||fileMode;
@@ -1835,7 +1871,7 @@ footer{max-width:1240px;padding-top:3px}
         $('#cameraFacing').disabled=fileMode||['counting','testing','loading','done'].includes(phase);
         for(const id of ['#labelA','#labelB'])$(id).disabled=testing||phase==='counting';
         $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','testing'].includes(phase);
-        $('#testButton').textContent=tr(testing?'stopTest':'startTest');
+        $('#testButton').textContent=tr(testing?'stopTest':state.testCompleted?'repeatTest':'startTest');
         $('#testResult').hidden=!(testing||state.testCompleted||state.testCancelled);
         if(!$('#testResult').hidden)formatTestStatus();
         $('#beginCount').disabled=!state.detector||!sourceAvailable||!validLine||
@@ -1854,8 +1890,9 @@ footer{max-width:1240px;padding-top:3px}
         $('#resetButton').disabled=!state.startTime&&!totals.hasEvents;
         $('#report').hidden=phase!=='done';
         $('#cameraPlaceholder').hidden=sourceAvailable;
-        const activeStep=['counting','paused','done','interrupted'].includes(phase)?'flowMeasure':
-          (!fileMode&&(testing||state.testCompleted)?'flowTest':'flowSet');
+        const next=renderNextAction(phase,fileMode,sourceAvailable,validLine);
+        const activeStep=next==='count'||next==='counting'||next==='done'?'flowMeasure':
+          next==='test'||next==='testing'?'flowTest':'flowSet';
         for(const id of ['flowSet','flowTest','flowMeasure']){
           if(id===activeStep)$('#'+id).setAttribute('aria-current','step');
           else $('#'+id).removeAttribute('aria-current');
