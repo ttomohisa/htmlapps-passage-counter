@@ -455,11 +455,6 @@ footer{max-width:1240px;padding-top:3px}
     </div>
   </section>
 
-    <div class="setup-flow" data-i18n-aria-label="setupProgress" aria-label="計測の手順" id="setupFlow">
-      <span id="flowSet" aria-current="step" data-i18n="stepSetup">1 · 設定</span>
-      <span id="flowTest" data-i18n="stepTest">2 · テスト</span>
-      <span id="flowMeasure" data-i18n="stepMeasure">3 · 計測</span>
-    </div>
   <div class="storage-notice" id="storageNotice" data-kind="idle" role="status" aria-live="polite" hidden></div>
   <div class="workspace">
     <section class="video-panel" aria-labelledby="cameraHeading">
@@ -488,6 +483,12 @@ footer{max-width:1240px;padding-top:3px}
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
       </div>
 
+      <div class="camera-launch" id="cameraLaunch">
+        <div class="actions" id="cameraActions">
+          <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
+          <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
+        </div>
+      </div>
       <div class="camera-stage" id="cameraStage">
         <video id="cameraFeed" autoplay muted playsinline data-i18n-aria-label="videoPreviewAria" aria-label="カメラ・動画のプレビュー"></video>
         <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：線をドラッグして移動、両端で角度や長さを調整"></canvas>
@@ -504,9 +505,6 @@ footer{max-width:1240px;padding-top:3px}
       </div>
       <div class="line-toolbar">
         <div class="line-instruction">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m12 2-3 3m3-3 3 3M12 2v20m0 0-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M2 12h20m0 0-3-3m3 3-3 3"/>
-          </svg>
           <span data-i18n="lineHelp">線の途中をドラッグして移動。両端の丸で角度・長さを調整。</span>
         </div>
         <button class="minor reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
@@ -518,10 +516,6 @@ footer{max-width:1240px;padding-top:3px}
       </div>
 
       <div class="media-controls">
-        <div class="actions" id="cameraActions">
-          <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
-          <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
-        </div>
         <div class="file-actions" id="videoPlayback" hidden>
           <div class="file-controls">
             <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
@@ -537,6 +531,48 @@ footer{max-width:1240px;padding-top:3px}
         </div>
       </div>
 
+    </section>
+
+      <section class="measure-console" aria-labelledby="counterHeading">
+        <div class="section-head measure-heading">
+          <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
+          <span class="clock" id="elapsedText">00:00:00</span>
+        </div>
+        <div class="counter-grid">
+          <div class="counter"><div class="label" id="displayLabelA" data-i18n="directionA">A → B</div><strong id="countA">0</strong><small data-i18n="passed">通過</small></div>
+          <div class="counter"><div class="label" id="displayLabelB" data-i18n="directionB">B → A</div><strong id="countB">0</strong><small data-i18n="passed">通過</small></div>
+        </div>
+        <div class="total"><span data-i18n="total">延べ通過件数</span><strong id="countTotal">0</strong></div>
+        <div class="next-action" id="nextAction" role="status" aria-live="polite" data-next="camera">
+          <span class="next-kicker" id="nextActionKicker" data-i18n="nextKicker">次の操作</span>
+          <strong id="nextActionTitle" data-i18n="nextStartCamera">まずカメラを開始</strong>
+          <p id="nextActionDescription" data-i18n="nextStartCameraDesc">映像を表示して判定線を置きます。</p>
+        </div>
+<div class="setup-flow" data-i18n-aria-label="setupProgress" aria-label="計測の手順" id="setupFlow">
+      <span id="flowSet" aria-current="step" data-i18n="stepSetup">1 · 設定</span>
+      <span id="flowTest" data-i18n="stepTest">2 · テスト</span>
+      <span id="flowMeasure" data-i18n="stepMeasure">3 · 計測</span>
+    </div>
+      <section class="test-card" id="testCard" aria-labelledby="testHeading">
+        <div class="test-copy">
+          <h2 id="testHeading" data-i18n="testHeading">30秒の設置チェック</h2>
+          <p data-i18n="testInstructions">判定線をまたいで通過し、A→BとB→Aの認識方向を確認します。この件数は本計測に入りません。</p>
+        </div>
+        <button type="button" id="testButton" class="minor" disabled data-i18n="startTest">30秒テストを開始</button>
+        <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
+          <strong id="testRemaining" role="timer" aria-live="off"></strong>
+          <span id="testMessage"></span>
+        </div>
+      </section>
+
+        <div class="session-controls" id="sessionControls">
+          <button class="primary" id="beginCount" disabled data-i18n="beginCount">計測を開始</button>
+          <button id="pauseCount" disabled data-i18n="pause">一時停止</button>
+          <button id="finishCount" disabled data-i18n="finish">終了</button>
+        </div>
+        <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
+      </section>
+    <section class="panel setup-extras" aria-label="計測の設定" data-i18n-aria-label="extrasAria">
       <details class="setup-options" id="setupOptions">
         <summary data-i18n="settingsSummary">カメラ・表示の設定</summary>
         <div class="option-fields">
@@ -555,35 +591,6 @@ footer{max-width:1240px;padding-top:3px}
           <input id="sessionName" maxlength="100" type="text" autocomplete="off" value="Passage Counter">
         </label>
       </div>
-      <section class="test-card" id="testCard" aria-labelledby="testHeading">
-        <div class="test-copy">
-          <h2 id="testHeading" data-i18n="testHeading">設置をテスト</h2>
-          <p data-i18n="testInstructions">30秒間、人が線を横切る様子を試せます。テスト件数は本計測へ加えません。</p>
-        </div>
-        <button type="button" id="testButton" class="minor" disabled data-i18n="startTest">30秒テストを開始</button>
-        <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
-          <strong id="testRemaining" role="timer" aria-live="off"></strong>
-          <span id="testMessage"></span>
-        </div>
-      </section>
-
-      <section class="measure-console" aria-labelledby="counterHeading">
-        <div class="section-head measure-heading">
-          <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
-          <span class="clock" id="elapsedText">00:00:00</span>
-        </div>
-        <div class="counter-grid">
-          <div class="counter"><div class="label" id="displayLabelA" data-i18n="directionA">A → B</div><strong id="countA">0</strong><small data-i18n="passed">通過</small></div>
-          <div class="counter"><div class="label" id="displayLabelB" data-i18n="directionB">B → A</div><strong id="countB">0</strong><small data-i18n="passed">通過</small></div>
-        </div>
-        <div class="total"><span data-i18n="total">延べ通過件数</span><strong id="countTotal">0</strong></div>
-        <div class="session-controls" id="sessionControls">
-          <button class="primary" id="beginCount" disabled data-i18n="beginCount">計測を開始</button>
-          <button id="pauseCount" disabled data-i18n="pause">一時停止</button>
-          <button id="finishCount" disabled data-i18n="finish">終了</button>
-        </div>
-        <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
-      </section>
     </section>
 
     <aside class="panel support-panel" aria-labelledby="correctHeading">
@@ -2070,15 +2077,6 @@ footer{max-width:1240px;padding-top:3px}
         };
         badge('A',cx-nx*36,cy-ny*36);
         badge('B',cx+nx*36,cy+ny*36);
-        if(!gesture.hasAttribute('hidden')){
-          // A visible centre grip explains that the line itself can be moved.
-          ctx.fillStyle='rgba(14,82,61,.96)';ctx.strokeStyle='#e9fff1';ctx.lineWidth=1.5;
-          ctx.beginPath();ctx.roundRect(cx-18,cy-10,36,20,9);ctx.fill();ctx.stroke();
-          ctx.fillStyle='#fff';
-          for(const offset of [-7,0,7]){
-            ctx.beginPath();ctx.arc(cx+offset,cy,1.65,0,Math.PI*2);ctx.fill();
-          }
-        }
         ctx.textAlign='start';ctx.textBaseline='alphabetic';
         if($('#showDetections').checked)state.detections.forEach(d=>{
           const x=g.x+d.originX*g.sx,y=g.y+d.originY*g.sx;
