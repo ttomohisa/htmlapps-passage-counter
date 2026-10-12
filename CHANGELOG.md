@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0] — 2026-10-12 (Draft, A/B line interaction and UX redesign)
+
+- Rebuilt the screen as a camera-first workflow, keeping video, line placement, status, 30-second test and live counters/actions close together. Moved correction/Undo and the 3 CSV exports to a distinct review panel.
+- Enabled rigid-body translation of a counting line by dragging **anywhere along its central segment**, while retaining independent endpoint drag for resizing and rotation.
+- Added a transparent SVG hit layer around the line and handles, so touch editing does not prevent vertical page scrolling elsewhere on the camera preview.
+- Added a centre grip, finite-line hit testing, whole-line boundary clamp, pointer capture, keyboard Shift/Arrow nudge and durable line persistence only when gestures finish.
+- Preserved test invalidation on line edits and editing lock during active counting/testing. Camera/local-video, events/Undo, IndexedDB/CSV, model/WASM and network-free standalone remain unchanged.
+- Added dedicated line-geometry tests, browser mouse/touch/keyboard regression and responsive workflow-order assertions. Re-capture real bilingual desktop/mobile README images from v0.10.0 UI.
+- **No-Go remains:** physical Android/iOS and 30-minute device tests, independent 100+ real crossing accuracy, specific model redistributability and deployed CSP audits.
+
+
 ## [0.9.0] — 2026-10-11 (Draft, release preparation; NOT approved RC)
 
 - Promoted application and generated standalone version metadata to v0.9.0, without changing the main camera/video/tracking logic.
