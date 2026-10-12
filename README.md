@@ -2,9 +2,17 @@
 
 Count **person-crossing events by direction** using a fixed camera or a local video and one draggable counting line. The complete application—including its AI model, JavaScript loader and **SIMD-only WASM**—lives inside one HTML file.
 
-**This branch is a SIMD-only v0.9.0 release-preparation preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
+**This branch is a SIMD-only v0.10.0 interaction/UX preview, not the production default.** Browsers without WebAssembly SIMD cannot start the camera; the limitation is shown before camera permission. Person tracking and crossing decisions still require real-world evaluation and **not yet accuracy-validated**. Do not rely on these counts for safety, legal reporting or billing without independent checks.
 
-## Screenshots — current v0.9.0 interface
+## v0.10.0 — A/B line movement and camera-first layout
+
+The counting line can now be **dragged anywhere along its middle** to reposition both endpoints together, preserving its angle and length. Drag a white endpoint when you want to rotate or resize the line. A centre grip and inline instructions explain the difference. The line is locked during counting or the setup test, and moving it after calibration requires another test.
+
+The interface is reorganized around the work: **select camera/video → adjust line → run camera setup test → start counting → review or correct → export CSV**. The video, status, direction counts, elapsed time and primary buttons are together, while corrections, Undo and exports are clearly separated. On phones, touching empty video space does not block vertical scrolling; the draggable line and endpoints have independent touch targets. The interface retains the Browser Kitty header, official SVG favicon, #16624f and Japanese/English support.
+
+The new [ADR-008](docs/ADR-008-LINE-DRAG-AND-UX.md) documents gesture constraints, stage letterboxing, touch/keyboard behavior and regression gates. This is still a preview: **physical-device endurance, genuine real-world accuracy and model-specific redistribution rights remain unverified**.
+
+## Screenshots — current v0.10.0 interface
 
 These images are genuine browser captures from the built Passage Counter app, showing **the setup screen before any camera or counting**. No faces, fabricated detection counts or personal data were used.
 
@@ -18,7 +26,7 @@ Japanese screenshots: [desktop](assets/screenshot.png) · [mobile](assets/screen
 
 This draft completes the release documentation and asset pipeline: pinned SVG favicon, bilingual live-UI screenshots, standalone and CSV integrity checks, CI regressions, actual dependencies and hashes, and explicit evidence-based release gates. **It is not the production release candidate until the remaining hard gates are closed.**
 
-**Outstanding blockers:** independently labeled 100+ real crossings and the ≥95% per-direction precision/recall target; 30-minute real Android/iPhone fixed-camera tests and heat/memory/fps; definitive redistribution permission for the precise EfficientDet model file and license delivery review; actual deployed response CSP. See [v0.9 release readiness](docs/RELEASE_READINESS_v0.9.0.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+**Outstanding blockers:** independently labeled 100+ real crossings and the ≥95% per-direction precision/recall target; 30-minute real Android/iPhone fixed-camera tests and heat/memory/fps; definitive redistribution permission for the precise EfficientDet model file and license delivery review; actual deployed response CSP. See [v0.9 release readiness](docs/RELEASE_READINESS_v0.10.0.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Browser Kitty interface and usability
 
