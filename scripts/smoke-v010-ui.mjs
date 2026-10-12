@@ -61,10 +61,28 @@ try{
  await ready(page);
  assert(await page.locator('#lineMoveTarget').evaluate(el=>getComputedStyle(el).pointerEvents==='stroke'));
  const before=await frame(page);
+ const target=await page.evaluate(pos=>{
+   const el=document.elementFromPoint(pos.x,pos.y);
+   const gesture=document.querySelector('#lineGestureLayer');
+   const line=document.querySelector('#lineMoveTarget');
+   window.__lineEvents=[];
+   for(const name of ['pointerdown','pointermove','pointerup','lostpointercapture'])
+     gesture.addEventListener(name,e=>window.__lineEvents.push({
+       name,pointerId:e.pointerId,buttons:e.buttons,target:e.target?.id||e.target?.className?.baseVal||e.target?.tagName
+     }),true);
+   return {hit:el?.id||el?.tagName||null,hitClass:el?.getAttribute('class'),
+     gestureHidden:gesture.hidden,gesturePointerEvents:getComputedStyle(gesture).pointerEvents,
+     linePointerEvents:getComputedStyle(line).pointerEvents,
+     lineStroke:getComputedStyle(line).stroke,lineBox:line.getBoundingClientRect().toJSON(),
+     stageBox:document.querySelector('#cameraStage').getBoundingClientRect().toJSON()};
+ },{x:before.mx,y:before.my});
+ console.log('[v010-debug] initial centre hit '+JSON.stringify(target));
  await pointerDrag(page,{x:before.mx,y:before.my},30,20);
  const moved=await frame(page);
  const dx0=moved.x1-before.x1,dx1=moved.x2-before.x2;
  const dy0=moved.y1-before.y1,dy1=moved.y2-before.y2;
+ if(!(dx0>5&&dy0>5))
+  console.log('[v010-debug] pointer events '+JSON.stringify(await page.evaluate(()=>window.__lineEvents)));
  assert(dx0>5&&dy0>5,'Dragging middle of line did not move it');
  close(dx0,dx1);close(dy0,dy1);
  close(Math.hypot(before.x2-before.x1,before.y2-before.y1),
