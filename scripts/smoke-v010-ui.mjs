@@ -59,6 +59,9 @@ try{
  assert.equal(await page.locator('#lineMoveTarget').count(),1);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await ready(page);
+ // Starting the camera button can scroll the stage above the viewport;
+ // bring the gesture target back into view before physical pointer input.
+ await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  assert(await page.locator('#lineMoveTarget').evaluate(el=>getComputedStyle(el).pointerEvents==='stroke'));
  const before=await frame(page);
  const target=await page.evaluate(pos=>{
@@ -94,6 +97,7 @@ try{
  await page.locator('#testButton').click();
  await page.locator('#testButton').click();
  assert.equal(await page.locator('#beginCount').isEnabled(),true);
+ await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  const handleStart=await frame(page);
  await pointerDrag(page,{x:handleStart.ex,y:handleStart.ey},0,-26);
  const handleEnd=await frame(page);
@@ -121,6 +125,7 @@ try{
  await page.locator('#beginCount').click();
  await page.waitForFunction(()=>/計測中|Counting/.test(document.querySelector('#statusPill')?.textContent||''));
  assert(await page.locator('#lineGestureLayer').isHidden());
+ await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  const locked=await frame(page);
  await pointerDrag(page,{x:locked.mx,y:locked.my},20,15);
  const afterLocked=await frame(page);
