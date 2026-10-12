@@ -7,7 +7,7 @@ The session title is marked as an example; no live camera or people were used.
 Capture command: node scripts/capture-release-screenshots.mjs
 Screenshots are generated offline with no model download, personal data or telemetry.
 
-- assets/screenshot.png: 1280x800, ja, 179131 bytes
-- assets/screenshot-en.png: 1280x800, en, 146353 bytes
-- assets/screenshot-mobile.png: 390x2625, ja, 190345 bytes
-- assets/screenshot-mobile-en.png: 390x2638, en, 138693 bytes
+- assets/screenshot.png: 1280x800, ja, 167689 bytes
+- assets/screenshot-en.png: 1280x800, en, 136376 bytes
+- assets/screenshot-mobile.png: 390x2502, ja, 186351 bytes
+- assets/screenshot-mobile-en.png: 390x2536, en, 136179 bytes
