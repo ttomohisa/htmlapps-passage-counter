@@ -1698,7 +1698,7 @@ footer{max-width:1240px;padding-top:3px}
         $('#cameraStart').disabled=!simdAvailable||phase==='loading'||phase==='done'||Boolean(state.stream)||fileMode;
         $('#cameraStop').disabled=!state.stream||fileMode;
         $('#reverseLine').disabled=!sourceAvailable||['counting','testing','loading','done'].includes(phase);
-        gesture.hidden=!sourceAvailable||['counting','testing','loading','done'].includes(phase);
+        gesture.toggleAttribute('hidden',!sourceAvailable||['counting','testing','loading','done'].includes(phase));
         $('#cameraFacing').disabled=fileMode||['counting','testing','loading','done'].includes(phase);
         for(const id of ['#labelA','#labelB'])$(id).disabled=testing||phase==='counting';
         $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','testing'].includes(phase);
@@ -2031,7 +2031,7 @@ footer{max-width:1240px;padding-top:3px}
         const pw=Math.floor(w*dpr),ph=Math.floor(h*dpr);
         if(overlay.width!==pw||overlay.height!==ph){overlay.width=pw;overlay.height=ph;}
         ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-        if(!hasActiveSource()){gesture.hidden=true;return;}
+        if(!hasActiveSource()){gesture.setAttribute('hidden','');return;}
         const g=layoutInfo();
         const x0=g.x+line[0].x*g.width,y0=g.y+line[0].y*g.height;
         const x1=g.x+line[1].x*g.width,y1=g.y+line[1].y*g.height;
@@ -2045,7 +2045,7 @@ footer{max-width:1240px;padding-top:3px}
           handle.setAttribute('cx',i===0?x0:x1);
           handle.setAttribute('cy',i===0?y0:y1);
         });
-        gesture.hidden=['counting','testing','loading','done'].includes(state.phase);
+        gesture.toggleAttribute('hidden',['counting','testing','loading','done'].includes(state.phase));
         ctx.lineWidth=6;ctx.strokeStyle='#092d22';ctx.shadowColor='#0008';ctx.shadowBlur=5;
         ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
         ctx.strokeStyle='#bcf0d0';ctx.shadowBlur=0;ctx.lineWidth=3;
@@ -2070,7 +2070,7 @@ footer{max-width:1240px;padding-top:3px}
         };
         badge('A',cx-nx*36,cy-ny*36);
         badge('B',cx+nx*36,cy+ny*36);
-        if(!gesture.hidden){
+        if(!gesture.hasAttribute('hidden')){
           // A visible centre grip explains that the line itself can be moved.
           ctx.fillStyle='rgba(14,82,61,.96)';ctx.strokeStyle='#e9fff1';ctx.lineWidth=1.5;
           ctx.beginPath();ctx.roundRect(cx-18,cy-10,36,20,9);ctx.fill();ctx.stroke();
