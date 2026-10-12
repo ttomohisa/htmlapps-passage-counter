@@ -70,14 +70,31 @@ try{
  assert(await page.locator('#beginCount').isHidden());
  const geometryDesktop=await page.evaluate(()=>{
    const rect=selector=>document.querySelector(selector).getBoundingClientRect();
-   return {preview:rect('#cameraStage').left,measurement:rect('.measure-console').left,
-     measureTop:rect('.measure-console').top,stageTop:rect('#cameraStage').top,
-     correctionTop:rect('.support-panel').top};
+   const measure=rect('.measure-console'),correction=rect('#correctionPanel');
+   const controls=rect('#sessionControls'),exportCard=rect('.support-panel');
+   return {preview:rect('#cameraStage').left,measurement:measure.left,
+     measureTop:measure.top,stageTop:rect('#cameraStage').top,
+     countBottom:rect('#countTotal').bottom,
+     controlsBottom:controls.bottom,correctionTop:correction.top,
+     correctionBottom:correction.bottom,correctionLeft:correction.left,
+     correctionRight:correction.right,measureRight:measure.right,
+     measureBottom:measure.bottom,exportLeft:exportCard.left};
  });
  assert(geometryDesktop.preview<geometryDesktop.measurement&&
    geometryDesktop.measureTop<=geometryDesktop.stageTop,
    'Desktop live counter must be immediately beside the camera');
- console.log('[v010] Desktop summary stays beside the video; camera → check → count is state-guided.');
+ assert(geometryDesktop.countBottom<geometryDesktop.correctionTop&&
+   geometryDesktop.controlsBottom<=geometryDesktop.correctionTop+1&&
+   geometryDesktop.correctionLeft>=geometryDesktop.measurement-1&&
+   geometryDesktop.correctionRight<=geometryDesktop.measureRight+1&&
+   geometryDesktop.correctionBottom<=geometryDesktop.measureBottom+1,
+   'Correction and Undo must be below the controls, inside the counting card');
+ assert(await page.evaluate(()=>
+   document.querySelector('#correctionPanel').closest('.measure-console')!==null&&
+   document.querySelector('.export-panel').closest('.support-panel')!==null&&
+   document.querySelector('.support-panel').getAttribute('aria-labelledby')==='exportHeading'
+ ),'Moved correction/export container or accessible label is wrong');
+ console.log('[v010] Desktop counting totals and correction/Undo share a card; CSV export remains separate.');
  // Starting the camera button can scroll the stage above the viewport;
  // bring the gesture target back into view before physical pointer input.
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
@@ -164,6 +181,16 @@ try{
  close(locked.x2,afterLocked.x2);close(locked.y2,afterLocked.y2);
  await page.locator('#pauseCount').click();
  assert.equal(await page.locator('#lineGestureLayer').isVisible(),true);
+ assert(await page.locator('#plusA').isVisible(),'Correction action must remain visible');
+ assert(await page.locator('#plusA').isEnabled(),'Moved correction must be enabled for paused sessions');
+ const countBefore=Number(await page.locator('#countA').textContent());
+ await page.locator('#plusA').click();
+ assert.equal(Number(await page.locator('#countA').textContent()),countBefore+1,
+   'Relocated correction +1 must still update the count');
+ await page.locator('#undoCorrection').click();
+ assert.equal(Number(await page.locator('#countA').textContent()),countBefore,
+   'Relocated Undo must reverse the manual correction');
+ console.log('[v010] Relocated correction +1 and Undo retain their ledger behavior.');
  console.log('[v010] Counting locks line edits; pause makes the line editable again.');
  await ctx.close();
 
@@ -176,19 +203,37 @@ try{
   await mobile.goto(origin+'/',{waitUntil:'domcontentloaded'});
   const geometry=await mobile.evaluate(()=>{
    const rect=sel=>document.querySelector(sel).getBoundingClientRect();
-   return {stage:rect('#cameraStage').top,
-    stageBottom:rect('#cameraStage').bottom,measure:rect('.measure-console').top,
-    measureRight:rect('.measure-console').right,measureBottom:rect('.measure-console').bottom,
-    test:rect('#testCard').top,count:rect('#countA').top,
-    extras:rect('.setup-extras').top,corrections:rect('.support-panel').top,
-    scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,
-    touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction};
+   const panel=rect('.measure-console'),correction=rect('#correctionPanel');
+   const plus=rect('#plusA'),minus=rect('#minusA'),undo=rect('#undoCorrection');
+   return {stage:rect('#cameraStage').top,measure:panel.top,
+     measureBottom:panel.bottom,measureRight:panel.right,measureLeft:panel.left,
+     count:rect('#countA').top,countBottom:rect('#countTotal').bottom,
+     correction:correction.top,correctionBottom:correction.bottom,
+     correctionLeft:correction.left,correctionRight:correction.right,
+     plus:plus.toJSON(),minus:minus.toJSON(),undo:undo.toJSON(),
+     extras:rect('.setup-extras').top,exports:rect('.support-panel').top,
+     exportRight:rect('.support-panel').right,
+     scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,
+     touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction};
   });
   assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
-  assert(geometry.stage<geometry.measure&&
-    geometry.measure<geometry.count&&
-    geometry.measureBottom<geometry.extras&&geometry.extras<geometry.corrections,
-    'Real counters must precede advanced settings and exports at '+width);
+  assert(geometry.stage<geometry.measure&&geometry.measure<geometry.count&&
+    geometry.countBottom<geometry.correction&&
+    geometry.correctionBottom<=geometry.measureBottom+1&&
+    geometry.measureBottom<geometry.extras&&geometry.extras<geometry.exports,
+    'Correction must follow the count within the same card, above settings and exports at '+width);
+  assert(geometry.correctionLeft>=geometry.measureLeft-1&&
+    geometry.correctionRight<=geometry.measureRight+1,
+    'Correction panel escapes the count card at '+width);
+  assert(geometry.plus.width>=44&&geometry.minus.width>=44&&
+    geometry.plus.height>=44&&geometry.minus.height>=44&&
+    geometry.undo.height>=44,
+    'Correction and Undo tap targets must remain at least 44px at '+width);
+  assert(geometry.plus.left>=geometry.minus.right-1&&
+    geometry.plus.right<=geometry.correctionRight+1&&
+    geometry.undo.right<=geometry.correctionRight+1&&
+    geometry.exportRight<=geometry.viewWidth+1,
+    'Correction button row / export overflows at '+width);
   assert(await mobile.locator('#testCard').isHidden(),
     'Setup check must remain hidden until a camera is ready');
   assert(geometry.measureRight<=geometry.viewWidth+1,
