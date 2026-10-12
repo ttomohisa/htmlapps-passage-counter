@@ -258,7 +258,7 @@ body{background:var(--background);color:var(--text);font-size:14px}
 .camera-placeholder svg{width:38px;height:38px;opacity:.72}
 .camera-stage .gesture-layer{position:absolute;inset:0;width:100%;height:100%;z-index:3;overflow:visible;pointer-events:none}
 .gesture-layer[hidden]{display:none!important}
-.gesture-layer .gesture-segment{stroke:transparent;stroke-width:36;pointer-events:stroke;touch-action:none;cursor:grab}
+.gesture-layer .gesture-segment{stroke:transparent;stroke-width:48;pointer-events:stroke;touch-action:none;cursor:grab}
 .gesture-layer .gesture-endpoint{fill:transparent;pointer-events:all;touch-action:none;cursor:crosshair}
 .gesture-layer[data-dragging] .gesture-segment,.gesture-layer[data-dragging] .gesture-endpoint{cursor:grabbing}
 .line-toolbar{padding:12px 20px 11px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #eff2ef}
@@ -493,8 +493,8 @@ footer{max-width:1240px;padding-top:3px}
         <canvas id="overlay" tabindex="0" role="group" data-i18n-aria-label="lineAria" aria-label="判定線：線をドラッグして移動、両端で角度や長さを調整"></canvas>
         <svg id="lineGestureLayer" class="gesture-layer" aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="none" hidden>
           <line id="lineMoveTarget" class="gesture-segment" x1="120" y1="500" x2="880" y2="500"/>
-          <circle class="gesture-endpoint" data-endpoint="0" cx="120" cy="500" r="27"/>
-          <circle class="gesture-endpoint" data-endpoint="1" cx="880" cy="500" r="27"/>
+          <circle class="gesture-endpoint" data-endpoint="0" cx="120" cy="500" r="31"/>
+          <circle class="gesture-endpoint" data-endpoint="1" cx="880" cy="500" r="31"/>
         </svg>
         <div class="mini-counts" id="mobileCounts" hidden aria-hidden="true"><span><span id="miniLabelA">A→B</span><strong id="miniA">0</strong></span><span><span id="miniLabelB">B→A</span><strong id="miniB">0</strong></span></div>
         <div class="camera-placeholder" id="cameraPlaceholder">
@@ -654,7 +654,7 @@ footer{max-width:1240px;padding-top:3px}
 <!-- APP:END -->
 <footer><span id="footerName">通過カウンター</span> · v0.10.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
-<dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線を置き、30秒の設置テストで通過を確認します。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2><ol><li data-i18n="help1">スマホを固定してカメラを開始します。</li><li data-i18n="help2">線の途中を動かして位置を決め、端の丸で角度や長さを調整します。カメラでは設置テストをします。</li><li data-i18n="help3">計測を開始し、必要なら方向別に±1で補正します。補正は元に戻せます。</li><li data-i18n="help4">終了後に補正履歴を含むCSVを書き出せます。</li></ol><p data-i18n="helpPrivacy">映像・顔・音声は保存せず、このアプリからサーバーへ送信しません。HTML内に必要なAIモデルとWASMを含みます。</p><p data-i18n="helpLimits">正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。</p><div class="dialog-actions"><button type="button" id="helpClose" data-i18n="close">閉じる</button></div></dialog>
 <!-- APP:HELP:END -->
 <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading" data-i18n="resetTitle">件数をリセットしますか？</h2><p data-i18n="resetMessage">現在の通過件数とイベント記録を消去します。この操作は取り消せません。</p><div class="dialog-actions"><button type="button" id="cancelReset" data-i18n="cancel">キャンセル</button><button type="button" id="confirmReset" class="danger" data-i18n="reset">件数をリセット</button></div></dialog>
 <div id="appToast" class="toast" hidden role="status" aria-live="polite"><span id="appToastMessage"></span><button id="appToastAction" hidden type="button"></button></div>
@@ -783,7 +783,7 @@ footer{max-width:1240px;padding-top:3px}
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
           prototypeNote:'v0.10.0では判定線の移動操作と画面構成を改善しました。実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
-          helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'判定線を置き、カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
+          helpTitle:'使い方と注意事項',help1:'カメラを固定するか、端末内の動画を選びます。',help2:'線の途中をドラッグして位置を動かし、両端で角度・長さを調整します。カメラの場合は設置テストをします。',help3:'計測中は方向別に±1で補正できます。直前の補正は取り消せます。',help4:'終了後は記録を見返したり、3種類のCSVで保存したりできます。',
           helpPrivacy:'カメラや選択した動画はアップロードしません。映像・顔・音声は保存せず、計測記録だけをブラウザ内に保存します。',
           helpLimits:'正確な人数を保証するものではありません。人の重なり・逆光・高速な通過・カメラの移動により誤認識します。画面を隠した場合は計測を中断します。',
           stepSetup:'1 · 設定',stepTest:'2 · テスト',stepMeasure:'3 · 計測',setupProgress:'計測の手順',
@@ -868,7 +868,7 @@ footer{max-width:1240px;padding-top:3px}
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
           prototypeNote:'v0.10.0 improves counting-line interaction and the workflow layout. Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
-          helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Place the counting line. For camera input, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
+          helpTitle:'How to use and limitations',help1:'Fix your camera or select a video stored on your device.',help2:'Drag the line to move it, or an end circle to change its angle and length. In camera mode, run the setup test.',help3:'Correct either direction with +1/-1; use Undo for the previous adjustment.',help4:'Review saved results and export three types of CSV.',
           helpPrivacy:'Camera and selected video files are not uploaded. Frames, faces and audio are not stored; only counting records are saved in this browser.',
           helpLimits:'Counts are estimates, not guaranteed. Crowds, glare, rapid movement and camera motion can affect results. Counting stops when the tab is hidden.',
           stepSetup:'1 · Setup',stepTest:'2 · Test',stepMeasure:'3 · Count',setupProgress:'Counting steps',
