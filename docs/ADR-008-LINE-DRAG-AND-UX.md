@@ -9,8 +9,8 @@ The application exposed too many equally weighted panels before the user had any
 ## UI decisions
 
 - Keep the existing Browser Kitty header, favicon, #16624f accent, responsive Japanese/English interface, quiet panels, no external font/emoji, no remote AI or runtime network access.
-- Use the video as the first visual anchor. Then guide input → line positioning → 30s camera test (not file mode) → directional counting; keep status and recognition feedback near the video.
-- Place active counters, elapsed time and main session actions directly under the camera/line/test, not in the far-away right column.
+- Lead with a visible Start camera button above the video; then make the **30-second non-counted setup check** the obvious next action after the camera/model become ready. When the check completes, emphasize Start counting. If there is no ready camera, do not show a dead Test button; if the input is a file, skip the camera-only check. Keep status and recognition feedback close to the video.
+- Place active directional counts and elapsed time **in the first workspace row, right beside the video on desktop; immediately below it on narrow phones**. Move advanced camera settings lower so they cannot push the counter off-screen. No duplicate count values or extra floating overlay are needed for a useful primary display.
 - Secondary correction/Undo and the three CSV exports remain visible and grouped separately on desktop, with a sensible vertical order on narrow screens. Do not delete or rename existing data inputs, commands, CSV, IndexedDB and help actions.
 - Avoid a fixed mobile bottom bar: no control hides content or keyboard, and there is no duplicated button state.
 - Empty, loading, permission failure, paused, interrupted, completed and recovered sessions still use the existing honest status model. An unverified field count is never presented as 100% accurate.
@@ -19,6 +19,8 @@ The application exposed too many equally weighted panels before the user had any
 ## A/B line interaction contract
 
 The drawn line and direction letters use the existing video-coordinate transform and aspect-ratio containment.
+
+- The user requested no separate centre drag handle. The SVG hit stroke is transparent; **the drawn line itself is dragged**. Visible white end circles remain for resizing/rotation.
 
 | Gesture | Behavior |
 |---|---|
@@ -50,3 +52,7 @@ The canvas remains the visual drawing and keyboard-focus surface but no longer s
 - README screenshots for v0.10.0 must come from the actual generated app and show honest 0 crossings when the camera is not started.
 
 This is **not** a completed v1.0.0 release: the 100+ independently annotated physical crossing accuracy target, Android/iPhone 30-minute devices and EfficientDet-specific redistribution grant remain open (see release-gates.v0.10.0.json).
+
+## v0.10.0 post-preview UI review
+
+After the initial draft, the user specifically asked to remove the central drag grip, clarify the setup-test UI, and bring counts higher. The revision removes only the extra centre-grip drawing (keeping line-body dragging), moves the counter console out of the bottom of the preview panel, and uses phase-driven Japanese/English Next step copy. Desktop positions video and counter side by side; mobile puts the primary count card directly after the video and before advanced camera settings, corrections and CSV. The setup check is hidden until camera/detector initialization succeeds, its button is emphasized while the app waits for a trial, and the Start counting button becomes prominent only after the trial is complete (or immediately when a local video is ready). Real accuracy/mobile endurance remain unverified.
