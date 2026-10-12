@@ -58,7 +58,26 @@ try{
  assert.equal(await page.locator('#versionBadge').textContent(),'v0.10.0');
  assert.equal(await page.locator('#lineMoveTarget').count(),1);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ // Initial view has one clear first action, not a disabled maze of buttons.
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'camera');
+ assert(await page.locator('#cameraStart').isVisible());
+ assert(await page.locator('#testCard').isHidden());
+ assert(await page.locator('#beginCount').isHidden());
  await ready(page);
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'test');
+ assert(await page.locator('#testCard').isVisible());
+ assert(await page.locator('#testButton').isEnabled());
+ assert(await page.locator('#beginCount').isHidden());
+ const geometryDesktop=await page.evaluate(()=>{
+   const rect=selector=>document.querySelector(selector).getBoundingClientRect();
+   return {preview:rect('#cameraStage').left,measurement:rect('.measure-console').left,
+     measureTop:rect('.measure-console').top,stageTop:rect('#cameraStage').top,
+     correctionTop:rect('.support-panel').top};
+ });
+ assert(geometryDesktop.preview<geometryDesktop.measurement&&
+   geometryDesktop.measureTop<=geometryDesktop.stageTop,
+   'Desktop live counter must be immediately beside the camera');
+ console.log('[v010] Desktop summary stays beside the video; camera → check → count is state-guided.');
  // Starting the camera button can scroll the stage above the viewport;
  // bring the gesture target back into view before physical pointer input.
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
@@ -95,8 +114,14 @@ try{
  // After a successful setup test, any line edit invalidates the test. Endpoint
  // adjustment moves only the chosen handle, not the whole segment.
  await page.locator('#testButton').click();
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'testing');
+ assert(await page.locator('#beginCount').isHidden());
+ assert.equal(await page.locator('#countTotal').textContent(),'0','Trial events must not touch real totals');
  await page.locator('#testButton').click();
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'count');
  assert.equal(await page.locator('#beginCount').isEnabled(),true);
+ assert(await page.locator('#beginCount').isVisible());
+ assert.match(await page.locator('#testButton').textContent(),/もう一度|again/);
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  const handleStart=await frame(page);
  await pointerDrag(page,{x:handleStart.ex,y:handleStart.ey},0,-26);
@@ -105,7 +130,9 @@ try{
  close(handleEnd.x2,handleStart.x2);
  close(handleEnd.y2,handleStart.y2);
  assert(await page.locator('#beginCount').isDisabled(),'Line edit must invalidate calibration test');
- console.log('[v010] Endpoint edit changes one handle and invalidates the completed test.');
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'test');
+ assert(await page.locator('#beginCount').isHidden());
+ console.log('[v010] Endpoint edit resets calibration and brings back the check CTA.');
 
  // Keyboard nudges retain the angle and length, and old A/B reversal remains.
  await page.locator('#overlay').focus();
@@ -124,6 +151,10 @@ try{
  await page.locator('#testButton').click();
  await page.locator('#beginCount').click();
  await page.waitForFunction(()=>/計測中|Counting/.test(document.querySelector('#statusPill')?.textContent||''));
+ assert.equal(await page.locator('#appMain').getAttribute('data-next'),'counting');
+ assert(await page.locator('#testCard').isHidden());
+ assert(await page.locator('#pauseCount').isVisible());
+ assert(await page.locator('#finishCount').isVisible());
  assert(await page.locator('#lineGestureLayer').isHidden());
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  const locked=await frame(page);
@@ -145,14 +176,23 @@ try{
   await mobile.goto(origin+'/',{waitUntil:'domcontentloaded'});
   const geometry=await mobile.evaluate(()=>{
    const rect=sel=>document.querySelector(sel).getBoundingClientRect();
-   return {stage:rect('#cameraStage').top,test:rect('#testCard').top,
-    measure:rect('.measure-console').top,corrections:rect('.support-panel').top,
+   return {stage:rect('#cameraStage').top,
+    stageBottom:rect('#cameraStage').bottom,measure:rect('.measure-console').top,
+    measureRight:rect('.measure-console').right,measureBottom:rect('.measure-console').bottom,
+    test:rect('#testCard').top,count:rect('#countA').top,
+    extras:rect('.setup-extras').top,corrections:rect('.support-panel').top,
     scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,
     touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction};
   });
   assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
-  assert(geometry.stage<geometry.test&&geometry.test<geometry.measure&&
-    geometry.measure<geometry.corrections,'Workflow order is confusing at '+width);
+  assert(geometry.stage<geometry.measure&&
+    geometry.measure<geometry.count&&geometry.count<geometry.test&&
+    geometry.measureBottom<geometry.extras&&geometry.extras<geometry.corrections,
+    'The real counters/check must precede advanced settings and exports at '+width);
+  assert(geometry.measureRight<=geometry.viewWidth+1,
+    'Mobile count panel overflows horizontally at '+width);
+  assert((await mobile.locator('#appMain').getAttribute('data-next'))==='camera',
+    'Initial state should make Start camera the next action');
   assert.equal(geometry.touchAction,'pan-y','Blank video area should allow phone page scrolling');
   if(width===390){
    await ready(mobile);
