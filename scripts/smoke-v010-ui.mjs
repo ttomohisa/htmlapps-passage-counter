@@ -186,9 +186,11 @@ try{
   });
   assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
   assert(geometry.stage<geometry.measure&&
-    geometry.measure<geometry.count&&geometry.count<geometry.test&&
+    geometry.measure<geometry.count&&
     geometry.measureBottom<geometry.extras&&geometry.extras<geometry.corrections,
-    'The real counters/check must precede advanced settings and exports at '+width);
+    'Real counters must precede advanced settings and exports at '+width);
+  assert(await mobile.locator('#testCard').isHidden(),
+    'Setup check must remain hidden until a camera is ready');
   assert(geometry.measureRight<=geometry.viewWidth+1,
     'Mobile count panel overflows horizontally at '+width);
   assert((await mobile.locator('#appMain').getAttribute('data-next'))==='camera',
@@ -196,6 +198,13 @@ try{
   assert.equal(geometry.touchAction,'pan-y','Blank video area should allow phone page scrolling');
   if(width===390){
    await ready(mobile);
+   assert(await mobile.locator('#testCard').isVisible());
+   assert(await mobile.evaluate(()=>{
+     const c=document.querySelector('#countA').getBoundingClientRect();
+     const t=document.querySelector('#testCard').getBoundingClientRect();
+     const b=document.querySelector('#beginCount');
+     return c.top<t.top&&b.getBoundingClientRect().height===0;
+   }),'Test CTA should appear below visible count but before real-count action');
    await mobile.locator('#cameraStage').scrollIntoViewIfNeeded();
    const original=await frame(mobile);
    const cdp=await context.newCDPSession(mobile);
