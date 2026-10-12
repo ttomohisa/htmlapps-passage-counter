@@ -6,9 +6,9 @@ Count **person-crossing events by direction** using a fixed camera or a local vi
 
 ## v0.10.0 — A/B line movement and camera-first layout
 
-The counting line can now be **dragged anywhere along its middle** to reposition both endpoints together, preserving its angle and length. Drag a white endpoint when you want to rotate or resize the line. A centre grip and inline instructions explain the difference. The line is locked during counting or the setup test, and moving it after calibration requires another test.
+The counting line can now be **dragged anywhere along its middle** to reposition both endpoints together, preserving its angle and length. Drag a white endpoint when you want to rotate or resize the line. The line itself is the drag target; no extra centre handle is displayed. The line is locked during counting or the setup test, and moving it after calibration requires another test.
 
-The interface is reorganized around the work: **select camera/video → adjust line → run camera setup test → start counting → review or correct → export CSV**. The video, status, direction counts, elapsed time and primary buttons are together, while corrections, Undo and exports are clearly separated. On phones, touching empty video space does not block vertical scrolling; the draggable line and endpoints have independent touch targets. The interface retains the Browser Kitty header, official SVG favicon, #16624f and Japanese/English support.
+The interface is reorganized around the work: **select camera/video → adjust line → run camera setup test → start counting → review or correct → export CSV**. Directional counters and elapsed time appear **beside the camera on desktop and immediately below it on phones**, not at the bottom after settings. The camera button is above the preview; when ready, a clearly labeled 30-second setup check appears with instructions and its own button. Completing the check reveals the real Start counting button. Only the next relevant action is emphasized. Corrections, Undo, and exports remain separate. On phones, touching empty video space does not block vertical scrolling; the draggable line and endpoints have independent touch targets. The interface retains the Browser Kitty header, official SVG favicon, #16624f and Japanese/English support.
 
 The new [ADR-008](docs/ADR-008-LINE-DRAG-AND-UX.md) documents gesture constraints, stage letterboxing, touch/keyboard behavior and regression gates. This is still a preview: **physical-device endurance, genuine real-world accuracy and model-specific redistribution rights remain unverified**.
 
@@ -81,7 +81,7 @@ node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --j
 
 1. Open a standalone HTML under HTTPS or locally in a browser that permits camera use for \`file://\`.
 2. Fix the camera in place and include the entire passage in the frame.
-3. Choose **Start camera**, grant permission, and adjust the two line endpoints.
+3. Choose **Start camera** above the preview, grant permission, and drag the line itself to move it or its endpoints to resize/rotate.
 4. Reverse the direction if necessary. Press **Start 30-second test** and walk across the line. You may stop the test early. Trial counts are excluded from the real session.
 5. Press **Start counting**. Keep the page visible. Use **+1/-1** for either direction to correct misses or false counts, and **Undo** if the last correction was wrong.
 6. Pause/resume if needed; missing coverage is distinguished from zero crossings. Finish and export **events / summary / time buckets** as CSV. You can rename the output file.
