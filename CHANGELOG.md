@@ -5,6 +5,7 @@
 - Rebuilt the screen with directional counters **at camera height on desktop and immediately after the video on phones**, avoiding an inaccessible below-the-settings count area. The prominent camera button starts the first task; after initialization the 30-second check and then real counting are surfaced as the next actionable step. Correction/Undo and the 3 CSV exports stay in a distinct review panel.
 - Enabled rigid-body translation of a counting line by dragging **anywhere along its central segment**, while retaining independent endpoint drag for resizing and rotation.
 - Added a transparent SVG hit layer around the line and handles, so touch editing does not prevent vertical page scrolling elsewhere on the camera preview.
+- Moved **manual correction ±1 and Undo immediately below the live counter** in the same panel, retaining original event-ledger behavior and keeping CSV export separate; checked 320–1280px layout and touch targets.
 - Kept **the line itself draggable without an extra centre grip**; finite-line hit testing, rigid boundary clamp, pointer capture, Shift/Arrow keyboard nudge and durable line persistence remain.
 - Preserved test invalidation on line edits and editing lock during active counting/testing. Camera/local-video, events/Undo, IndexedDB/CSV, model/WASM and network-free standalone remain unchanged.
 - Added dedicated line-geometry tests, browser mouse/touch/keyboard regression and responsive workflow-order assertions. Re-capture real bilingual desktop/mobile README images from v0.10.0 UI.
