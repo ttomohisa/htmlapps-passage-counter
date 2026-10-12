@@ -697,30 +697,7 @@ footer{max-width:1240px;padding-top:3px}
           <button id="finishCount" disabled data-i18n="finish">終了</button>
         </div>
         <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
-      </section>
-    <section class="panel setup-extras" aria-label="計測の設定" data-i18n-aria-label="extrasAria">
-      <details class="setup-options" id="setupOptions">
-        <summary data-i18n="settingsSummary">カメラ・表示の設定</summary>
-        <div class="option-fields">
-          <label for="cameraFacing"><span data-i18n="cameraSelection">カメラの向き</span>
-            <select id="cameraFacing"><option value="environment" data-i18n="rearCamera">背面カメラ</option><option value="user" data-i18n="frontCamera">前面カメラ</option></select>
-          </label>
-          <label class="toggle" for="showDetections"><input type="checkbox" id="showDetections" checked><span data-i18n="showDetections">検出枠と追跡点を表示</span></label>
-          <label for="labelA"><span data-i18n="directionALabel">A→Bの名称</span><input id="labelA" type="text" maxlength="24" placeholder="A→B"></label>
-          <label for="labelB"><span data-i18n="directionBLabel">B→Aの名称</span><input id="labelB" type="text" maxlength="24" placeholder="B→A"></label>
-        </div>
-        <p class="helper" data-i18n="cameraOrientationNote">画面の鏡像反転は行いません。判定線と映像の向きを一致させます。</p>
-      </details>
-
-      <div class="precount-row">
-        <label class="inline-field" for="sessionName"><span data-i18n="sessionName">計測名</span>
-          <input id="sessionName" maxlength="100" type="text" autocomplete="off" value="Passage Counter">
-        </label>
-      </div>
-    </section>
-
-    <aside class="panel support-panel" aria-labelledby="correctHeading">
-      <section class="correction-panel" aria-labelledby="correctHeading">
+      <section class="correction-panel" id="correctionPanel" aria-labelledby="correctHeading" hidden>
         <div class="support-header">
           <span class="workspace-eyebrow" data-i18n="correctionEyebrow">結果の確認</span>
           <h2 id="correctHeading" data-i18n="correctionHeading">件数を補正</h2>
@@ -743,6 +720,29 @@ footer{max-width:1240px;padding-top:3px}
         <div class="undo-row"><button type="button" id="undoCorrection" disabled data-i18n="undoCorrection">直前の補正を取り消す</button></div>
       </section>
 
+      </section>
+    <section class="panel setup-extras" aria-label="計測の設定" data-i18n-aria-label="extrasAria">
+      <details class="setup-options" id="setupOptions">
+        <summary data-i18n="settingsSummary">カメラ・表示の設定</summary>
+        <div class="option-fields">
+          <label for="cameraFacing"><span data-i18n="cameraSelection">カメラの向き</span>
+            <select id="cameraFacing"><option value="environment" data-i18n="rearCamera">背面カメラ</option><option value="user" data-i18n="frontCamera">前面カメラ</option></select>
+          </label>
+          <label class="toggle" for="showDetections"><input type="checkbox" id="showDetections" checked><span data-i18n="showDetections">検出枠と追跡点を表示</span></label>
+          <label for="labelA"><span data-i18n="directionALabel">A→Bの名称</span><input id="labelA" type="text" maxlength="24" placeholder="A→B"></label>
+          <label for="labelB"><span data-i18n="directionBLabel">B→Aの名称</span><input id="labelB" type="text" maxlength="24" placeholder="B→A"></label>
+        </div>
+        <p class="helper" data-i18n="cameraOrientationNote">画面の鏡像反転は行いません。判定線と映像の向きを一致させます。</p>
+      </details>
+
+      <div class="precount-row">
+        <label class="inline-field" for="sessionName"><span data-i18n="sessionName">計測名</span>
+          <input id="sessionName" maxlength="100" type="text" autocomplete="off" value="Passage Counter">
+        </label>
+      </div>
+    </section>
+
+    <aside class="panel support-panel" aria-labelledby="exportHeading">
       <section class="export-panel" aria-labelledby="exportHeading">
         <div class="support-header">
           <span class="workspace-eyebrow" data-i18n="exportEyebrow">データ保存</span>
