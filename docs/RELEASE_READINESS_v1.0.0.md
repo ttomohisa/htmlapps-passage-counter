@@ -15,7 +15,7 @@ The latest [machine-readable gates](release-gates.v1.0.0.json) distinguish (1) i
 | Model identity | Official Google GCS source: 4,602,795 bytes, SHA-256 0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb verified |
 | User input network behavior | Automated Chrome/Edge model startup, local video and offline HTML report no unexpected outbound HTTP and no SDK telemetry in exercised paths |
 | Cloudflare Preview CSP | **VERIFIED**: live v1.0.0 HTTP 200, no response CSP header, enforcing meta CSP, Chrome bundled model initialized to ready with 0 CSP violations, 0 JS errors, 0 outbound HTTP requests |
-| GitHub Pages response | HTTP 200 with meta CSP and no HTTP CSP header; current deployed badge read v1.1.0, different from the v1.0.0 PR |
+| GitHub Pages response | HTTP 200 with meta CSP and no HTTP CSP header; raw HTML showed v1.1.0 but runtime badge showed v1.3.0, both different from this v1.0.0 PR. Current Pages model startup was not verified |
 | User interface | JA/EN, 320–1280px, Help scroll/X/Escape, counting line body and endpoints, 30-second camera check, counting actions and per-direction +1/−1 with Undo |
 | Persistence/export | IndexedDB session recovery, event/correction/Undo audit log, observed vs missing intervals, 3 CSV exports, native local video and seek/reanalysis |
 | Single-file copyright notice | Full MediaPipe Apache-2.0 license embedded in Help, from licenses/Apache-2.0.txt |
