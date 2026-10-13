@@ -40,11 +40,11 @@ for(const site of [source,pages]){
     permissionsPolicy:response.headers.get('permissions-policy')
   };
   const html=await response.text();
-  const metaTag=html.match(/<meta\\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i)?.[0]||'';
+  const metaTag=html.match(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i)?.[0]||'';
   // CSP directives legitimately contain apostrophes ('self', 'none').
   // Attribute quoting is double-quoted here; never stop at internal apostrophes.
-  entry.metaCsp=metaTag.match(/\\bcontent="([^"]*)"/i)?.[1]||
-    metaTag.match(/\\bcontent='([^']*)'/i)?.[1]||null;
+  entry.metaCsp=metaTag.match(/\bcontent="([^"]*)"/i)?.[1]||
+    metaTag.match(/\bcontent='([^']*)'/i)?.[1]||null;
   entry.documentVersion=(html.match(/id=["']versionBadge["'][^>]*>\s*(v\d+(?:\.\d+){2})/)||[])[1]||null;
   entry.hasRuntimeInlineHtml=/<main[\s>]/i.test(html)&&/<script[\s>]/i.test(html);
   entry.htmlBytes=Buffer.byteLength(html);
