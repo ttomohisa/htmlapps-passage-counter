@@ -8,7 +8,7 @@
 
 Passage Counter is a Browser Kitty tool for counting **person-crossing events in two directions (A→B and B→A)**, using a live fixed camera or a video already on the device. It is delivered as one HTML file and does not require an account, installation or video uploads.
 
-**v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. The exact EfficientDet model binary's redistribution grant and the standalone package's remaining license/NOTICE obligations are still **unresolved**, so a stable release is not yet approved. [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
+**v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. MediaPipe maintainers' published **Apache 2.0 default covering source and models** provides a strong redistribution basis for the existing EfficientDet-Lite0 int8 (no contrary exception found). The separately bundled JS/WASM third-party NOTICE and covered-source obligations remain under review, so stable release approval is still pending. [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
 ## Live demo
 
@@ -136,14 +136,14 @@ The full requirements, testing and design notes are in [APP_SPEC.md](APP_SPEC.md
 - A person crossing both directions produces two crossing events. This is **not unique visitor identification**.
 - Do not use the counts as the sole evidence for safety-critical monitoring, billing or legal reporting.
 - **Future Work:** Actual 100+ independently annotated real crossings, the 95% per-direction precision/recall goal, physical Android/iPhone/Windows tests and 30-minute endurance remain unverified. [Deferred validation plan](docs/FUTURE_WORK.md).
-- **Still blocking release:** Exact EfficientDet model redistribution permission and remaining compiled artifact/NOTICE compliance. [Audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md).
+- **Still blocking release:** Additional compiled JS/WASM third-party NOTICE/covered-source obligations. The model's Apache 2.0 basis is documented by upstream maintainer replies. [Model-license evidence](docs/EFFICIENTDET_MODEL_LICENSE_2026-10-13.md).
 
 ## Dependencies and model
 
 | Component | Pinned version/type | Role |
 | --- | --- | --- |
 | MediaPipe Tasks Vision | 0.10.35, Apache-2.0 | Browser-side person detection and WASM runtime |
-| EfficientDet-Lite0 | int8 TFLite, SHA-256 pinned | Person model; **the exact model file's redistribution permission remains unverified** |
+| EfficientDet-Lite0 | int8 TFLite, pinned SHA-256, MediaPipe default Apache 2.0 | License supported by upstream maintainer statements; no variant-specific exception noted |
 | Application source | MIT | Tracking, crossing logic, correction/Undo, CSV and browser UI |
 
 [Third-party notices and model licensing](THIRD_PARTY_NOTICES.md)
