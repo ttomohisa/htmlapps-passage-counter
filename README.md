@@ -8,7 +8,7 @@
 
 Passage Counter is a Browser Kitty tool for counting **person-crossing events in two directions (A→B and B→A)**, using a live fixed camera or a video already on the device. It is delivered as one HTML file and does not require an account, installation or video uploads.
 
-**About the v1.0.0 candidate:** The interface and package metadata use version 1.0.0. However, independent real-footage accuracy testing with 100+ genuine crossings, 30-minute physical phone tests and the exact model-file redistribution terms are still **unverified**. The formal stable-release decision remains **NO-GO**. Successful CI does not prove real-world count accuracy. [v1.0.0 release readiness](docs/RELEASE_READINESS_v1.0.0.md)
+**v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. The exact EfficientDet model binary's redistribution grant and the standalone package's remaining license/NOTICE obligations are still **unresolved**, so a stable release is not yet approved. [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
 ## Live demo
 
@@ -135,7 +135,8 @@ The full requirements, testing and design notes are in [APP_SPEC.md](APP_SPEC.md
 - Crowds, occlusion, backlighting, darkness, quick crossings, poor placement, camera movement and slow inference can introduce missed or incorrect counts.
 - A person crossing both directions produces two crossing events. This is **not unique visitor identification**.
 - Do not use the counts as the sole evidence for safety-critical monitoring, billing or legal reporting.
-- **Stable v1.0.0 approval is pending.** The 100+ independently annotated real crossing sample, 95% direction-wise precision/recall target, 30-minute physical-device tests and exact model redistribution rights remain open. [Review the release gates](docs/RELEASE_READINESS_v1.0.0.md).
+- **Future Work:** Actual 100+ independently annotated real crossings, the 95% per-direction precision/recall goal, physical Android/iPhone/Windows tests and 30-minute endurance remain unverified. [Deferred validation plan](docs/FUTURE_WORK.md).
+- **Still blocking release:** Exact EfficientDet model redistribution permission and remaining compiled artifact/NOTICE compliance. [Audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md).
 
 ## Dependencies and model
 
