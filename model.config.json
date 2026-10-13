@@ -1,0 +1,19 @@
+{
+  "id": "person-model",
+  "name": "EfficientDet-Lite0 (int8)",
+  "version": "1",
+  "url": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite",
+  "sha256": "0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb",
+  "license": "Apache-2.0",
+  "homepage": "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector",
+  "licenseBasis": {
+    "type": "upstream-MediaPipe-maintainer-default-unless-otherwise-noted",
+    "evidence": [
+      "https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830",
+      "https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604",
+      "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector"
+    ],
+    "reviewedOn": "2026-10-13",
+    "note": "No exception is noted for this official EfficientDet-Lite0 int8 variation in the checked Object Detector guide; binary metadata license field is null but does not revoke upstream default."
+  }
+}

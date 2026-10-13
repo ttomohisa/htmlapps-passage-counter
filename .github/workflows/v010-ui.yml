@@ -1,0 +1,124 @@
+name: Passage Counter v0.10.0 — camera-first UI, drag interactions and browser regression
+on:
+  push:
+    branches:
+      - feat/passage-counter-v0.10.0
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: passage-counter-v010-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  release-preparation:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build and verify self-contained model/WASM HTML and scripts
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Deterministic tracker, coverage, ledger, pacing and accuracy gates
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-tracker-stress.mjs
+          node scripts/test-line-interaction.mjs
+          node scripts/test-ledger.mjs
+          node scripts/test-session-model.mjs
+          node scripts/test-performance.mjs
+          node scripts/test-accuracy-evaluator.mjs
+      - name: Synthetic accuracy fixture MUST remain not ready for product release
+        shell: pwsh
+        run: |
+          node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --json=dist/accuracy-example.json --md=dist/accuracy-example.md
+          $a = Get-Content -Raw dist/accuracy-example.json | ConvertFrom-Json
+          if ($a.gate.eligibleForReview) { throw "Fabricated data must never satisfy real accuracy acceptance." }
+      - name: Install pinned Playwright for CI only
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Capture 4 real Japanese and English README UI screenshots (camera unused)
+        shell: pwsh
+        run: node scripts/capture-release-screenshots.mjs
+      - name: Verify screenshot PNGs, release assets, manifest and explicit No-Go decisions
+        shell: pwsh
+        run: node scripts/audit-release.mjs
+      - name: Verify A/B whole-line drag, endpoint resize, counting lock and mobile touch layout
+        shell: pwsh
+        run: node scripts/smoke-v010-ui.mjs
+      - name: Verify Browser Kitty responsive header, canonical SVG favicon and help dialog
+        shell: pwsh
+        run: node scripts/smoke-header.mjs
+      - name: Verify Chrome and Edge real model inference, local-only CSP, offline and locales
+        shell: pwsh
+        run: node scripts/smoke-v07-integration.mjs
+      - name: Regression saved sessions, corrections, missing intervals and CSV
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Regression native WebM video, seek/reset, storage and CSV
+        shell: pwsh
+        run: node scripts/smoke-video.mjs
+      - name: Regression annotation helper; offline label CSV, safe mobile drag
+        shell: pwsh
+        run: node scripts/smoke-annotation.mjs
+      - name: Regression 20-second synthetic endurance and Wake Lock
+        shell: pwsh
+        run: |
+          node scripts/smoke-endurance.mjs
+          node scripts/smoke-wakelock.mjs
+      - name: Commit genuine README screenshots on release-preparation branch only
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_NAME -ne 'feat/passage-counter-v0.10.0') {
+            throw "Refusing screenshot commit outside v0.10.0 development branch."
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- assets/screenshot.png assets/screenshot-en.png assets/screenshot-mobile.png assets/screenshot-mobile-en.png assets/SCREENSHOTS.md
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "docs(v0.10.0): commit verified bilingual screenshots from actual app UI"
+            if ($LASTEXITCODE -ne 0) { throw "Screenshot commit failed." }
+            git push origin HEAD:feat/passage-counter-v0.10.0
+            if ($LASTEXITCODE -ne 0) { throw "Screenshot push failed." }
+            Write-Host "[screenshots] Stored four genuine browser captures on the draft branch."
+          } else {
+            Write-Host "[screenshots] Screenshot assets are already up-to-date."
+          }
+      - name: Print package sizes and unresolved release blockers
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/build-size-report.json) {
+            $sizes = Get-Content -Raw dist/build-size-report.json | ConvertFrom-Json
+            Write-Host ("[v010-size] readable={0} selfExtract={1}" -f $sizes.readableHtmlBytes,$sizes.selfExtractHtmlBytes)
+          }
+          if (Test-Path dist/release-audit.json) {
+            $audit = Get-Content -Raw dist/release-audit.json | ConvertFrom-Json
+            Write-Host ("[v010-release] engineering={0} decision={1}, unresolved={2}" -f $audit.automatedEngineering,$audit.releaseDecision,@($audit.unresolvedReleaseGates).Count)
+          }
+          Write-Host "[field] Real 100+ crossings, actual Android/iOS 30-minute test, model redistribution review: still NOT VERIFIED."
+      - name: Upload release preparation build and evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v0.10.0-draft
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+            dist/dependency-manifest.json
+            dist/release-audit.json
+            dist/accuracy-example.json
+            dist/accuracy-example.md
+            assets/screenshot*.png
+            assets/SCREENSHOTS.md
+          if-no-files-found: warn
+          retention-days: 7

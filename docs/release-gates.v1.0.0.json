@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "assessedAt": "2026-10-13",
+  "decision": "NO_GO",
+  "decisionScope": "Field accuracy and physical devices are Future Work. The original MediaPipe EfficientDet model license has been identified as Apache-2.0 (unless exceptions). Hosted Cloudflare CSP is verified. v1.0.0 technical integration is ready for review but source mapping/covered-source notices for exact bundled npm WASM remain a residual compliance review item.",
+  "reviewProtocol": "docs/RELEASE_READINESS_v1.0.0.md",
+  "gates": [
+    {
+      "id": "AC-04",
+      "status": "future_work",
+      "severity": "future_work",
+      "subject": "100+ independently annotated real held-out passage events, two directions, standard-condition Precision and Recall at least 95%",
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
+    },
+    {
+      "id": "AC-06",
+      "status": "future_work",
+      "severity": "future_work",
+      "subject": "Physical 30-minute sustained counting, thermal/battery/full-process memory",
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
+    },
+    {
+      "id": "AC-07-WIN",
+      "status": "future_work",
+      "severity": "future_work",
+      "subject": "Actual Windows Chrome/Edge camera and physical end-to-end path, not synthetic camera alone",
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
+    },
+    {
+      "id": "AC-07-ANDROID",
+      "status": "future_work",
+      "severity": "future_work",
+      "subject": "Physical Android Chrome fixed-camera counting, correction/Undo, exports and interruptions",
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
+    },
+    {
+      "id": "AC-07-IOS",
+      "status": "future_work",
+      "severity": "future_work",
+      "subject": "Physical iPhone Safari fixed-camera counting, correction/Undo, exports and interruptions",
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
+    },
+    {
+      "id": "LICENSE-MODEL",
+      "status": "verified",
+      "severity": "release_check",
+      "subject": "Authoritative license/redistribution permission for exact EfficientDet-Lite0 int8 .tflite",
+      "evidence": [
+        "https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830",
+        "https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604",
+        "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector",
+        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38347201387"
+      ],
+      "observation": "MediaPipe maintainer directly states source and models are Apache 2.0 unless otherwise noted; separate object detection maintainer answer confirms object models Apache 2.0 for commercial use. Official EfficientDet-Lite0 int8 model guide links this exact model and has no indicated exception; exact 4,602,795-byte GCS SHA matched. File-local metadata license=null is not an upstream policy exception. Assessment assumes no contrary model-specific notice and requires Apache notice compliance."
+    },
+    {
+      "id": "LICENSE-STANDALONE",
+      "status": "review_pending",
+      "severity": "blocker",
+      "subject": "Confirm license/NOTICE copy distribution alongside the independent single HTML",
+      "evidence": [
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/WORKSPACE",
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/third_party/eigen.BUILD",
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/third_party/wasm_files.bzl",
+        "https://www.mozilla.org/en-US/MPL/2.0/",
+        "docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md"
+      ],
+      "observation": "Pinned npm @mediapipe/tasks-vision@0.10.35 archive SHA verified: 13 files, no LICENSE/NOTICE; package license Apache-2.0. Exact SIMD WASM SHA 6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc differs from v0.10.35 tagged wasm_files.bzl reference e17fc0c480b79a16ad1756bb81ebd9a6c117b1ec4cad6084c6d6a417a6f426b7. v0.10.35 WORKSPACE pins Eigen MPL-2.0/BSD revision 4c38131a16803130b66266a912029504f2cf23cd. Full Apache/MIT/Eigen MPL/BSD/MINPACK texts now embedded in both standalone HTMLs. Exact npm WASM to corresponding source/NOTICE mapping remains unverified."
+    },
+    {
+      "id": "CSP-HOST",
+      "status": "verified",
+      "severity": "release_check",
+      "subject": "Cloudflare live preview HTTP CSP headers and final production header compatibility",
+      "evidence": [
+        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721"
+      ],
+      "observation": "Cloudflare PR #10 Preview HTTP 200 served v1.0.0 without HTTP CSP header but with inline meta CSP; Chrome actually initialized the embedded model to ready with zero CSP violations, JavaScript errors and external HTTP requests. GitHub Pages HTTP 200 served a different v1.1.0; verify its deployment separately."
+    }
+  ],
+  "notes": [
+    "New direct Google/MediaPipe maintainer comments clarify that source and models default to Apache 2.0 unless exceptions; no EfficientDet-Lite0 int8 exception found in official recommended model guide. The separate compiled runtime/NOTICE gate remains open.",
+    "User requested that physical-device tests and real crossing precision/recall become Future Work, with the actual limitations disclosed rather than marked passed.",
+    "CSP-HOST verification is scoped to the actually deployed Cloudflare PR #10 Preview of v1.0.0; it does not assert an untested Browser Kitty main-site deployment.",
+    "GitHub Pages was seen serving v1.1.0 at audit time; the version differs from the PR and must not be confused with the verified v1.0.0 preview.",
+    "Version 1.0.0 in source and downloadable build identifies the requested candidate, not a validated stable release.",
+    "The Web Serial Terminal-style help layout and background scroll locking, including Escape, X, backdrop and mobile short-height operation, are subject to automated testing.",
+    "The PDF Organizer README structure is a documentation reference only; no PDF-specific capability is attributed to Passage Counter.",
+    "v0.10.0 is a pre-release camera-first UX and A/B line interaction improvement; its CI is not a substitute for physical devices or field accuracy.",
+    "The line centre translates both endpoints together, preserving length and angle; each endpoint adjusts independently.",
+    "An empty region of the camera should remain scrollable on mobile; line and handle gestures use isolated touch hit regions.",
+    "A successful GitHub Actions run proves the listed automatic checks, not field accuracy.",
+    "The three-event synthetic scoring example must never count as human-labeled field evidence.",
+    "The repo's model.config.json license declaration alone does not establish a model-specific redistribution grant."
+  ]
+}

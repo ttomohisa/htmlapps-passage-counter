@@ -1,136 +1,135 @@
 # Changelog
 
-## Unreleased
+## [1.0.0] — 2026-10-13 (candidate UI/documentation milestone; stable **NO-GO**)
 
-- Added automatic repository-root HTML generation: normal builds copy `dist/index.html` byte-for-byte to `<repository-name-without-htmlapps-prefix>.html`, and repository checks verify the copy exists and matches.
-
-- Split Cloudflare PR Preview creation and PR-close cleanup into separate workflows so normal Preview runs contain only deployment checks and cleanup runs independently on `closed`.
-
-- Added optional Cloudflare Workers PR Previews using pinned Wrangler 4.135.0, with same-repository secret protection, standalone build verification, Preview probing, stable PR comments, and automatic cleanup when a PR closes.
-- Added `wrangler.preview.jsonc` for the shared `bk-previews` static-assets Worker while keeping GitHub Pages as the production publishing path.
-- Documented the required `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets and the fact that template-created repositories must configure them individually.
-
-## 1.3.0 - Build preflight, canonical app icon, and mobile help hardening - 2026-09-06
-
-- Added `scripts/check-powershell-syntax.ps1` and run it before local / CI builds to catch parser errors before repository checks.
-- The preflight also rejects BOM-less PowerShell source containing non-ASCII bytes, preventing Windows PowerShell 5.1 mojibake from turning localized strings into syntax failures.
-- Added `assets/favicon.svg` as the canonical icon source. The readable build now embeds the exact same SVG payload for both the browser favicon and upper-left application brand icon, and verification rejects drift between them.
-- Reworked the help dialog into a viewport-bounded flex layout with a dedicated scroll body and safe-area-aware bottom padding so long Japanese / English help remains reachable on smartphones.
-- Documented `Set-StrictMode` collection normalization (`@(...)` before `.Count`) and expanded release / offline checks for the new guardrails.
-- Kept canonical favicon/header-icon verification mandatory for real standalone builds while allowing explicitly marked synthetic verifier fixtures to omit product chrome.
-
-## 1.2.2 - WebRTC DataChannel-ready connection gate - 2026-09-01
-
-- Application `onConnected` now waits for both PeerConnection `connected` and the designated readiness DataChannel `open`.
-- Added `readyChannelLabel` / `requireReadyChannelOpen` for custom DataChannel layouts.
-- Added repository regression checks for the readiness contract.
-- Updated bilingual WebRTC/component/template guidance.
-
-## 1.2.1 - Dependency update check collection fix - 2026-08-31
-
-- Fixed dependency collection normalization in `check-dependency-updates.ps1`, `sync-dependency-lock.ps1`, and `update-dependency.ps1`; an empty `dependencies.json` now remains a zero-length array under `Set-StrictMode` instead of becoming `$null`.
-- Added repository regression coverage for both zero dependencies and a single disabled dependency without making npm network requests.
-
-## 1.2.0 - Dependency lifecycle and Issue-based update monitoring - 2026-08-29
-
-- Added committed `dependencies.lock.json` tarball SHA-256 locking and build-time mismatch rejection.
-- Added `patch` / `minor` / `major` / `manual` dependency update policies without allowing scheduled jobs to change source automatically.
-- Added local PowerShell commands to check updates, synchronize lock entries, and apply a reviewed update with asset validation, standalone build verification, and config/lock rollback on failure.
-- Added a weekly GitHub Actions workflow that creates or refreshes one dependency maintenance Issue, closes it when no tracked updates remain, and never creates an automatic dependency pull request.
-- Added bilingual dependency lifecycle documentation and updated security, architecture, contributor, README, and LLM guidance.
-
-## 1.1.0 - Reusable fully serverless WebRTC QR pairing - 2026-08-29
-
-- Added `components/webrtc-qr-pairing.html`, a reusable host/joining-device pairing UI and controller based on the connection flow hardened in Wireless Sensor v1.0.0.
-- Added manual QR/copy signaling with `iceServers: []`, complete ICE gathering before QR generation, candidate diagnostics, stale-attempt cleanup, and delayed joining-side Answer creation.
-- Added low-resolution camera handling, native `BarcodeDetector` with embedded `jsQR` fallback, chunked QR transfer, and pre-connect Answer regeneration.
-- Added `examples/dependencies.webrtc-qr.json` with pinned `qrcode-generator` and `jsqr` assets for the standalone build pipeline.
-- Added bilingual WebRTC pairing documentation, custom DataChannel hooks, protocol-prefix customization, privacy wording, limitations, and real-device release tests.
-- Updated template guidance so future apps reuse the canonical WebRTC pairing component instead of rebuilding manual signaling from scratch.
-
-## 1.0 - Smartphone bottom-tab page switching - 2026-08-24
-
-- Extended `components/mobile-bottom-bar.html` with a canonical mobile page-tab mode using `data-mobile-page-target`.
-- Added `.app-mobile-page` / `.is-mobile-active` behavior: smartphones show only the selected page while desktop keeps every section in normal document flow.
-- Added `showPage()` / `currentPage()` APIs so app workflows can switch tabs programmatically.
-- Kept the existing section-scroll (`data-mobile-target`) and workflow-action (`data-mobile-action`) modes for backward compatibility.
-- Updated LLM/product guidance to prefer bottom-tab page switching for long smartphone tools that naturally divide into 3-5 groups.
-
-## 1.0 - Browser-Kitty UX and asset pipeline hardening - 2026-08-20
-
-- Removed the second Base64 layer around the complete embedded asset bundle; asset payloads are now Base64-encoded exactly once.
-- Added per-asset `none` / `gzip` / `auto` compression, async decompression APIs, and per-asset original/stored byte metadata.
-- Added `build-size-report.json` plus configurable warning-only readable/self-extract size budgets.
-- Added reusable Toast + Undo, compact popover menu, preset + custom numeric setting, and async source-generation/state components.
-- Updated starter export UX with a user-editable output filename, fixed extension handling, invalid-character sanitization, and fallback naming.
-- Added template rules for source-change invalidation, stale async result rejection, explicit heavy-processing phases, mobile preview/control proximity, portrait media geometry/orientation, and compact advanced settings.
-- Added finished-app README guidance and repository checks for the new components and asset-bundle contract.
+- Rewrote the Japanese/English Help dialog using Web Serial Terminal as the *layout* reference: compact header, accessible 44px X close button, scrollable Basics / Privacy / Limitations sections and a factual caution about counting accuracy.
+- Fixed background page scrolling while Help is open. Native X, Escape and backdrop exit paths restore scroll position and keyboard focus; mobile dialog content scrolls independently.
+- Unified the header and body maximum width (1240px) and side gutters at desktop/tablet/mobile viewports.
+- Completely reorganized the Japanese and English README files following the PDF Organizer documentation structure, including badges, screenshots, demo/version clarification, features, usage, standalone build, privacy, CSV, browser limits, dependency notices and contribution/license.
+- Added a dedicated browser regression suite for modal sizing, both locales, short mobile viewports, background scroll locking and restoration, keyboard focus and header/body edge alignment.
+- Preserved the v0.10.0 camera/video, whole-line drag, 30-second check, per-tile +1/−1, Undo, IndexedDB, CSV, Model/WASM and local-only runtime behavior.
+- Updated candidate version badges, README screenshots and CI artifact names to v1.0.0. No production publish, tag or merge was made.
+- **Release decision stays NO-GO:** the required independent real-world accuracy dataset, physical Android/iPhone and 30-minute tests, specific model redistribution grant and actual deployed CSP response audit are not complete. See [v1.0.0 release readiness](docs/RELEASE_READINESS_v1.0.0.md).
 
 
-## 1.0 - Reusable mobile bottom navigation / action bar - 2026-08-19
+## [0.10.0] — 2026-10-12 (Draft, A/B line interaction and UX redesign)
 
-- Added `components/mobile-bottom-bar.html` as the canonical fixed smartphone navigation / workflow action pattern.
-- Added safe-area-aware 3-5 item layout, icon + label controls, native disabled states, section scrolling, active-section tracking, and application action hooks.
-- Documented when to use a bottom bar versus an in-flow primary button, including the pattern of enabling Save / Share only after a valid result exists.
-- Updated LLM guidance, product UX guidance, bilingual README files, and repository checks so future apps discover and reuse the component instead of rebuilding it ad hoc.
+- Rebuilt the screen with directional counters **at camera height on desktop and immediately after the video on phones**, avoiding an inaccessible below-the-settings count area. The prominent camera button starts the first task; after initialization the 30-second check and then real counting are surfaced as the next actionable step. Correction/Undo and the 3 CSV exports stay in a distinct review panel.
+- Enabled rigid-body translation of a counting line by dragging **anywhere along its central segment**, while retaining independent endpoint drag for resizing and rotation.
+- Added a transparent SVG hit layer around the line and handles, so touch editing does not prevent vertical page scrolling elsewhere on the camera preview.
+- Refined correction placement to the **top-right inside each A→B / B→A count tile**, with separate 44px −1/+1 touch targets; moved Undo alongside the total. Removed the redundant lower correction section; existing event-ledger, disabled/zero-floor guard, and CSV behavior are unchanged. Verified narrow mobile geometry.
+- Kept **the line itself draggable without an extra centre grip**; finite-line hit testing, rigid boundary clamp, pointer capture, Shift/Arrow keyboard nudge and durable line persistence remain.
+- Preserved test invalidation on line edits and editing lock during active counting/testing. Camera/local-video, events/Undo, IndexedDB/CSV, model/WASM and network-free standalone remain unchanged.
+- Added dedicated line-geometry tests, browser mouse/touch/keyboard regression and responsive workflow-order assertions. Re-capture real bilingual desktop/mobile README images from v0.10.0 UI.
+- **No-Go remains:** physical Android/iOS and 30-minute device tests, independent 100+ real crossing accuracy, specific model redistributability and deployed CSP audits.
 
-## 1.0 - Portable PowerShell build verification - 2026-08-17
 
-- Removed the builder's dependency on `Get-FileHash` and now calculate file SHA-256 hashes through the .NET cryptography API.
-- Replaced `::new()` constructor syntax in self-extract build/verification scripts with older-compatible construction syntax.
-- Changed standalone placeholder verification to reject only the real build placeholders instead of every `__UPPERCASE__` runtime identifier.
-- Added repository regression guards so future template changes cannot reintroduce `Get-FileHash`, `::new()`, or the generic placeholder false positive.
+## [0.9.0] — 2026-10-11 (Draft, release preparation; NOT approved RC)
 
-## 1.0 - Self-extract loader robustness - 2026-08-17
+- Promoted application and generated standalone version metadata to v0.9.0, without changing the main camera/video/tracking logic.
+- Added reproducible README screenshot capture from the genuine built HTML for Japanese/English and desktop/mobile, with provenance that counts and camera footage are not fabricated.
+- Added offline package/version, embedded icon, model hash, runtime lock, CSV/asset and distribution checks for release QA.
+- Added complete Apache 2.0 license text and documented fixed dependency and model SHA-256 plus the outstanding model-specific redistribution permission question.
+- Added a release decision checklist and machine-readable hard-gate statuses. Automated checks and physical-device/field-accuracy evidence are reported **separately**.
+- Retained all existing v0.8.0 accuracy tools and v0.7.0 browser/CSV/IndexedDB/dual-CSP test suites.
+- **Still No-Go for stable release:** independently labeled 100+ real passages and required precision/recall, Android/iPhone physical 30-minute testing, and model-specific redistribution license approval.
 
-- Made `scripts/build-self-extract.ps1` ASCII-only so Windows PowerShell 5.1 cannot corrupt Japanese loader text when the script is stored as BOM-less UTF-8.
-- Encoded non-ASCII loader copy and application titles into ASCII-safe HTML character references / JavaScript Unicode escapes.
-- Inherited the embedded favicon from the normal standalone HTML into `dist/index.self-extract.html`.
-- Added regression checks for ASCII-only loader output, embedded favicon presence and exact favicon inheritance, and the existing byte-for-byte gzip payload restoration.
-- Added a repository guard that rejects non-ASCII text in the self-extract builder source.
 
-## 1.0 - Reusable mobile confirmation component - 2026-08-15
+## [0.8.0] — 2026-10-11 (Draft, accuracy evaluation tooling)
 
-- Added `components/confirm-dialog.html`, a dependency-free Promise-based confirmation dialog.
-- Added centered desktop and safe-area-aware smartphone bottom-sheet presentations.
-- Added destructive-action styling, backdrop/Esc cancellation, keyboard focus handling, and focus restoration.
-- Integrated the confirmation component into the starter Clear action as the recommended pattern.
-- Added bilingual reusable-component documentation and updated LLM guidance to prefer it over `window.confirm()`.
+- Replaced the favicon and matching app-header icon with the exact user-supplied Passage Counter SVG (#16624f, 64×64, rx=16). Both standalone editions embed it.
+- Made the header Help SVG action visually consistent with Wi-Fi Share: no background or border, 20px glyph, transparent minimum 44×44px touch target; added CSS/asset assertions.
+- Added the self-contained offline evaluation HTML for human crossing-time labels, with video playback, draggable line endpoints, keyboard A/B and Undo, and BOM CSV output.
+- Added a dependency-free accuracy evaluator with strict event time/CSV parsing, one-to-one direction-specific matching, TP/FP/FN and Precision/Recall by group, synthetic data exclusion and review-only evidence gate.
+- Added automated evaluator regression including duplicate predictions, direction errors, ±1.5s boundary, independent holdout split, correction exclusion and no false release approval.
+- Added ADR-007 field evidence protocol, holdout separation and required annotated 100+ real events. Included a deliberately synthetic fixture; **not a real performance metric**.
+- Preserved all v0.7.0 local camera, local video, CSV and storage behaviors; carried forward browser/standalone/network and wake-lock checks.
+- **Open:** independently annotated 100+ real fixed-camera crossing events and 95% target, Android/iPhone actual device tests and 30-minute performance/heat study.
 
-## 1.0 - Self-extracting build - 2026-08-05
 
-- Added `dist/index.self-extract.html`, generated by gzip-compressing the normal standalone HTML.
-- Added native browser restoration with `DecompressionStream`, no runtime dependency, and no network access.
-- Added byte-for-byte payload verification, size/hash manifest, CI artifact upload, and documentation.
-- Kept `dist/index.html` as the default GitHub Pages entry point.
+## [0.7.0] — 2026-10-11 (Draft, integration verification)
 
-## 1.0 - Pages setup fix - 2026-08-05
+- Added bilingual error-state stability for camera permission denial and rejected local video when switching languages. Localized media-preview and aggregation accessibility labels.
+- Added Windows Chrome/Edge desktop integration smoke for actual embedded-model camera inference, session correction/CSV, mobile dialog Escape cancellation, and JA/EN errors.
+- Added combined HTTP CSP-header plus standalone meta-policy checks, clean offline file-based initialization with service workers blocked, and no-outbound-HTTP assertions.
+- Extended stacked PR Preview trigger to the v0.6.0 base branch; maintained one-HTML model/WASM distribution and inherited regression tests.
+- Added an explicit browser compatibility matrix, manual device checklist and evidence boundaries in ADR-006.
+- **Open:** Android Chrome and iPhone Safari physical testing, real 30-minute endurance/thermals/memory, actual Cloudflare CSP headers, and independently labeled precision/recall. No release approval is implied.
 
-- Prevented the first GitHub Actions run from failing when GitHub Pages has not been enabled yet.
-- Added a Pages preflight check and a clear workflow summary with the one-time setup steps.
-- Kept the generated standalone HTML available as a normal Actions artifact even when deployment is skipped.
 
-## 1.0 - 2026-08-05
+## [0.6.0] — 2026-10-11 (Draft, SIMD-only)
 
-- Promoted the template to version 1.0.
-- Removed the filled backgrounds and borders from the header language and help controls.
-- Kept the compact bilingual help dialog and the PDF Organizer-inspired light interface.
-- Added LLM guidance requiring help content to stay synchronized with application behavior.
+- Updated app header and hero to match the current Browser Kitty PDF Fill & Sign and Wi-Fi Share design: sticky pale header, app icon/name/version, EN/JA quick toggle, SVG Help, concise bilingual title and truthful local-processing indicator.
+- Updated unsupported-browser messages to plain language and added bilingual 320/360/390/820/1280px layout assertions with screenshot artifacts.
+- Added an adaptive CPU-only latest-frame inference pacer (105–225ms interval), no backlog, measured frame-rate and inference latency. Consumer status now reports `Recognizing` / `Processing is slow`; technical diagnostics are collapsed.
+- Added a prolonged very-low-fps fail-safe that interrupts a live session and records missing coverage rather than pretending slow video is a zero count.
+- Released decoded model and SIMD WASM caches plus initialization Blob URLs once the detector is running. Preserved fully embedded offline model and SIMD binary.
+- Decoupled five-second IndexedDB checkpoints from full DOM updates and throttled timeline redraws. Removed copying all existing events on every newly persisted crossing.
+- Fixed asynchronous Screen Wake Lock pause/release handling, foreground tab transition and orientation-change interruption, with resumed counting requiring explicit action.
+- Added deterministic performance tests and 20-second Chrome synthetic-camera endurance/heap diagnostic. **Real midrange phone 8fps and 30-minute endurance are unverified** and remain release gates.
 
-All notable changes to this template are documented here.
 
-## 0.3.0 - 2026-08-05
+## [0.5.0] — 2026-10-11 (Draft, SIMD-only)
 
-- Added a compact upper-right help button modeled after PDF Organizer.
-- Added a bilingual native dialog for usage, privacy, limitations, and offline notes.
+- Added local MP4/WebM/other browser-playable video input by file picker or drag/drop, using revocable local Blob URLs and browser-native decoding; no whole-video buffering, persistence, upload or external libraries.
+- Reused embedded EfficientDet + MediaPipe SIMD and the existing directional crossing tracker, with actual file `sourceTimeMs` stored in event ledger, IndexedDB and CSV.
+- Added preview/play/pause/seek controls, explicit confirmation and full session reset on seek/reanalysis, EOF completion and interrupted-state protection for unexpected seeking.
+- Saved video-derived count sessions without persisting file names or video bytes; restored results can be viewed/exported but not automatically resumed.
+- Preserved v0.4.0 camera, 30-second setup, adjustment/Undo, persistence, missing coverage, 5/15/60-minute *analysis-wall-time* summaries and three CSV exports.
+- Added Chrome E2E tests with browser-encoded WebM (not simulated detection outputs), local `file://`, seek/replay, CSV source times and zero HTTP transfers. New Cloudflare PR Preview workflow configuration supports stacked PRs.
+- Android/iPhone compatibility, large videos, battery/memory behavior and actual person-count precision remain pending.
 
-## [0.1.0] - 2026-08-04
 
-### Added
+## [0.4.0] — 2026-10-11 (Draft, SIMD-only)
 
-- Generic single-HTML builder with exact npm package and asset embedding.
-- SHA-256 dependency manifest.
-- Runtime no-network Content Security Policy.
-- Responsive bilingual starter interface with local persistence and export.
-- GitHub Actions for build validation and GitHub Pages deployment.
-- LLM implementation contract, product specification, architecture, and workflow guides.
+- Persist named sessions to IndexedDB (versioned session records and append-only event store), writing each new event together with its session checkpoint in a single transaction.
+- Restore finished or interrupted sessions from the local browser list; interrupted counts never restart automatically. Keep camera video and person-track IDs out of persistent records.
+- Record observed, paused and missing coverage intervals, including unobserved time since the last durable checkpoint after a browser crash. Display 5/15/60-minute local-time groupings without equating missing coverage to zero crossings.
+- Add summary, events and time-bucket CSV exports with UTF-8 BOM, formula injection safety, time-zone information, automatic/manual/final counts and undo references.
+- Add local rename/open/delete controls with destructive confirmation, a prominent persistence-error warning and in-memory CSV rescue.
+- Add deterministic session/coverage/ledger tests and full Chrome IndexedDB reload, interrupted recovery, deletion and blocked-storage E2E tests.
+- Preserve the complete SIMD-only MediaPipe / EfficientDet runtime, standalone HTML and external HTTP zero. Mobile field validation remains pending.
+
+
+## SIMD-only v0.3.0 experiment — 2026-10-11 (Draft, not released)
+
+- Preserve the complete EfficientDet int8 model, tracking, setup testing, corrections and CSV.
+- Remove non-SIMD MediaPipe loader/WASM (no runtime network fallback).
+- Detect unsupported SIMD environments and explain incompatibility in Japanese and English before camera permissions.
+- Measure same-run size savings: **13,505,896 → 9,150,133 bytes, -32.25%**.
+- Retest live synthetic camera inference, mobile layout, offline `file://`, and external HTTP zero. Mobile field compatibility still pending.
+
+
+## [0.3.0] - 2026-10-11 (Draft)
+
+- Added a timed **30-second calibration test** with a live trial count, manual stop and automatic finish. Test counts are kept separate from real session totals and CSV history.
+- Added directional `+1/-1` corrections and Undo, with append-only audit events, zero-floor protection and editable direction names.
+- Added front/rear camera selection, detection overlay switch, locally remembered line/settings, setup step guidance, and on-video mobile counters.
+- Improved pause/configuration safety: calibration is invalidated by line movement or camera switching; a new test is required before counting again.
+- Extended CSV event fields for direction labels and Undo references.
+- Added deterministic ledger tests and browser smoke tests for setup, correction, export, Japanese/English and mobile layouts.
+- Kept the AI model and SIMD/non-SIMD WASM inside each gzip-optimized one-file HTML, without new runtime dependencies.
+
+## [0.2.0] - 2026-10-11 (Draft)
+
+- Added prediction-assisted matching with IoU, object size and foot-point distance.
+- Added track arming, stable-side hysteresis, direction re-arming and finite-segment intersections.
+- Suppress uncertain matches and crossings after long detection gaps rather than creating inferred counts.
+- Added 15 deterministic crossing, diagonal-line, jitter, simultaneous-passage, occlusion and reset tests.
+- Disabled counting when line endpoints are too close, with localized guidance.
+- Preserved the embedded AI model, both WASM variants, offline/privacy gates and bilingual UI.
+- Reduced readable HTML from 13,635,491 to 13,484,563 bytes (-1.11%) with the strongest compatible native gzip level, without removing either WASM variant.
+
+## [0.1.0] - 2026-10-11 (Draft)
+
+- Implemented initial camera capture, person detection, draggable line, provisional short-term tracking, directional counting, pause/resume/finish and CSV export.
+- Embedded EfficientDet-Lite0 (int8), MediaPipe JavaScript module, SIMD and non-SIMD WASM loaders/binaries in every standalone HTML.
+- Pinned npm tarball and model SHA-256 and kept the template's readable/root/self-extract artifact pipeline.
+- Added Chrome synthetic-camera smoke tests, Japanese and English UI, mobile layout and local-only CSP.
+- Adopted formal application specification and v0.1.0–v1.0.0 development plan.
+
+### Not yet complete
+
+- Real-device and field accuracy validation.
+- Person ID tracking and crossing precision improvements (v0.2.0).
+- Manual adjustments, session persistence and recovery (v0.3.0–v0.4.0).

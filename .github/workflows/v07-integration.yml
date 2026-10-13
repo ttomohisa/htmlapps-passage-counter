@@ -1,0 +1,76 @@
+name: Passage Counter v0.7.0 integration and desktop browser compatibility
+on:
+  push:
+    branches:
+      - feat/passage-counter-v0.7.0
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: passage-counter-v07-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integration:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build both fully embedded HTML editions and verify repository
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Run deterministic algorithm and session tests
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-ledger.mjs
+          node scripts/test-session-model.mjs
+          node scripts/test-performance.mjs
+      - name: Install CI-only browser automation
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Verify bilingual 320–1280px Browser Kitty header and help layout
+        shell: pwsh
+        run: node scripts/smoke-header.mjs
+      - name: Verify Chrome and Edge integration, translated failures, dual CSP and cold offline HTML
+        shell: pwsh
+        run: node scripts/smoke-v07-integration.mjs
+      - name: Regression — real embedded model, IndexedDB, offline and correction/CSV
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Regression — browser-decoded local video, reset, exports and file://
+        shell: pwsh
+        run: node scripts/smoke-video.mjs
+      - name: Regression — 20-second synthetic camera lifecycle (not 30-minute device endurance)
+        shell: pwsh
+        run: node scripts/smoke-endurance.mjs
+      - name: Regression — synthetic Wake Lock release
+        shell: pwsh
+        run: node scripts/smoke-wakelock.mjs
+      - name: Report package size and non-device test scope
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/build-size-report.json) {
+            $r = Get-Content -Raw dist/build-size-report.json | ConvertFrom-Json
+            Write-Host ("[v07-size] readable={0} selfExtract={1}" -f $r.readableHtmlBytes,$r.selfExtractHtmlBytes)
+          }
+          Write-Host "[v07] Actual Android Chrome and iOS Safari runs: NOT performed by this CI."
+          Write-Host "[v07] Physical 30-minute endurance and count precision/recall: NOT measured by this CI."
+      - name: Upload two HTML editions and layout evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v0.7.0-integration
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/dependency-manifest.json
+            dist/build-size-report.json
+            dist/screenshots/*.png
+          if-no-files-found: warn
+          retention-days: 7

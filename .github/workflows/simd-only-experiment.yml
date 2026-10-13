@@ -1,0 +1,57 @@
+name: MediaPipe SIMD-only standalone experiment
+on:
+  push:
+    branches: [experiment/mediapipe-simd-only]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  simd-only:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          ref: feat/passage-counter-v0.1.0
+          path: baseline
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build original baseline with both WASM variants
+        shell: pwsh
+        run: ./baseline/scripts/check-repository.ps1
+      - name: Build standalone SIMD-only app
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Compare exact generated HTML bytes and asset manifests
+        shell: pwsh
+        run: node scripts/compare-simd-sizes.mjs
+      - name: Install Chromium automation driver (CI only)
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Run full offline/camera/i18n/session regression with SIMD only
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-ledger.mjs
+          node scripts/smoke-browser.mjs
+      - name: Compare synthetic Chrome cold start, without treating it as a mobile benchmark
+        shell: pwsh
+        run: node scripts/benchmark-simd-boot.mjs
+      - name: Upload experimental deliverables and comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mediapipe-simd-only-comparison
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+            dist/simd-only-comparison.json
+            dist/simd-boot-comparison.json
+            baseline/dist/build-size-report.json
+          if-no-files-found: warn
+          retention-days: 14

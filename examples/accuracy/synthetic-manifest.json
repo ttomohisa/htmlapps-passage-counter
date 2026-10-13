@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "evaluationId": "synthetic-harness-check-not-field-accuracy",
+  "algorithmVersion": "prediction-iou-v0.2",
+  "modelVersion": "EfficientDet-Lite0-int8-1",
+  "toleranceMs": 1500,
+  "metadata": {
+    "purpose": "Scoring harness self-test only. NOT real people-counting accuracy."
+  },
+  "scenes": [
+    {
+      "id": "synthetic-example",
+      "condition": "standard",
+      "split": "holdout",
+      "provenance": "synthetic",
+      "timeBasis": "media",
+      "groundTruthCsv": "synthetic-truth.csv",
+      "predictedCsv": "synthetic-app-events.csv",
+      "device": "simulated",
+      "notes": "Example exists only to prove the matching and CSV pipeline. Never qualify as real footage."
+    }
+  ]
+}

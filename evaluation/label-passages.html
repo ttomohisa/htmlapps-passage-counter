@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src blob:; img-src data:; connect-src 'none'; object-src 'none'; frame-src 'none';">
+<title>通過イベント・正解ラベル作成 | 開発用</title>
+<style>
+:root{color-scheme:light;--green:#16624f;--surface:#fff;--bg:#f5f5f2;--text:#202720;--line:#ceded6}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,sans-serif}
+main{max-width:900px;margin:auto;padding:22px 16px 60px}
+h1{font-size:24px;margin:0 0 7px}h2{font-size:17px;margin:0}
+p{margin:8px 0 16px}label{font-weight:650}
+.panel{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px;margin:16px 0;min-width:0}
+.button-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,input{font:inherit}button{padding:9px 14px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-weight:650}
+button:disabled{opacity:.45;cursor:not-allowed}button.primary{background:var(--green);border-color:var(--green);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid #4489ce;outline-offset:2px}
+input[type=file]{width:100%;font:inherit;min-height:44px;overflow-wrap:anywhere}
+.stage{width:100%;aspect-ratio:16/9;background:#101815;position:relative;border-radius:11px;overflow:hidden}
+.stage video{width:100%;height:100%;position:absolute;inset:0;display:block;object-fit:fill}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.line{stroke:#fff;stroke-width:3;filter:drop-shadow(0 1px 3px #000)}
+/* 44px transparent pointer target avoids tiny distorted SVG hit areas
+   on narrow portrait devices while preserving the visual endpoint marker. */
+.line-handle{position:absolute;z-index:2;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;transform:translate(-50%,-50%);touch-action:none;cursor:grab}
+.line-handle::after{content:'';position:absolute;width:16px;height:16px;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:50%;background:var(--green);box-shadow:0 1px 4px #0008}
+.line-handle:disabled{cursor:not-allowed}
+.line-handle:focus-visible{outline:3px solid #4489ce;outline-offset:0}
+.cover{position:absolute;inset:0;display:grid;place-items:center;color:#fff;padding:18px;text-align:center;pointer-events:none}
+.badge{display:inline-block;border-radius:999px;background:#e7f1ec;color:var(--green);padding:3px 9px;font-size:12px;font-weight:750}
+.note{font-size:13px;color:#58685f;overflow-wrap:anywhere}
+.kbd{border:1px solid #c5d3cb;background:#f9faf8;border-radius:4px;padding:0 5px;font-size:12px}
+#rows{width:100%;border-collapse:collapse;table-layout:fixed}
+#rows th,#rows td{font-size:13px;text-align:left;border-bottom:1px solid var(--line);padding:9px 5px;overflow-wrap:anywhere}
+#rows th:last-child,#rows td:last-child{width:65px}
+#status{font-size:13px;min-height:23px;overflow-wrap:anywhere}
+#position{font-variant-numeric:tabular-nums;font-size:15px;font-weight:750}
+@media(max-width:520px){main{padding:16px 12px 40px}h1{font-size:21px}.panel{padding:12px}.button-row button{flex:1 1 130px}#rows th,#rows td{font-size:12px}}
+</style>
+</head>
+<body>
+<main>
+<h1>通過イベントの正解ラベル作成</h1>
+<p><span class="badge">開発・精度検証用</span> Passage Counterの精度評価用に、動画内で人が判定線を横切った時刻と方向を記録します。<strong>動画・ラベルは外部送信も自動保存もしません。</strong></p>
+<section class="panel">
+<label for="movieFile">1. 端末内の評価動画を選択</label>
+<input id="movieFile" type="file" accept="video/*,.mp4,.webm,.mov">
+<p id="status" role="status" aria-live="polite">動画を選択してください。ブラウザが再生できる形式のみ利用できます。</p>
+<div class="stage" id="stage">
+<video id="movie" controls playsinline preload="metadata" aria-label="正解ラベル用動画"></video>
+<svg id="lineOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="通過判定線">
+<line id="line" class="line" x1="120" y1="500" x2="880" y2="500"/>
+</svg>
+<button class="line-handle" type="button" data-endpoint="0" aria-label="判定線の始点を移動" style="left:12%;top:50%" disabled></button>
+<button class="line-handle" type="button" data-endpoint="1" aria-label="判定線の終点を移動" style="left:88%;top:50%" disabled></button>
+<div class="cover" id="cover">動画を選ぶとここに表示されます</div>
+</div>
+<p class="note">白い線の両端を動かして、Passage Counter本体の判定線と同じ位置に合わせます。映像の有効範囲だけを扱います。カメラ映像の前後反転・A/B設定を必ず一致させてください。</p>
+<div class="button-row">
+<button id="rewind" type="button" disabled>−0.1 秒</button>
+<button id="forward" type="button" disabled>＋0.1 秒</button>
+<button id="play" type="button" disabled>再生／停止</button>
+<strong id="position">00:00.000</strong>
+</div>
+</section>
+<section class="panel">
+<h2>2. 人が線を横切った瞬間にラベルを追加</h2>
+<p class="note">必要に応じて動画を一時停止し、足元が線を越えた時刻を記録します。<span class="kbd">A</span>でA→B、<span class="kbd">B</span>でB→A、<span class="kbd">Z</span>で最後を取り消します。録画中の独立した真値を作るため、アプリの自動カウント結果を見ながら正解を決めないでください。</p>
+<div class="button-row">
+<button class="primary" id="addA" type="button" disabled>A → B を記録</button>
+<button class="primary" id="addB" type="button" disabled>B → A を記録</button>
+<button id="undo" type="button" disabled>最後を取り消す</button>
+</div>
+<p id="counter" role="status" aria-live="polite">正解ラベル 0 件</p>
+<table id="rows" aria-label="記録した正解ラベル"><thead><tr><th>ID</th><th>方向</th><th>動画時刻</th><th>操作</th></tr></thead><tbody id="body"></tbody></table>
+</section>
+<section class="panel">
+<h2>3. 正解CSVを保存</h2>
+<p class="note">CSVは <code>event_id,direction,source_time_ms,subject_id</code> の4列です。AIによる判定イベントはこのCSVへ混ぜないでください。評価本体の <code>scripts/evaluate-accuracy.mjs</code> でアプリのイベントCSVと比較できます。</p>
+<div class="button-row">
+<button class="primary" id="save" type="button" disabled>正解CSVを保存</button>
+<button id="clear" type="button" disabled>記録を全削除</button>
+</div>
+</section>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),movie=$('#movie'),stage=$('#stage'),cover=$('#cover');
+let url=null,ready=false,entries=[],counter=0,dirty=false;
+let line=[{x:.12,y:.5},{x:.88,y:.5}],drag=-1;
+const fmt=ms=>{
+ const total=Math.max(0,Math.round(ms));
+ return String(Math.floor(total/60000)).padStart(2,'0')+':'+
+   String(Math.floor(total%60000/1000)).padStart(2,'0')+'.'+
+   String(total%1000).padStart(3,'0');
+};
+const setStatus=text=>{$('#status').textContent=text;};
+const moveLine=()=>{
+ $('#line').setAttribute('x1',String(line[0].x*1000));
+ $('#line').setAttribute('y1',String(line[0].y*1000));
+ $('#line').setAttribute('x2',String(line[1].x*1000));
+ $('#line').setAttribute('y2',String(line[1].y*1000));
+ stage.querySelectorAll('.line-handle').forEach((h,i)=>{
+   h.style.left=(line[i].x*100)+'%';h.style.top=(line[i].y*100)+'%';
+ });
+};
+function render(){
+ $('#rewind').disabled=!ready;$('#forward').disabled=!ready;$('#play').disabled=!ready;
+ stage.querySelectorAll('.line-handle').forEach(h=>{h.disabled=!ready;});
+ $('#addA').disabled=!ready;$('#addB').disabled=!ready;
+ $('#undo').disabled=!entries.length;$('#save').disabled=!entries.length;$('#clear').disabled=!entries.length;
+ $('#counter').textContent='正解ラベル '+entries.length+' 件（A→B '+entries.filter(e=>e.direction==='A_TO_B').length+'／B→A '+entries.filter(e=>e.direction==='B_TO_A').length+'）';
+ $('#position').textContent=fmt(movie.currentTime*1000);
+ const body=$('#body');body.replaceChildren();
+ for(const e of entries){
+   const tr=document.createElement('tr');
+   for(const value of [e.id,e.direction,fmt(e.sourceTimeMs)]){
+     const td=document.createElement('td');td.textContent=value;tr.append(td);
+   }
+   const td=document.createElement('td'),button=document.createElement('button');
+   button.type='button';button.textContent='削除';button.setAttribute('aria-label',e.id+' を削除');
+   button.addEventListener('click',()=>{
+     entries=entries.filter(item=>item!==e);dirty=true;render();
+   });
+   td.append(button);tr.append(td);body.append(tr);
+ }
+}
+function dispose(){
+ movie.pause();movie.removeAttribute('src');movie.load();
+ if(url){URL.revokeObjectURL(url);url=null;}
+ ready=false;
+}
+$('#movieFile').addEventListener('change',async event=>{
+ const f=event.target.files?.[0];if(!f)return;
+ if(dirty&&entries.length&&!confirm('現在のラベルを消して別の動画を開きますか？')){event.target.value='';return;}
+ dispose();entries=[];counter=0;dirty=false;ready=false;render();setStatus('動画を準備しています…');
+ const next=URL.createObjectURL(f);url=next;
+ const done=()=>{ready=true;cover.hidden=true;
+   stage.style.aspectRatio=movie.videoWidth+' / '+movie.videoHeight;
+   setStatus('選択中: '+f.name+' / '+movie.videoWidth+'×'+movie.videoHeight);
+   render();
+ };
+ const failed=()=>{dispose();cover.hidden=false;setStatus('この動画を再生できません。対応するMP4/WebM等を選んでください。');render();};
+ movie.addEventListener('loadedmetadata',done,{once:true});
+ movie.addEventListener('error',failed,{once:true});
+ movie.src=next;movie.load();
+});
+$('#rewind').addEventListener('click',()=>{movie.pause();movie.currentTime=Math.max(0,movie.currentTime-.1);});
+$('#forward').addEventListener('click',()=>{movie.pause();movie.currentTime=Math.min(movie.duration||Infinity,movie.currentTime+.1);});
+$('#play').addEventListener('click',()=>{if(!ready)return;if(movie.paused)movie.play().catch(()=>setStatus('動画を再生できません。'));else movie.pause();});
+movie.addEventListener('timeupdate',()=>{$('#position').textContent=fmt(movie.currentTime*1000);});
+function add(direction){
+ if(!ready||!Number.isFinite(movie.currentTime))return;
+ entries.push({id:'human-'+String(++counter).padStart(4,'0'),direction,sourceTimeMs:Math.round(movie.currentTime*1000)});
+ dirty=true;render();
+}
+$('#addA').addEventListener('click',()=>add('A_TO_B'));
+$('#addB').addEventListener('click',()=>add('B_TO_A'));
+$('#undo').addEventListener('click',()=>{if(entries.length){entries.pop();dirty=true;render();}});
+$('#clear').addEventListener('click',()=>{
+ if(entries.length&&confirm('すべての正解ラベルを削除しますか？')){entries=[];dirty=true;render();}
+});
+document.addEventListener('keydown',event=>{
+ if(event.ctrlKey||event.metaKey||event.altKey||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+ const key=event.key.toLowerCase();
+ if(key==='a')add('A_TO_B');else if(key==='b')add('B_TO_A');
+ else if(key==='z'){if(entries.length){entries.pop();dirty=true;render();}}
+});
+function csvCell(value){return '"'+String(value).replaceAll('"','""')+'"';}
+$('#save').addEventListener('click',()=>{
+ if(!entries.length)return;
+ const rows=[['event_id','direction','source_time_ms','subject_id'],
+   ...[...entries].sort((a,b)=>a.sourceTimeMs-b.sourceTimeMs).map(e=>[e.id,e.direction,e.sourceTimeMs,''])];
+ const csv='\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
+ const output=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ const anchor=document.createElement('a');anchor.href=output;anchor.download='passage-ground-truth.csv';anchor.click();
+ setTimeout(()=>URL.revokeObjectURL(output),1800);
+ dirty=false;setStatus('正解ラベルをCSVに保存しました。動画や映像フレームは保存していません。');
+});
+function coords(event){
+ const bounds=stage.getBoundingClientRect();
+ return{x:Math.min(.97,Math.max(.03,(event.clientX-bounds.left)/bounds.width)),
+ y:Math.min(.97,Math.max(.03,(event.clientY-bounds.top)/bounds.height))};
+}
+stage.querySelectorAll('.line-handle').forEach(handle=>{
+ handle.addEventListener('pointerdown',event=>{if(!ready)return;drag=Number(handle.dataset.endpoint);handle.setPointerCapture(event.pointerId);event.preventDefault();});
+ handle.addEventListener('pointermove',event=>{if(drag!==Number(handle.dataset.endpoint))return;
+   line[drag]=coords(event);moveLine();});
+ handle.addEventListener('pointerup',()=>drag=-1);
+ handle.addEventListener('pointercancel',()=>drag=-1);
+ handle.addEventListener('keydown',event=>{
+   const delta={ArrowLeft:[-.01,0],ArrowRight:[.01,0],
+     ArrowUp:[0,-.01],ArrowDown:[0,.01]}[event.key];
+   if(!ready||!delta)return;
+   event.preventDefault();const end=Number(handle.dataset.endpoint);
+   line[end]={x:Math.min(.97,Math.max(.03,line[end].x+delta[0])),
+     y:Math.min(.97,Math.max(.03,line[end].y+delta[1]))};
+   moveLine();
+ });
+});
+window.addEventListener('beforeunload',event=>{if(dirty&&entries.length){event.preventDefault();event.returnValue='';}});
+window.addEventListener('pagehide',dispose);
+render();
+})();
+</script>
+</body>
+</html>

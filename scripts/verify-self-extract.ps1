@@ -63,7 +63,8 @@ $checks = @(
   @{ Message = "The inherited favicon is not embedded"; Failed = -not (Get-FaviconHref $html).StartsWith("data:", [StringComparison]::OrdinalIgnoreCase) },
   @{ Message = "The self-extract payload is missing"; Failed = $html -notmatch '<script\s+id=["'']self-extract-payload["'']\s+type=["'']application/octet-stream["'']>' },
   @{ Message = "The gzip decompressor is missing"; Failed = $html -notmatch 'new\s+DecompressionStream\(["'']gzip["'']\)' },
-  @{ Message = "connect-src 'none' is missing"; Failed = $html -notmatch "connect-src\s+'none'" },
+  @{ Message = "Self-extract must use local blob-only connect-src"; Failed = $html -notmatch 'connect-src\s+blob:\s*;' },
+  @{ Message = "Self-extract must allow embedded WASM compilation"; Failed = $html -notmatch "'wasm-unsafe-eval'" },
   @{ Message = "An external script URL remains"; Failed = $html -match '<script[^>]+src\s*=\s*["'']https?://' },
   @{ Message = "An external stylesheet URL remains"; Failed = $html -match '<link[^>]+href\s*=\s*["'']https?://' },
   @{ Message = "An external frame URL remains"; Failed = $html -match '<(?:iframe|frame)[^>]+src\s*=\s*["'']https?://' }
