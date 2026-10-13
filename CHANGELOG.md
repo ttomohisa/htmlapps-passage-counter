@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.0] — 2026-10-13 (candidate UI/documentation milestone; stable **NO-GO**)
+
+- Rewrote the Japanese/English Help dialog using Web Serial Terminal as the *layout* reference: compact header, accessible 44px X close button, scrollable Basics / Privacy / Limitations sections and a factual caution about counting accuracy.
+- Fixed background page scrolling while Help is open. Native X, Escape and backdrop exit paths restore scroll position and keyboard focus; mobile dialog content scrolls independently.
+- Unified the header and body maximum width (1240px) and side gutters at desktop/tablet/mobile viewports.
+- Completely reorganized the Japanese and English README files following the PDF Organizer documentation structure, including badges, screenshots, demo/version clarification, features, usage, standalone build, privacy, CSV, browser limits, dependency notices and contribution/license.
+- Added a dedicated browser regression suite for modal sizing, both locales, short mobile viewports, background scroll locking and restoration, keyboard focus and header/body edge alignment.
+- Preserved the v0.10.0 camera/video, whole-line drag, 30-second check, per-tile +1/−1, Undo, IndexedDB, CSV, Model/WASM and local-only runtime behavior.
+- Updated candidate version badges, README screenshots and CI artifact names to v1.0.0. No production publish, tag or merge was made.
+- **Release decision stays NO-GO:** the required independent real-world accuracy dataset, physical Android/iPhone and 30-minute tests, specific model redistribution grant and actual deployed CSP response audit are not complete. See [v1.0.0 release readiness](docs/RELEASE_READINESS_v1.0.0.md).
+
+
 ## [0.10.0] — 2026-10-12 (Draft, A/B line interaction and UX redesign)
 
 - Rebuilt the screen with directional counters **at camera height on desktop and immediately after the video on phones**, avoiding an inaccessible below-the-settings count area. The prominent camera button starts the first task; after initialization the 30-second check and then real counting are surfaced as the next actionable step. Correction/Undo and the 3 CSV exports stay in a distinct review panel.
