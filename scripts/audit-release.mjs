@@ -15,17 +15,25 @@ const gates=JSON.parse(await read('docs/release-gates.v1.0.0.json'));
 assert.equal(gates.schemaVersion,1);
 assert.equal(gates.version,expectedVersion);
 assert(Array.isArray(gates.gates)&&gates.gates.length>=7);
-const unresolved=gates.gates.filter(g=>g.status!=='verified'&&g.status!=='passed');
-const requiredBlockers=['AC-04','AC-06','AC-07-WIN','AC-07-ANDROID','AC-07-IOS',
-  'LICENSE-MODEL','LICENSE-STANDALONE'];
+const unresolved=gates.gates.filter(g=>g.severity==='blocker'&&
+  g.status!=='verified'&&g.status!=='passed');
+const futureWork=gates.gates.filter(g=>g.severity==='future_work');
+const requiredBlockers=['LICENSE-MODEL','LICENSE-STANDALONE'];
+const deferred=['AC-04','AC-06','AC-07-WIN','AC-07-ANDROID','AC-07-IOS'];
 for(const id of requiredBlockers){
  const value=gates.gates.find(g=>g.id===id);
- assert(value,'Release gate '+id+' must not disappear');
+ assert(value,'License gate '+id+' must not disappear');
  assert(value.severity==='blocker');
 }
-assert(unresolved.length>0,'Automated CI cannot silently approve an unreviewed release');
+for(const id of deferred){
+ const value=gates.gates.find(g=>g.id===id);
+ assert(value,'Future Work gate '+id+' must not disappear');
+ assert(value.severity==='future_work'&&value.status==='future_work',
+   'Deferred field evidence must not be marked tested or removed: '+id);
+}
+assert(unresolved.length>0,'Model redistribution/legal release blockers must stay explicit');
 assert.equal(gates.decision,'NO_GO',
-  'A release GO requires separate human signoff, not just passing engineering CI');
+  'A release GO requires independently established model rights, not an automated CI success');
 const output=config.build.output;
 const selfOutput=config.build.selfExtract?.output;
 assert(typeof output==='string'&&typeof selfOutput==='string','Configured HTML output missing');
@@ -67,6 +75,12 @@ assert(!assetKeys.some(x=>/baseline|non-simd/i.test(x)),
 const licenseText=await read('licenses/Apache-2.0.txt');
 assert(licenseText.includes('TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION')&&
   licenseText.length>11000,'Full Apache 2.0 license text missing');
+assert(html.includes('TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION')&&
+  html.includes('id="embeddedApacheLicense"')&&
+  !html.includes('__MEDIAPIPE_APACHE_LICENSE_TEXT__'),
+  'Standalone HTML must visibly carry full MediaPipe Apache 2.0 license text');
+assert.equal(model.license,'UNVERIFIED',
+  'Do not assert Apache-2.0 rights for the separately hosted model without evidence');
 const thirdParty=await read('THIRD_PARTY_NOTICES.md');
 for(const needle of [model.sha256,runtimeAsset.tarballSha256,'UNVERIFIED','licenses/Apache-2.0.txt'])
  assert(thirdParty.includes(needle),'Third-party notice incomplete: '+needle);
@@ -116,11 +130,14 @@ const report={
  },
  readmeScreenshots:pics,
  unresolvedReleaseGates:unresolved.map(g=>({id:g.id,subject:g.subject,status:g.status})),
- note:'CI verifies reproducibility only. Real-world accuracy, physical mobile, hosted CSP and model-specific licensing require independent review.'
+ futureWork:futureWork.map(g=>({id:g.id,subject:g.subject,status:g.status})),
+ hostedCsp:{cloudflarePreview:'verified',productionSite:'not covered by this standalone audit'},
+ note:'CI verifies reproducibility only. Owner deferred physical-device and real-count accuracy to Future Work; specific model redistribution and all standalone NOTICE obligations remain unverified.'
 };
 await mkdir('dist',{recursive:true});
 await writeFile('dist/release-audit.json',JSON.stringify(report,null,2)+'\n','utf8');
 console.log('[release-audit] PASS mechanical integrity: '+htmlBytes.length+' + '+wrapperBytes.length+' bytes');
 console.log('[release-audit] PASS 4 genuine README screenshots, pinned model/SIMD, SVG/license/notices');
-console.log('[release-audit] NO_GO: '+unresolved.map(g=>g.id).join(', '));
-console.log('[release-audit] Release decision stays NO_GO until independent evidence and legal review.');
+console.log('[release-audit] NO_GO legal: '+unresolved.map(g=>g.id).join(', '));
+console.log('[release-audit] Future Work (not passed): '+futureWork.map(g=>g.id).join(', '));
+console.log('[release-audit] Cloudflare Preview CSP checked independently; release is pending model rights.');
