@@ -23,6 +23,9 @@ jobs:
         run: |
           ./scripts/check-repository.ps1
           node scripts/audit-release.mjs
+      - name: Inspect exact MediaPipe npm archive and Eigen/MPL/NOTICE provenance
+        shell: pwsh
+        run: node scripts/audit-compiled-runtime-licenses.mjs
       - name: Compare TensorFlow/Kaggle Lite0 licensed variants to exact embedded TFLite
         shell: pwsh
         run: node scripts/research-efficientdet-provenance.mjs
@@ -68,6 +71,7 @@ jobs:
             dist/model-license-audit.json
             dist/efficientdet-model-provenance.json
             dist/kaggle-compatibility-audit.json
+            dist/compiled-runtime-license-audit.json
             dist/host-csp-audit.json
             dist/release-audit.json
           if-no-files-found: warn
