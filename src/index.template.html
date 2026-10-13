@@ -698,6 +698,10 @@ body.help-scroll-locked{
   #helpDialog .help-dialog-body{padding:14px 15px calc(20px + env(safe-area-inset-bottom))}
 }
 
+.embedded-license-notice{margin-top:20px;padding:13px 14px;border:1px solid var(--border);border-radius:10px;background:#fbfdfb}
+.embedded-license-notice summary{cursor:pointer;min-height:44px;font-size:12px;font-weight:700;display:flex;align-items:center;color:var(--brand)}
+.embedded-license-notice p{font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.embedded-license-notice pre{font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:white;border:1px solid var(--border);padding:12px;border-radius:8px;max-height:240px;overflow:auto}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -980,6 +984,11 @@ body.help-scroll-locked{
       <li data-i18n="helpLimitStorage">保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。</li>
     </ul>
     <p class="help-dialog-note" data-i18n="helpImportant">計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。</p>
+    <details class="embedded-license-notice" id="embeddedLicenseNotice">
+      <summary data-i18n="thirdPartyLicenseTitle">第三者ライセンス（MediaPipe）</summary>
+      <p data-i18n="thirdPartyLicenseNote">下記はMediaPipe Tasks VisionのApache 2.0ライセンスです。EfficientDetモデルファイルの再配布許諾を示すものではありません。</p>
+      <pre id="embeddedApacheLicense">__MEDIAPIPE_APACHE_LICENSE_TEXT__</pre>
+    </details>
   </div>
 </dialog>
 <!-- APP:HELP:END -->
@@ -1127,6 +1136,7 @@ body.help-scroll-locked{
           helpLimitInterrupt:'画面を隠す、端末がスリープする、カメラが切断されるなどの場合、計測は中断します。見られなかった時間は0件として扱いません。',
           helpLimitStorage:'保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。',
           helpImportant:'計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。',
+          thirdPartyLicenseTitle:'第三者ライセンス（MediaPipe）',thirdPartyLicenseNote:'下記はMediaPipe Tasks VisionのApache 2.0ライセンスです。EfficientDetモデルファイルの再配布許諾を示すものではありません。',
           stepSetup:'1 · 準備',stepTest:'2 · 設置チェック',stepMeasure:'3 · 本計測',stepMeasureFile:'2 · 本計測',setupProgress:'計測までの手順',
           nextKicker:'次の操作',extrasAria:'カメラと計測の設定',
           nextStartCamera:'カメラを開始',nextStartCameraDesc:'スマホを固定してから「カメラを開始」を押してください。',
@@ -1240,6 +1250,7 @@ body.help-scroll-locked{
           helpLimitInterrupt:'Counting is interrupted when the tab is hidden, the device sleeps or the camera disconnects. Unobserved time is not treated as zero crossings.',
           helpLimitStorage:'Saved records are isolated by browser and origin. Clearing site data removes them, so export CSV for any result you need to retain.',
           helpImportant:'Do not use these counts as the sole basis for safety, billing or legal reports without an independent check.',
+          thirdPartyLicenseTitle:'Third-party license (MediaPipe)',thirdPartyLicenseNote:'The following Apache 2.0 license covers MediaPipe Tasks Vision runtime code. It does not establish redistribution permission for the separate EfficientDet model file.',
           stepSetup:'1 · Set up',stepTest:'2 · Check',stepMeasure:'3 · Count',stepMeasureFile:'2 · Count',setupProgress:'Steps to counting',
           nextKicker:'Next step',extrasAria:'Camera and counting settings',
           nextStartCamera:'Start the camera',nextStartCameraDesc:'Fix the device in position, then select Start camera above the preview.',
