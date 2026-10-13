@@ -73,7 +73,7 @@ try{
    const result={
      preview:rect('#cameraStage'),measure:rect('.measure-console'),
      cardA:rect('#countA'),cardB:rect('#countB'),
-     tileA:rect('#minusA').toJSON?null:null
+     tileA:null
    };
    result.tileA=document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON();
    result.tileB=document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON();
@@ -258,8 +258,24 @@ try{
     'Undo or export clips the card at '+width);
   assert(await mobile.locator('#testCard').isHidden(),
     'Setup check must remain hidden until a camera is ready');
-  assert(geometry.measureRight<=geometry.viewWidth+1,
+  assert(geometry.measure.right<=geometry.viewWidth+1,
     'Mobile count panel overflows horizontally at '+width);
+  // DOM-only stress verifies that a long custom label and a large count remain
+  // within the direction tile. Never place synthetic events in the real ledger.
+  const stressed=await mobile.evaluate(()=>{
+    const a=document.querySelector('#displayLabelA'),n=document.querySelector('#countA');
+    const previousLabel=a.textContent,previousValue=n.textContent,previousDigits=n.dataset.digits;
+    a.textContent='A→B 長い方向名・複数の通過カウンター表示';
+    n.textContent='999999';n.dataset.digits='6';
+    const overflow=document.documentElement.scrollWidth>innerWidth+1;
+    const number=n.getBoundingClientRect(),button=document.querySelector('#minusA').getBoundingClientRect();
+    const overlap=number.right>button.left+1;
+    a.textContent=previousLabel;n.textContent=previousValue;
+    if(previousDigits===undefined)delete n.dataset.digits;else n.dataset.digits=previousDigits;
+    return {overflow,overlap};
+  });
+  assert(!stressed.overflow&&!stressed.overlap,
+    'Long direction label or large count clips quick controls at '+width);
   assert((await mobile.locator('#appMain').getAttribute('data-next'))==='camera',
     'Initial state should make Start camera the next action');
   assert.equal(geometry.touchAction,'pan-y','Blank video area should allow phone page scrolling');
