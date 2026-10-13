@@ -36,6 +36,14 @@ For full evidence, reproducibility commands, scope caveats and public sources, s
 
 Google provides this exact int8 EfficientDet-Lite0 model for download and use in its examples. That does not independently establish permission to **redistribute its model bytes inside someone else's self-contained HTML**. The model's own metadata has no license field, and GCS response license headers are absent. The local model.config.json now says UNVERIFIED rather than asserting Apache-2.0. Resolve by locating authoritative model-specific terms, obtaining permission from Google/the rights holder, or deliberately selecting a model with verifiable rights and re-running compatibility checks. Until then: **do not label model redistribution authorized**.
 
+### Pinned npm archive / Eigen compliance evidence (2026-10-13)
+
+The archive for `@mediapipe/tasks-vision@0.10.35` was downloaded and SHA-verified against the checked-in lock: **13 files, no bundled LICENSE/NOTICE**, although its `package.json` declares **Apache-2.0**. The actual `vision_wasm_internal.wasm` is **11,153,617 bytes**, SHA-256 `6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc`, different from the upstream MediaPipe `v0.10.35` Bazel WASM SHA `e17fc0c480b79a16ad1756bb81ebd9a6c117b1ec4cad6084c6d6a417a6f426b7`.
+
+The tagged upstream `WORKSPACE` pins Eigen `4c38131a16803130b66266a912029504f2cf23cd`, with its `third_party/eigen.BUILD` labeling the library MPL 2.0 and BSD-style. Complete upstream Eigen MPL/BSD/MINPACK/README notices and the Passage Counter MIT license were added to **both standalone HTML** Help screens, together with the MediaPipe Apache license. A build/audit test checks their presence. This is a conservative notice mitigation, not proof that the npm WASM uses that exact Eigen source revision or that every dependency is mapped.
+
+The **remaining item is corresponding-source/provenance verification for the exact compiled npm WASM** (potential MPL §3.2 source availability), or explicit informed owner risk acceptance. [Exact tarball and source mapping report](MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md).
+
 ### LICENSE-STANDALONE — compiled binary notices
 
 The runtime's Apache 2.0 text is now embedded within both standalone HTML editions in a readable Help appendix. This is a concrete mitigation but not proof that the pinned npm/WASM distribution carries no additional NOTICE or attribution requirements. Verify them against the specific delivered compiled components. Never apply the runtime code license automatically to the model.

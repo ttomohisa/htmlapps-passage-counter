@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "assessedAt": "2026-10-13",
   "decision": "NO_GO",
-  "decisionScope": "Physical-device and field accuracy intentionally remain Future Work; exact MediaPipe model Apache 2.0 is supported by primary maintainer statements unless exceptions; compiled JS/WASM and additional standalone NOTICE conditions remain open; hosted Cloudflare CSP verified.",
+  "decisionScope": "Field accuracy and physical devices are Future Work. The original MediaPipe EfficientDet model license has been identified as Apache-2.0 (unless exceptions). Hosted Cloudflare CSP is verified. v1.0.0 technical integration is ready for review but source mapping/covered-source notices for exact bundled npm WASM remain a residual compliance review item.",
   "reviewProtocol": "docs/RELEASE_READINESS_v1.0.0.md",
   "gates": [
     {
@@ -61,11 +61,17 @@
     },
     {
       "id": "LICENSE-STANDALONE",
-      "status": "unverified",
+      "status": "review_pending",
       "severity": "blocker",
       "subject": "Confirm license/NOTICE copy distribution alongside the independent single HTML",
-      "evidence": [],
-      "observation": "Full MediaPipe Apache-2.0 license text is embedded visibly within the standalone Help dialog by the build. Review whether the pinned compiled JS/WASM and the standalone HTML also require additional LICENSE/NOTICE texts; the separate model is not covered by this code license."
+      "evidence": [
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/WORKSPACE",
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/third_party/eigen.BUILD",
+        "https://github.com/google-ai-edge/mediapipe/blob/v0.10.35/third_party/wasm_files.bzl",
+        "https://www.mozilla.org/en-US/MPL/2.0/",
+        "docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md"
+      ],
+      "observation": "Pinned npm @mediapipe/tasks-vision@0.10.35 archive SHA verified: 13 files, no LICENSE/NOTICE; package license Apache-2.0. Exact SIMD WASM SHA 6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc differs from v0.10.35 tagged wasm_files.bzl reference e17fc0c480b79a16ad1756bb81ebd9a6c117b1ec4cad6084c6d6a417a6f426b7. v0.10.35 WORKSPACE pins Eigen MPL-2.0/BSD revision 4c38131a16803130b66266a912029504f2cf23cd. Full Apache/MIT/Eigen MPL/BSD/MINPACK texts now embedded in both standalone HTMLs. Exact npm WASM to corresponding source/NOTICE mapping remains unverified."
     },
     {
       "id": "CSP-HOST",

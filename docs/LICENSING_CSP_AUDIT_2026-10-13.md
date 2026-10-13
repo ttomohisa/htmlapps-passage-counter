@@ -32,27 +32,33 @@ The pinned model is **EfficientDet-Lite0, int8, version 1**:
 - URL: https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite
 - SHA-256: 0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb
 - Size: **4,602,795 bytes** (exact hash verified in GitHub Actions on 2026-10-13).
-- Binary format: **TFL3**, containing a TFLite \`TFLITE_METADATA\` buffer. Its ModelMetadata fields read: \`name=ObjectDetector\`, \`version=1\`, \`author=MediaPipe\`, \`license=null\`.
-- GCS response: no \`x-goog-meta-license\`, \`x-goog-meta-licence\`, \`x-goog-meta-attribution\`, or \`x-goog-meta-copyright\` headers were returned.
-- Build config \`model.config.json\` used to *assert* \`Apache-2.0\`. It is now changed to \`UNVERIFIED\`, because a locally written license string cannot authorize redistribution.
-- Reproducible technical audit: \`node scripts/audit-model-license.mjs\`. Evidence: [GitHub Actions run 38339053721](https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721); CI uploads \`dist/model-license-audit.json\`.
+- Binary format: **TFL3**, containing a TFLite `TFLITE_METADATA` buffer. Its ModelMetadata fields read: `name=ObjectDetector`, `version=1`, `author=MediaPipe`, `license=null`.
+- GCS response: no `x-goog-meta-license`, `x-goog-meta-licence`, `x-goog-meta-attribution`, or `x-goog-meta-copyright` headers were returned.
+- Build config `model.config.json` used to *assert* `Apache-2.0`. It is now changed to `UNVERIFIED`, because a locally written license string cannot authorize redistribution.
+- Reproducible technical audit: `node scripts/audit-model-license.mjs`. Evidence: [GitHub Actions run 38339053721](https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721); CI uploads `dist/model-license-audit.json`.
 
 **Evidence from Google:** [MediaPipe Object Detection task documentation](https://developers.google.com/edge/mediapipe/solutions/vision/object_detector) names the model as a recommended downloadable option; Google's [MediaPipe for Raspberry Pi and iOS article](https://developers.googleblog.com/mediapipe-for-raspberry-pi-and-ios/) uses the **exact same int8 object URL** in its example command. This supports official **download and use**. Neither page, as reviewed, explicitly grants the independent right to **re-embed/re-distribute the hosted TFLite bytes as part of a third-party single HTML**.
 
-**Separate software license:** The [google-ai-edge/mediapipe](https://github.com/google-ai-edge/mediapipe) code repo has an [Apache License, Version 2.0](https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE). The \`@mediapipe/tasks-vision@0.10.35\` dependency declares \`Apache-2.0\`. That grant covers MediaPipe runtime *code* under its terms, but cannot automatically be extended to the separately hosted model artifact without evidence.
+**Separate software license:** The [google-ai-edge/mediapipe](https://github.com/google-ai-edge/mediapipe) code repo has an [Apache License, Version 2.0](https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE). The `@mediapipe/tasks-vision@0.10.35` dependency declares `Apache-2.0`. That grant covers MediaPipe runtime *code* under its terms, but cannot automatically be extended to the separately hosted model artifact without evidence.
 
 **Conclusion:** **NO explicit model-binary redistribution permission was established for this SHA-pinned int8 artifact**. This does not prove redistribution is forbidden; it means we cannot sign it off from available authoritative evidence. To close this gate, obtain official model-specific terms/permission from Google/the rightsholder, or change to a correctly licensed and technically suitable alternative with a verified exact artifact. Do not quietly replace the model or downgrade license requirements.
 
+## October 13 exact npm/WASM third-party notice investigation
+
+The SHA-locked `@mediapipe/tasks-vision@0.10.35` npm archive (SHA `84597a25e13d123b5f4cbe768bb72e97a2c28c7a465f0ace287d8cbe5246bff0`) was fetched and inventoried. It contains **13 files without LICENSE or NOTICE**, even though package metadata declares Apache 2.0. The SIMD WASM that is actually bundled hashes to `6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc`, whereas `v0.10.35/third_party/wasm_files.bzl` references a different WASM hash `e17fc0c480b79a16ad1756bb81ebd9a6c117b1ec4cad6084c6d6a417a6f426b7`. This prevents confidently matching the npm executable to an exact source revision.
+
+The upstream `v0.10.35` source pins Eigen at revision `4c38131a16803130b66266a912029504f2cf23cd` with **MPL 2.0 and BSD-style** licenses. We conservatively included the full MPL-2.0 and related Eigen BSD/MINPACK material, plus the application's MIT license, in the self-contained Help alongside Apache 2.0. The original running MediaPipe model remains unchanged. The exact compiled-WASM corresponding-source and transitive notice mapping is still under review, particularly [MPL 2.0 §3.2](https://www.mozilla.org/en-US/MPL/2.0/). See [detailed audit](MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md) and [limited-release handoff](RELEASE_HANDOFF_v1.0.0.md). This is **not** presented as a confirmed violation, only an unclosed evidence gap.
+
 ## MediaPipe notices in the offline HTML
 
-The standalone distribution must work even when someone downloads **only** the single HTML. The repository's \`licenses/Apache-2.0.txt\` is not automatically included in that download.
+The standalone distribution must work even when someone downloads **only** the single HTML. The repository's `licenses/Apache-2.0.txt` is not automatically included in that download.
 
 This audit adds:
 - An expandable **Third-party license (MediaPipe)** section in the Help dialog, with the complete license text embedded at **build time** into both the readable and self-extract HTML.
 - A build failure if the local Apache-2.0 text is missing or incomplete; HTML-escaped insertion prevents the text from breaking the single-file source.
 - A release-audit assertion that the resulting HTML contains the real full text and does not pretend the model's separate grant has been verified.
 
-This helps fulfill the runtime Apache license notice requirement. It is **not yet** an independent audit of the compiled npm/WASM package's possible additional \`NOTICE\`/attribution material; this remains an explicit licensing blocker rather than being incorrectly marked green.
+This helps fulfill the runtime Apache license notice requirement. It is **not yet** an independent audit of the compiled npm/WASM package's possible additional `NOTICE`/attribution material; this remains an explicit licensing blocker rather than being incorrectly marked green.
 
 Related: [MediaPipe APIs Terms of Service](https://developers.google.com/edge/mediapipe/legal/tos), updated 2026, discuss SDK usage telemetry/metrics. In exercised Passage Counter browser paths, outgoing HTTP remains blocked and no telemetry requests were observed. Legal interpretation of those terms for this particular offline-bundled runtime remains separate from technical network verification.
 
@@ -61,13 +67,13 @@ Related: [MediaPipe APIs Terms of Service](https://developers.google.com/edge/me
 Audited endpoint: https://r1413462956-pr-10-bk-previews.ttomohisa.workers.dev/
 
 - Response: **HTTP 200**, correct v1.0.0 HTML.
-- Response \`Content-Security-Policy\` header: **absent** (not an automatic failure).
-- An enforcing HTML \`meta http-equiv="Content-Security-Policy"\` is present, containing:
-  - \`connect-src blob:\` — no network origins permitted for \`fetch\`/XHR.
-  - \`script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:\` — allows bundled code/WASM as currently implemented.
-  - \`worker-src 'self' blob:\`, \`media-src 'self' blob:\`, \`object-src 'none'\`, \`frame-src 'none'\`.
+- Response `Content-Security-Policy` header: **absent** (not an automatic failure).
+- An enforcing HTML `meta http-equiv="Content-Security-Policy"` is present, containing:
+  - `connect-src blob:` — no network origins permitted for `fetch`/XHR.
+  - `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:` — allows bundled code/WASM as currently implemented.
+  - `worker-src 'self' blob:`, `media-src 'self' blob:`, `object-src 'none'`, `frame-src 'none'`.
 - Actual Windows Chrome from the GitHub Actions runner loaded the served Cloudflare HTML, accepted a simulated video-only camera, initialized the embedded MediaPipe/WASM/object detector to **ready**, and reported **zero** CSP policy violations, uncaught JS errors and outbound HTTP requests.
-- Technical evidence: [GitHub Actions run 38339053721](https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721), \`node scripts/audit-hosted-csp.mjs\`; output \`dist/host-csp-audit.json\`.
+- Technical evidence: [GitHub Actions run 38339053721](https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721), `node scripts/audit-hosted-csp.mjs`; output `dist/host-csp-audit.json`.
 
 **Interpretation:** The absence of an HTTP CSP header is compatible with an **enforcing meta CSP**. A future host-level CSP header, if added, applies *in addition to* the meta policy and must be tested for Blob/WASM and media compatibility. This check does not imply the app is already published on Browser Kitty's main production website.
 
