@@ -3,67 +3,85 @@
   "version": "1.0.0",
   "assessedAt": "2026-10-13",
   "decision": "NO_GO",
-  "decisionScope": "v1.0.0 candidate engineering checks are distinct from stable-release approval.",
+  "decisionScope": "Real-device and real-person accuracy are explicitly Future Work, not false passes. Only unresolved model redistribution/licensing conditions still block release; Cloudflare Preview CSP verified, production site integration still separate.",
   "reviewProtocol": "docs/RELEASE_READINESS_v1.0.0.md",
   "gates": [
     {
       "id": "AC-04",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "future_work",
+      "severity": "future_work",
       "subject": "100+ independently annotated real held-out passage events, two directions, standard-condition Precision and Recall at least 95%",
-      "evidence": []
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
     },
     {
       "id": "AC-06",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "future_work",
+      "severity": "future_work",
       "subject": "Physical 30-minute sustained counting, thermal/battery/full-process memory",
-      "evidence": []
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
     },
     {
       "id": "AC-07-WIN",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "future_work",
+      "severity": "future_work",
       "subject": "Actual Windows Chrome/Edge camera and physical end-to-end path, not synthetic camera alone",
-      "evidence": []
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
     },
     {
       "id": "AC-07-ANDROID",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "future_work",
+      "severity": "future_work",
       "subject": "Physical Android Chrome fixed-camera counting, correction/Undo, exports and interruptions",
-      "evidence": []
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
     },
     {
       "id": "AC-07-IOS",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "future_work",
+      "severity": "future_work",
       "subject": "Physical iPhone Safari fixed-camera counting, correction/Undo, exports and interruptions",
-      "evidence": []
+      "evidence": [],
+      "reason": "Owner explicitly deferred real-device field/endurance and independently labeled accuracy evaluation on 2026-10-13; no result is claimed."
     },
     {
       "id": "LICENSE-MODEL",
       "status": "unverified",
       "severity": "blocker",
       "subject": "Authoritative license/redistribution permission for exact EfficientDet-Lite0 int8 .tflite",
-      "evidence": []
+      "evidence": [
+        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721",
+        "https://developers.googleblog.com/mediapipe-for-raspberry-pi-and-ios/",
+        "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector"
+      ],
+      "observation": "Exact 4,602,795-byte int8 model matches pinned SHA-256, ModelMetadata.author is MediaPipe, ModelMetadata.license is empty, GCS object has no license headers. Official use/download docs do not explicitly grant standalone HTML redistribution."
     },
     {
       "id": "LICENSE-STANDALONE",
       "status": "unverified",
       "severity": "blocker",
       "subject": "Confirm license/NOTICE copy distribution alongside the independent single HTML",
-      "evidence": []
+      "evidence": [],
+      "observation": "Full MediaPipe Apache-2.0 license text is embedded visibly within the standalone Help dialog by the build. Review whether the pinned compiled JS/WASM and the standalone HTML also require additional LICENSE/NOTICE texts; the separate model is not covered by this code license."
     },
     {
       "id": "CSP-HOST",
-      "status": "unverified",
+      "status": "verified",
       "severity": "release_check",
       "subject": "Cloudflare live preview HTTP CSP headers and final production header compatibility",
-      "evidence": []
+      "evidence": [
+        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721"
+      ],
+      "observation": "Cloudflare PR #10 Preview HTTP 200 served v1.0.0 without HTTP CSP header but with inline meta CSP; Chrome actually initialized the embedded model to ready with zero CSP violations, JavaScript errors and external HTTP requests. GitHub Pages HTTP 200 served a different v1.1.0; verify its deployment separately."
     }
   ],
   "notes": [
+    "User requested that physical-device tests and real crossing precision/recall become Future Work, with the actual limitations disclosed rather than marked passed.",
+    "CSP-HOST verification is scoped to the actually deployed Cloudflare PR #10 Preview of v1.0.0; it does not assert an untested Browser Kitty main-site deployment.",
+    "GitHub Pages was seen serving v1.1.0 at audit time; the version differs from the PR and must not be confused with the verified v1.0.0 preview.",
+    "The exact model metadata contains no license text; model.config.json has been changed to UNVERIFIED rather than making an unsupported Apache-2.0 claim.",
     "Version 1.0.0 in source and downloadable build identifies the requested candidate, not a validated stable release.",
     "The Web Serial Terminal-style help layout and background scroll locking, including Escape, X, backdrop and mobile short-height operation, are subject to automated testing.",
     "The PDF Organizer README structure is a documentation reference only; no PDF-specific capability is attributed to Passage Counter.",
@@ -72,7 +90,6 @@
     "An empty region of the camera should remain scrollable on mobile; line and handle gestures use isolated touch hit regions.",
     "A successful GitHub Actions run proves the listed automatic checks, not field accuracy.",
     "The three-event synthetic scoring example must never count as human-labeled field evidence.",
-    "The repo's model.config.json license declaration alone does not establish a model-specific redistribution grant.",
-    "The v0.9 branch remains a draft until all blocking gates are independently reviewed."
+    "The repo's model.config.json license declaration alone does not establish a model-specific redistribution grant."
   ]
 }
