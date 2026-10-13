@@ -1,11 +1,17 @@
 # Passage Counter v1.0.0 — Release-readiness review
 
 **Updated:** 2026-10-13
-**Current outcome:** **NO-GO for unrestricted model-containing distribution**, pending model-specific redistribution terms and compiled-runtime notices.
+**Current outcome:** **MediaPipe model default Apache-2.0 supported**; overall stable release NO-GO pending compiled-runtime third-party NOTICE/covered-source review.
 
 The actual application code, standalone build and automated browser tests have passed. The owner explicitly re-scoped **physical-device/endurance verification and field-counting precision/recall to Future Work**; those items are not passed, and no precision/recall number is claimed. This is a scope change, **not** invented evidence. For provenance, see [Future Work](FUTURE_WORK.md), [the source requirements](../APP_SPEC.md) and [original development plan](../DEVELOPMENT_PLAN.md).
 
 The latest [machine-readable gates](release-gates.v1.0.0.json) distinguish (1) immediate redistribution blockers, (2) verified hosted security policy, and (3) deferred field testing.
+
+## Model licensing assessment updated
+
+The prior "LICENSE-MODEL UNVERIFIED" evaluation was superseded by authoritative [MediaPipe maintainer evidence](https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830) and [MediaPipe Object Detection team's answer](https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604). MediaPipe source **and models** default to Apache 2.0 unless a different license is noted. No exception was identified for this official EfficientDet-Lite0 int8 model. The pinned 4,602,795-byte binary has not been changed, and full Apache-2.0 text accompanies the standalone HTML. The TFLite metadata's null license field is **not** a contrary exception. [Detailed evidence](EFFICIENTDET_MODEL_LICENSE_2026-10-13.md).
+
+**Current remaining redistribution blocker:** complete compiled JavaScript/WASM third-party NOTICE and covered-source verification (LICENSE-STANDALONE). The current decision remains NO-GO pending that separate issue, *not because an express Apache2 model default has never been found*. Deferred real-device/precision work remains Future Work.
 
 ## Tested engineering requirements
 
@@ -19,7 +25,7 @@ The latest [machine-readable gates](release-gates.v1.0.0.json) distinguish (1) i
 | User interface | JA/EN, 320–1280px, Help scroll/X/Escape, counting line body and endpoints, 30-second camera check, counting actions and per-direction +1/−1 with Undo |
 | Persistence/export | IndexedDB session recovery, event/correction/Undo audit log, observed vs missing intervals, 3 CSV exports, native local video and seek/reanalysis |
 | Single-file copyright notice | Full MediaPipe Apache-2.0 license embedded in Help, from licenses/Apache-2.0.txt |
-| Distribution rights for the separate model | **UNVERIFIED**: the exact model binary's embedded license metadata is null and the source response provides no license header |
+| Distribution rights for the separate model | **VERIFIED from MediaPipe maintainer's Apache-2.0 default** (unless otherwise noted); the official recommended int8 model guide has no exception |
 | Additional compiled JS/WASM notices | **UNVERIFIED**: the npm package's precise NOTICE and attribution requirements still need an independent review |
 
 For full evidence, reproducibility commands, scope caveats and public sources, see [licensing and CSP audit](LICENSING_CSP_AUDIT_2026-10-13.md). The new CI runs dedicated scripts/audit-model-license.mjs, scripts/audit-hosted-csp.mjs and scripts/audit-release.mjs, in addition to browser regression coverage.
