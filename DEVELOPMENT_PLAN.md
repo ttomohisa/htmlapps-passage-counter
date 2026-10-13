@@ -1,5 +1,8 @@
 # Passage Counter / 通過カウンター — v0.1.0〜v1.0.0 開発計画
 
+> **2026-10-13 オーナー指示によるリリース範囲変更:** 本計画の当初のv1.0.0 Hard Blockerに含まれる実機・30分稼働と100件以上の実映像Precision/Recall検証は、未達のまま [Future Work](docs/FUTURE_WORK.md) へ延期する。下記の旧Go/No-Go要件は設計履歴であり、現時点のリリース判定は [最新のv1.0.0判定記録](docs/RELEASE_READINESS_v1.0.0.md) と [機械可読ゲート](docs/release-gates.v1.0.0.json) を正とする。これは動作保証を与える変更ではない。モデル固有の再配布許諾、単一HTMLのライセンス告知およびホストCSP確認は延期しない。
+
+
 - 文書ID: `PC-PLAN-001`
 - 計画版: `1.0`
 - 作成日: 2026-10-11
