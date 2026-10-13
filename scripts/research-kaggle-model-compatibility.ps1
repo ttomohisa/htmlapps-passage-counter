@@ -7,6 +7,7 @@ $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 $originalConfig = Get-Content -Raw -Encoding UTF8 "./model.config.json"
 $originalBuilder = Get-Content -Raw -Encoding UTF8 "./build-standalone.ps1"
+$originalSmokeBrowser = Get-Content -Raw -Encoding UTF8 "./scripts/smoke-browser.mjs"
 $expected = "2e04c53bfeac0ac2a30c057c7e2a777594ce39baaac35a92f74fb1e8c4fc4e0b"
 $url = "https://www.kaggle.com/api/v1/models/tensorflow/efficientdet/tfLite/lite0-detection-metadata/1/download"
 $temp = Join-Path $env:RUNNER_TEMP "kaggle-alternative-model"
@@ -47,6 +48,13 @@ try {
   & (Join-Path $Root "build-standalone.ps1")
   if ($LASTEXITCODE -ne 0) { throw "Standalone build with Kaggle model failed." }
   $status = "BUILT"
+  # Existing browser smoke pins the original MediaPipe hash as a fixed product
+  # invariant. For this isolated alternative model test only, expect the
+  # temporary Kaggle hash in the test. Restore the original test in finally.
+  $currentHash = "0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb"
+  if (-not $originalSmokeBrowser.Contains($currentHash)) { throw "Browser smoke model pin changed." }
+  [System.IO.File]::WriteAllText((Join-Path $Root "scripts/smoke-browser.mjs"),
+    $originalSmokeBrowser.Replace($currentHash, $expected), [System.Text.Encoding]::UTF8)
   & node scripts/smoke-browser.mjs
   if ($LASTEXITCODE -ne 0) { throw "Chrome browser smoke with Kaggle model failed." }
   $smokeBrowser = "PASS"
@@ -62,6 +70,7 @@ try {
 } finally {
   [System.IO.File]::WriteAllText((Join-Path $Root "model.config.json"),$originalConfig,[System.Text.Encoding]::UTF8)
   [System.IO.File]::WriteAllText((Join-Path $Root "build-standalone.ps1"),$originalBuilder,[System.Text.Encoding]::UTF8)
+  [System.IO.File]::WriteAllText((Join-Path $Root "scripts/smoke-browser.mjs"),$originalSmokeBrowser,[System.Text.Encoding]::UTF8)
   $report = [ordered]@{
     auditedAt = [DateTimeOffset]::UtcNow.ToString("o")
     scope = "Ephemeral Kaggle alternative runtime compatibility test; no source changes committed."
