@@ -428,18 +428,29 @@ $manifest = [ordered]@{
 
 Write-Step "Generating standalone HTML"
 $template = [System.IO.File]::ReadAllText($TemplatePath, [System.Text.Encoding]::UTF8)
+$apacheLicensePath = Join-Path $Root "licenses\Apache-2.0.txt"
+if (-not (Test-Path -LiteralPath $apacheLicensePath -PathType Leaf)) {
+  throw "MediaPipe Apache 2.0 license copy is required for self-contained distribution."
+}
+$apacheLicenseText = [System.IO.File]::ReadAllText($apacheLicensePath, [System.Text.Encoding]::UTF8)
+if ($apacheLicenseText -notmatch "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION" -or $apacheLicenseText.Length -lt 10000) {
+  throw "MediaPipe full Apache 2.0 license text is incomplete."
+}
+$apacheLicenseHtml = $apacheLicenseText.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;")
 $assetBundleJson = ConvertTo-SafeJson $assetBundle 50
 $replacements = [ordered]@{
   "__APP_CONFIG_JSON__" = ConvertTo-SafeJson $appConfig 20
   "__BUILD_MANIFEST_JSON__" = ConvertTo-SafeJson $manifest 40
   "__EMBEDDED_ASSET_BUNDLE_JSON__" = $assetBundleJson
   "__APP_ICON_DATA_URI__" = $appIconDataUri
+  "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = $apacheLicenseHtml
 }
 $replacementExpectedCounts = @{
   "__APP_CONFIG_JSON__" = 1
   "__BUILD_MANIFEST_JSON__" = 1
   "__EMBEDDED_ASSET_BUNDLE_JSON__" = 1
   "__APP_ICON_DATA_URI__" = 2
+  "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = 1
 }
 
 foreach ($entry in $replacements.GetEnumerator()) {
