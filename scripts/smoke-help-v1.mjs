@@ -135,8 +135,12 @@ try{
     await page.locator('#helpButton').click();
     await page.locator('#helpDialog').waitFor({state:'visible'});
     await page.mouse.click(2,Math.round(height/2));
-    await page.waitForFunction(()=>!document.querySelector('#helpDialog').open);
-    assert(await page.evaluate(()=>!document.body.classList.contains('help-scroll-locked')));
+    // Native dialog.close() clears [open] before the asynchronous close event;
+    // wait for its scroll-unlock callback, not only the attribute mutation.
+    await page.waitForFunction(()=>
+      !document.querySelector('#helpDialog').open&&
+      !document.body.classList.contains('help-scroll-locked')&&
+      !document.documentElement.classList.contains('help-scroll-locked'));
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     await context.close();
     console.log('[help-v1] PASS '+width+'x'+height+' aligned header/body, JA/EN, scrolling, X, ESC and backdrop');
