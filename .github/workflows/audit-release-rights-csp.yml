@@ -40,6 +40,9 @@ jobs:
         env:
           PASSAGE_COUNTER_CLOUDFLARE_URL: https://r1413462956-pr-10-bk-previews.ttomohisa.workers.dev/
         run: node scripts/audit-hosted-csp.mjs
+      - name: Research alternative official Kaggle model end-to-end compatibility (ephemeral)
+        shell: pwsh
+        run: ./scripts/research-kaggle-model-compatibility.ps1
       - name: Summarize provenance, rights gaps and served policy
         if: always()
         shell: pwsh
@@ -64,6 +67,7 @@ jobs:
           path: |
             dist/model-license-audit.json
             dist/efficientdet-model-provenance.json
+            dist/kaggle-compatibility-audit.json
             dist/host-csp-audit.json
             dist/release-audit.json
           if-no-files-found: warn
