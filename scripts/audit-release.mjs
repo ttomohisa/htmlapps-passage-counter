@@ -1,4 +1,4 @@
-// v0.10.0 mechanical audit. This script does NOT approve field/mobile/legal gates.
+// v1.0.0 mechanical audit. This script does NOT approve field/mobile/legal gates.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -6,12 +6,12 @@ import {basename,join,dirname} from 'node:path';
 const read=async file=>await readFile(file,'utf8');
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const config=JSON.parse(await read('app.config.json'));
-const expectedVersion='0.10.0';
-assert.equal(config.version,expectedVersion,'App version must be v0.10.0');
+const expectedVersion='1.0.0';
+assert.equal(config.version,expectedVersion,'App version must be v1.0.0');
 const model=JSON.parse(await read('model.config.json'));
 const locked=JSON.parse(await read('dependencies.lock.json'));
 const dependencies=JSON.parse(await read('dependencies.json'));
-const gates=JSON.parse(await read('docs/release-gates.v0.10.0.json'));
+const gates=JSON.parse(await read('docs/release-gates.v1.0.0.json'));
 assert.equal(gates.schemaVersion,1);
 assert.equal(gates.version,expectedVersion);
 assert(Array.isArray(gates.gates)&&gates.gates.length>=7);
@@ -96,7 +96,7 @@ for(const name of ['screenshot.png','screenshot-en.png','screenshot-mobile.png',
 const provenance=await read('assets/SCREENSHOTS.md');
 assert(provenance.includes('pre-count')&&provenance.includes('camera-off'),
   'Screenshot provenance must explain zero-count and camera-off conditions');
-const docs=await read('docs/RELEASE_READINESS_v0.10.0.md');
+const docs=await read('docs/RELEASE_READINESS_v1.0.0.md');
 assert(docs.includes('NO-GO')&&docs.includes('LICENSE-MODEL'),
   'Release readiness document must expose licensing and field blockers');
 const report={

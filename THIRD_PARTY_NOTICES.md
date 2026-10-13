@@ -1,4 +1,4 @@
-# Third-party notices — Passage Counter v0.10.0 draft
+# Third-party notices — Passage Counter v1.0.0 draft
 
 These notices describe the **pinned build-time sources**. They are not an independent legal opinion or a statement that every stable-release redistribution gate is closed.
 
@@ -26,4 +26,4 @@ These notices describe the **pinned build-time sources**. They are not an indepe
 - Build dependencies are downloaded only at build time; production app never relies on an external model/WASM server.
 - Generated HTML alone contains the executable assets; the associated **license notice delivery for standalone redistribution** needs final legal/compliance review. The draft release readiness gate records this as unresolved.
 
-See [docs/RELEASE_READINESS_v0.10.0.md](docs/RELEASE_READINESS_v0.10.0.md) for the remaining formal approval conditions.
+See [docs/RELEASE_READINESS_v1.0.0.md](docs/RELEASE_READINESS_v1.0.0.md) for the remaining formal approval conditions.

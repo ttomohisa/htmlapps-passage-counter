@@ -55,7 +55,7 @@ try{
  });
  const page=await ctx.newPage();observe(page,'desktop');
  await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
- assert.equal(await page.locator('#versionBadge').textContent(),'v0.10.0');
+ assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
  assert.equal(await page.locator('#lineMoveTarget').count(),1);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  // Initial view has one clear first action, not a disabled maze of buttons.

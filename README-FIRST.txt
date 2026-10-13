@@ -17,6 +17,7 @@ This repository implements Browser Kitty's Passage Counter, not the starter samp
 - v0.8.0 evidence-scoped accuracy evaluation and local human annotation: docs/ADR-007-ACCURACY-EVALUATION.md
 - v0.9.0 release-preparation audit and unresolved blockers: docs/RELEASE_READINESS_v0.9.0.md
 - v0.10.0 camera-first UI and drag-the-line interaction: docs/ADR-008-LINE-DRAG-AND-UX.md
+- v1.0.0 candidate help, width, bilingual README and outstanding release gates: docs/RELEASE_READINESS_v1.0.0.md
 
 Canonical editable source: src/index.template.html
 Build using: scripts/check-powershell-syntax.ps1, then scripts/check-repository.ps1
