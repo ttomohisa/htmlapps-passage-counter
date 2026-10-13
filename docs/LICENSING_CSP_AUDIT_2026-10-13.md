@@ -3,12 +3,22 @@
 Date: **2026-10-13**
 Scope: the SHA-pinned EfficientDet-Lite0 int8 model and the *actually served* Cloudflare PR #10 Preview / public GitHub Pages HTTP responses. This is a technical evidence review, **not a lawyer's opinion**.
 
+## October 13 update — direct upstream model licensing evidence
+
+**This finding supersedes the earlier "model license unverified" conclusion below.** A MediaPipe maintainer has explicitly stated that "Our source and the models (unless otherwise noted) are licensed under Apache2" ([original upstream comment](https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830)). A separate [MediaPipe object-detection team answer](https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604) confirms Apache 2.0 commercial use for MediaPipe models. The official [EfficientDet-Lite0 int8 model guide](https://developers.google.com/edge/mediapipe/solutions/vision/object_detector) links the exact recommended model and does not mark an exception.
+
+**Updated judgment:** Apache 2.0 is supported for the current hash-verified MediaPipe EfficientDet-Lite0 int8 under that upstream default, **unless an undiscovered model-specific exception applies**. A null license field in the binary is not a contrary license notice. The general model policy, rather than the different Kaggle model's license, is the authoritative basis. The original model has not been changed.
+
+**Important remaining work:** the exact compiled JavaScript/WASM package's third-party NOTICE or covered-source obligations still require review. This is a separate question from whether MediaPipe's model is Apache-2.0 licensed. Physical camera/device and real crossing accuracy tests remain Future Work. See [full hash/provenance comparison](EFFICIENTDET_MODEL_LICENSE_2026-10-13.md) and [Apache 2.0 redistribution conditions](https://www.apache.org/licenses/LICENSE-2.0).
+
+The following older sections show the original forensic results **before the maintainer's general grant was located**. Interpret their older "UNVERIFIED" conclusion as historical, not current.
+
 ## Summary
 
 | Issue | Result |
 | --- | --- |
 | Google model download and integrity | **Verified**: exact official URL, 4,602,795 bytes, pinned SHA-256 |
-| License for the *separate model binary* | **UNVERIFIED**: the byte-identical model embeds no license metadata and its storage response has no license-specific headers |
+| License for the *separate model binary* | **Apache-2.0 supported by MediaPipe maintainer's default** (unless otherwise noted). Binary-local metadata is blank; official guide notes no exception |
 | MediaPipe runtime code license | **Apache-2.0** at upstream; full Apache license text is now embedded visibly in the single HTML Help (build-time) |
 | All bundled JS/WASM/third-party NOTICE obligations | **Open review**: evaluate pinned compiled package for additional required attribution/NOTICE |
 | Cloudflare PR #10 live CSP | **Verified**: HTTP 200 (v1.0.0), enforcing HTML meta CSP; no HTTP CSP header; genuine Chrome bundled-model startup succeeded with 0 violations, 0 JS errors, 0 external HTTP requests |
