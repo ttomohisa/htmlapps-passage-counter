@@ -1,0 +1,57 @@
+name: Audit v1.0 model rights and hosted CSP
+on:
+  push:
+    branches:
+      - audit/release-rights-csp-20261013
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-rights-csp-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  audit-release-evidence:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Inspect hash-verified official TFLite metadata and model-specific license
+        shell: pwsh
+        run: node scripts/audit-model-license.mjs
+      - name: Install browser automation in CI only
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Inspect Cloudflare/GitHub Pages HTTP response CSP and real Chrome model initialization
+        shell: pwsh
+        env:
+          PASSAGE_COUNTER_CLOUDFLARE_URL: https://r1413462956-pr-10-bk-previews.ttomohisa.workers.dev/
+        run: node scripts/audit-hosted-csp.mjs
+      - name: Summarize provenance, rights gaps and served policy
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/model-license-audit.json) {
+            $m=Get-Content -Raw dist/model-license-audit.json | ConvertFrom-Json
+            Write-Host "[rights] $($m.redistributionConclusion) model_sha=$($m.exactModel.sha256)"
+            Write-Host "[rights] model_metadata_license=$($m.modelMetadata.license)"
+          }
+          if (Test-Path dist/host-csp-audit.json) {
+            $h=Get-Content -Raw dist/host-csp-audit.json | ConvertFrom-Json
+            Write-Host "[host] $($h.effectiveCloudflareCspResult)"
+            foreach ($entry in $h.origins) {
+              Write-Host "[host] $($entry.site) HTTP=$($entry.httpStatus) version=$($entry.documentVersion) headerCSP=$($entry.contentSecurityPolicyHeader)"
+            }
+          }
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-rights-and-host-csp
+          path: |
+            dist/model-license-audit.json
+            dist/host-csp-audit.json
+          if-no-files-found: warn
+          retention-days: 30
