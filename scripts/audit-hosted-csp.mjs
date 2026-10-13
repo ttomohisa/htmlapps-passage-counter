@@ -120,10 +120,60 @@ try{
 }finally{
  if(browser)await browser.close();
 }
+// Probe the *currently* published GitHub Pages page independently, even if it
+// is a different version than our v1.0.0 Preview. Record it as a separate
+// deployment, never conflate the findings with the code under review.
+let pagesBrowserReport={version:results[1].documentVersion,
+  status:'NOT_CHECKED'};
+if(results[1].httpStatus===200 && results[1].metaCsp){
+ let browserPage;
+ try{
+  browserPage=await chromium.launch({channel:'chrome',headless:true,
+   args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
+  const context=await browserPage.newContext({
+   viewport:{width:1100,height:850},permissions:['camera'],serviceWorkers:'block'
+  });
+  const page=await context.newPage();
+  const violation=[],errors=[],network=[];
+  const origin=new URL(pages.url).origin;
+  await page.addInitScript(()=>{
+   window.__auditedCsp=[];
+   document.addEventListener('securitypolicyviolation',e=>{
+    window.__auditedCsp.push({effectiveDirective:e.effectiveDirective,
+     blockedURI:e.blockedURI,disposition:e.disposition});
+   });
+  });
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('request',req=>{
+   const url=req.url();
+   if(/^https?:\/\//.test(url)&&!url.startsWith(origin+'/'))network.push(url);
+  });
+  await page.goto(pages.url,{waitUntil:'domcontentloaded',timeout:65000});
+  const version=await page.locator('#versionBadge').textContent({timeout:10000});
+  let phase='NOT_RUN';
+  if(await page.locator('#cameraStart').count()){
+   await page.locator('#cameraStart').click();
+   await page.waitForFunction(()=>['ready','error'].includes(
+    document.querySelector('#appMain')?.dataset.phase),null,{timeout:90000});
+   phase=await page.locator('#appMain').getAttribute('data-phase');
+  }
+  violation.push(...await page.evaluate(()=>window.__auditedCsp||[]));
+  pagesBrowserReport={status:phase==='ready'&&!violation.length&&!errors.length&&
+    !network.length?'PASS':'REVIEW',
+    version,phase,cspViolations:violation,errors,unexpectedExternalRequests:network};
+  await context.close();
+ }catch(e){pagesBrowserReport={status:'FAILED_OR_UNSUPPORTED',
+   version:results[1].documentVersion,error:String(e.message||e).slice(0,700)};}
+ finally{if(browserPage)await browserPage.close();}
+}
+console.log('[host-csp] GitHub Pages browser status='+pagesBrowserReport.status+
+ ' version='+pagesBrowserReport.version+' phase='+pagesBrowserReport.phase);
+
 const report={
  auditedAt:new Date().toISOString(),
  scope:'External HTTP response headers from hosted URLs, plus actual Chrome camera/model initialization with current Cloudflare Preview.',
  origins:results,
+ githubPagesBrowser:pagesBrowserReport,
  actualBrowser:{version:actualPageVersion,modelInitialization,securityPolicyViolations:violations,
    unexpectedExternalRequests:externalRequests,pageErrors},
  effectiveCloudflareCspResult:!main.metaCsp?'FAIL_NO_META':
