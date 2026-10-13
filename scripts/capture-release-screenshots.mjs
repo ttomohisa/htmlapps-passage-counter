@@ -7,7 +7,7 @@ import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
 
 const html=await readFile('dist/index.html');
 const config=JSON.parse(await readFile('app.config.json','utf8'));
-assert.equal(config.version,'0.10.0');
+assert.equal(config.version,'1.0.0');
 const server=createServer((req,res)=>{
  if(req.url==='/'){
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
@@ -45,7 +45,7 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:30_000});
   await page.waitForFunction(()=>
-    document.querySelector('#versionBadge')?.textContent==='v0.10.0' &&
+    document.querySelector('#versionBadge')?.textContent==='v1.0.0' &&
     document.querySelector('#savedList .saved-empty')!==null &&
     document.querySelector('#cameraStart')?.disabled===false,
     null,{timeout:15000});
@@ -82,7 +82,7 @@ try{
  }
  await writeFile('assets/SCREENSHOTS.md',[
   '# Passage Counter README screenshot provenance','',
-  'All four PNGs were captured from the real generated Passage Counter v0.10.0 interface',
+  'All four PNGs were captured from the real generated Passage Counter v1.0.0 interface',
   'using automated Windows Chrome (desktop viewport 1280x800, mobile 390x844 full-page).',
   'These show a **pre-count, camera-off state** with genuine 0 crossing events.',
   'The session title is marked as an example; no live camera or people were used.',
