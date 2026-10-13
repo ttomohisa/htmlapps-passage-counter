@@ -437,6 +437,25 @@ if ($apacheLicenseText -notmatch "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AN
   throw "MediaPipe full Apache 2.0 license text is incomplete."
 }
 $apacheLicenseHtml = $apacheLicenseText.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;")
+$extraLicenseFiles = [ordered]@{
+  "__EIGEN_MPL_LICENSE_TEXT__" = "licenses\Eigen-MPL-2.0.txt"
+  "__EIGEN_BSD_NOTICE_TEXT__" = "licenses\Eigen-COPYING.BSD.txt"
+  "__EIGEN_MINPACK_NOTICE_TEXT__" = "licenses\Eigen-COPYING.MINPACK.txt"
+  "__EIGEN_LICENSE_README_TEXT__" = "licenses\Eigen-COPYING.README.txt"
+  "__APP_MIT_LICENSE_TEXT__" = "LICENSE"
+}
+$extraLicenseHtml = [ordered]@{}
+foreach ($item in $extraLicenseFiles.GetEnumerator()) {
+  $source = Join-Path $Root $item.Value
+  if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+    throw "Missing required offline license/notice file: $($item.Value)"
+  }
+  $fullText = [System.IO.File]::ReadAllText($source, [System.Text.Encoding]::UTF8)
+  if ($fullText.Length -lt 250) {
+    throw "Incomplete offline license/notice file: $($item.Value)"
+  }
+  $extraLicenseHtml[$item.Key] = $fullText.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;")
+}
 $assetBundleJson = ConvertTo-SafeJson $assetBundle 50
 $replacements = [ordered]@{
   "__APP_CONFIG_JSON__" = ConvertTo-SafeJson $appConfig 20
@@ -445,12 +464,18 @@ $replacements = [ordered]@{
   "__APP_ICON_DATA_URI__" = $appIconDataUri
   "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = $apacheLicenseHtml
 }
+foreach ($item in $extraLicenseHtml.GetEnumerator()) {
+  $replacements[$item.Key] = $item.Value
+}
 $replacementExpectedCounts = @{
   "__APP_CONFIG_JSON__" = 1
   "__BUILD_MANIFEST_JSON__" = 1
   "__EMBEDDED_ASSET_BUNDLE_JSON__" = 1
   "__APP_ICON_DATA_URI__" = 2
   "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = 1
+}
+foreach ($key in $extraLicenseFiles.Keys) {
+  $replacementExpectedCounts[$key] = 1
 }
 
 foreach ($entry in $replacements.GetEnumerator()) {

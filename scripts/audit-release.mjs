@@ -82,6 +82,23 @@ assert(html.includes('TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTI
   html.includes('id="embeddedApacheLicense"')&&
   !html.includes('__MEDIAPIPE_APACHE_LICENSE_TEXT__'),
   'Standalone HTML must visibly carry full MediaPipe Apache 2.0 license text');
+const extraLicenses=[
+ ['licenses/Eigen-MPL-2.0.txt','embeddedEigenMplLicense','__EIGEN_MPL_LICENSE_TEXT__'],
+ ['licenses/Eigen-COPYING.BSD.txt','embeddedEigenBsdNotice','__EIGEN_BSD_NOTICE_TEXT__'],
+ ['licenses/Eigen-COPYING.MINPACK.txt','embeddedEigenMinpackNotice','__EIGEN_MINPACK_NOTICE_TEXT__'],
+ ['licenses/Eigen-COPYING.README.txt','embeddedEigenLicenseReadme','__EIGEN_LICENSE_README_TEXT__'],
+ ['LICENSE','embeddedAppMitLicense','__APP_MIT_LICENSE_TEXT__']
+];
+for(const [filepath,id,placeholder] of extraLicenses){
+ const txt=await read(filepath);
+ assert(txt.length>250,'Missing/incomplete offline license '+filepath);
+ assert(html.includes('id="'+id+'"')&&!html.includes(placeholder),
+   'Standalone HTML lacks readable notice '+filepath);
+ if(filepath==='licenses/Eigen-MPL-2.0.txt')
+   assert(html.includes('Mozilla Public License Version 2.0'),'Bundled MPL-2.0 full license text absent');
+ if(filepath==='LICENSE')
+   assert(html.includes('Permission is hereby granted'),'MIT application notice absent');
+}
 assert.equal(model.license,'Apache-2.0',
   'Exact model license must match upstream maintainer policy');
 assert(model.licenseBasis?.evidence?.some(x=>x.includes('issuecomment-5997480830')),

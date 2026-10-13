@@ -138,6 +138,8 @@ The full requirements, testing and design notes are in [APP_SPEC.md](APP_SPEC.md
 - **Future Work:** Actual 100+ independently annotated real crossings, the 95% per-direction precision/recall goal, physical Android/iPhone/Windows tests and 30-minute endurance remain unverified. [Deferred validation plan](docs/FUTURE_WORK.md).
 - **Still blocking release:** Additional compiled JS/WASM third-party NOTICE/covered-source obligations. The model's Apache 2.0 basis is documented by upstream maintainer replies. [Model-license evidence](docs/EFFICIENTDET_MODEL_LICENSE_2026-10-13.md).
 
+The single-file Help dialog includes MediaPipe's full Apache 2.0 text, Eigen's MPL-2.0/BSD notice material, and the application's MIT license. The precise WASM-to-source build mapping remains under review, especially for the MPL source-availability requirement. [Compiled runtime licensing audit](docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md).
+
 ## Dependencies and model
 
 | Component | Pinned version/type | Role |

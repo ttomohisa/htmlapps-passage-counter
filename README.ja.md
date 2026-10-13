@@ -138,6 +138,8 @@ GitHub Pagesは[deploy-pages.yml](.github/workflows/deploy-pages.yml)を使い�
 - **Future Work:** 実映像100件以上での方向別Precision／Recall各95%目標、Android/iPhone/Windows実機、30分連続計測・発熱・電池・メモリ。どれも未検証です。[将来の評価計画](docs/FUTURE_WORK.md)
 - **正式公開前の確認事項:** EfficientDetモデルはApache 2.0の公開原則が確認できました。同梱JS/WASMのライセンス告知等は別途確認が必要です。[モデルライセンス一次資料](docs/EFFICIENTDET_MODEL_LICENSE_2026-10-13.md)
 
+単一HTMLのヘルプから、MediaPipeのApache 2.0に加えて、EigenのMPL 2.0／BSDの告知とアプリのMITライセンス本文を確認できます。MPL対象コードのソース提供条件と、npm配布WASMのビルド元との厳密な対応付けは監査記録に明記しています。[詳細](docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md)
+
 ## 使用ライブラリ・モデル
 
 | コンポーネント | 固定バージョン／種類 | 用途 |
