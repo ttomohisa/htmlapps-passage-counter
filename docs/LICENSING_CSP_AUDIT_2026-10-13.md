@@ -65,7 +65,7 @@ Audited endpoint: https://r1413462956-pr-10-bk-previews.ttomohisa.workers.dev/
 
 Endpoint: https://ttomohisa.github.io/htmlapps-passage-counter/
 
-At the time of the audit, the server returned **HTTP 200**, with **no HTTP CSP header**, and **an HTML meta CSP**. Its application badge read **v1.1.0**, which is **not** the v1.0.0 commit under review. Treat this as a distinct deployed build, not evidence that the v1.0.0 PR was released. The audit script records this version mismatch in a separate section.
+At the time of the audit, the server returned **HTTP 200**, with **no HTTP CSP header**, and **an HTML meta CSP**. The raw served HTML included a v1.1.0 version badge; after the page's JavaScript ran, browser automation observed a v1.3.0 badge. The public deployment is therefore **not the v1.0.0 build** being audited; its browser-based model-startup path was not executed by this v1.0.0-specific test. We do not infer its runtime CSP compatibility from the v1.0.0 Preview result. The difference between raw and runtime labels is recorded as an observation rather than silently reconciled.
 
 ## Release policy and Future Work
 
