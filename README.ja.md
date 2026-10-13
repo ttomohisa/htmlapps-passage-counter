@@ -8,7 +8,7 @@
 
 カメラまたは端末内の動画を使い、画面上の線を人物が横切った回数を **A→B／B→A の方向別に記録する** Browser Kittyの単一HTMLツールです。インストール・アカウント登録・動画のアップロードは不要です。
 
-**v1.0.0の確認状況：** カメラ／動画・単一HTML・CSV等の自動検証に加え、Cloudflare PreviewでCSPの実配信・モデル起動を確認しました。**実機30分試験と実人物100件以上の精度評価はFuture Work**であり、達成・保証したものではありません。現時点の未解決事項は **EfficientDetモデル固有の再配布許諾と追加のライセンス告知条件** です。正式リリースはまだ未承認です。[リリース判定](docs/RELEASE_READINESS_v1.0.0.md) ／ [Future Work](docs/FUTURE_WORK.md) ／ [ライセンス・CSP監査](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
+**v1.0.0の確認状況：** カメラ／動画・単一HTML・CSV等の自動検証に加え、Cloudflare PreviewでCSPの実配信・モデル起動を確認しました。**実機30分試験と実人物100件以上の精度評価はFuture Work**であり、達成・保証したものではありません。**モデル自体はMediaPipe公式メンテナーのApache 2.0共通方針で再配布の根拠を確認しました**（別途例外の指定がある場合を除きます）。残るのは同梱JS/WASMの追加NOTICE・ソース提供義務などの確認です。正式リリースはまだ未承認です。[リリース判定](docs/RELEASE_READINESS_v1.0.0.md) ／ [Future Work](docs/FUTURE_WORK.md) ／ [ライセンス・CSP監査](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
 ## デモ
 
@@ -136,14 +136,14 @@ GitHub Pagesは[deploy-pages.yml](.github/workflows/deploy-pages.yml)を使い�
 - カウントするのは重複しない人物数ではありません。ひとりが往復した場合は2回の通過として記録されます。
 - 計測値の正確性が重要な安全管理・請求・法的報告では、独立した確認なしに利用しないでください。
 - **Future Work:** 実映像100件以上での方向別Precision／Recall各95%目標、Android/iPhone/Windows実機、30分連続計測・発熱・電池・メモリ。どれも未検証です。[将来の評価計画](docs/FUTURE_WORK.md)
-- **正式公開前の確認事項:** EfficientDetモデルファイル固有の再配布条件・同梱ライセンス告知。[監査結果](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
+- **正式公開前の確認事項:** EfficientDetモデルはApache 2.0の公開原則が確認できました。同梱JS/WASMのライセンス告知等は別途確認が必要です。[モデルライセンス一次資料](docs/EFFICIENTDET_MODEL_LICENSE_2026-10-13.md)
 
 ## 使用ライブラリ・モデル
 
 | コンポーネント | 固定バージョン／種類 | 用途 |
 | --- | --- | --- |
 | MediaPipe Tasks Vision | 0.10.35（Apache-2.0） | ブラウザ内の人物検出・WASMランタイム |
-| EfficientDet-Lite0 | int8 TFLite、固定SHA-256 | 人物検出モデル。**このモデルファイル固有の再配布許諾は未確認** |
+| EfficientDet-Lite0 | int8 TFLite、固定SHA-256、Apache 2.0（MediaPipe公開原則） | モデルはメンテナーのライセンス説明と公式モデルガイドに基づいて記録 |
 | アプリ固有コード | MIT | 追跡、判定線、補正、集計、CSV、保存、UI |
 
 [第三者ライセンス・モデルの注意事項](THIRD_PARTY_NOTICES.md)
