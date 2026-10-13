@@ -18,7 +18,10 @@ assert(Array.isArray(gates.gates)&&gates.gates.length>=7);
 const unresolved=gates.gates.filter(g=>g.severity==='blocker'&&
   g.status!=='verified'&&g.status!=='passed');
 const futureWork=gates.gates.filter(g=>g.severity==='future_work');
-const requiredBlockers=['LICENSE-MODEL','LICENSE-STANDALONE'];
+const requiredBlockers=['LICENSE-STANDALONE'];
+const modelLicenseGate=gates.gates.find(g=>g.id==='LICENSE-MODEL');
+assert(modelLicenseGate?.status==='verified'&&modelLicenseGate?.evidence?.some(x=>x.includes('issuecomment-5997480830')),
+  'Model Apache 2.0 assessment must be based on actual MediaPipe maintainer policy, not merely local config');
 const deferred=['AC-04','AC-06','AC-07-WIN','AC-07-ANDROID','AC-07-IOS'];
 for(const id of requiredBlockers){
  const value=gates.gates.find(g=>g.id===id);
@@ -31,9 +34,9 @@ for(const id of deferred){
  assert(value.severity==='future_work'&&value.status==='future_work',
    'Deferred field evidence must not be marked tested or removed: '+id);
 }
-assert(unresolved.length>0,'Model redistribution/legal release blockers must stay explicit');
+assert(unresolved.length>0,'Remaining compiled runtime/standalone NOTICE blockers must stay explicit');
 assert.equal(gates.decision,'NO_GO',
-  'A release GO requires independently established model rights, not an automated CI success');
+  'A release GO still requires complete standalone notice review and manual signoff');
 const output=config.build.output;
 const selfOutput=config.build.selfExtract?.output;
 assert(typeof output==='string'&&typeof selfOutput==='string','Configured HTML output missing');
@@ -79,8 +82,10 @@ assert(html.includes('TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTI
   html.includes('id="embeddedApacheLicense"')&&
   !html.includes('__MEDIAPIPE_APACHE_LICENSE_TEXT__'),
   'Standalone HTML must visibly carry full MediaPipe Apache 2.0 license text');
-assert.equal(model.license,'UNVERIFIED',
-  'Do not assert Apache-2.0 rights for the separately hosted model without evidence');
+assert.equal(model.license,'Apache-2.0',
+  'Exact model license must match upstream maintainer policy');
+assert(model.licenseBasis?.evidence?.some(x=>x.includes('issuecomment-5997480830')),
+  'The model license config must preserve verifiable upstream evidence');
 const thirdParty=await read('THIRD_PARTY_NOTICES.md');
 for(const needle of [model.sha256,runtimeAsset.tarballSha256,'UNVERIFIED','licenses/Apache-2.0.txt'])
  assert(thirdParty.includes(needle),'Third-party notice incomplete: '+needle);
@@ -124,7 +129,7 @@ const report={
  },
  pinnedAssets:{
   icon:{sha256:actualSvgSha,embeddedOccurrences:2},
-  model:{name:model.name,version:model.version,sha256:model.sha256,licenseStatus:'UNVERIFIED'},
+  model:{name:model.name,version:model.version,sha256:model.sha256,licenseStatus:'Apache-2.0 upstream maintainer default unless otherwise noted'},
   mediapipe:{version:runtimeAsset.version,tarballSha256:runtimeAsset.tarballSha256,
     wasmKey:'simd-wasm'}
  },
@@ -140,4 +145,4 @@ console.log('[release-audit] PASS mechanical integrity: '+htmlBytes.length+' + '
 console.log('[release-audit] PASS 4 genuine README screenshots, pinned model/SIMD, SVG/license/notices');
 console.log('[release-audit] NO_GO legal: '+unresolved.map(g=>g.id).join(', '));
 console.log('[release-audit] Future Work (not passed): '+futureWork.map(g=>g.id).join(', '));
-console.log('[release-audit] Cloudflare Preview CSP checked independently; release is pending model rights.');
+console.log('[release-audit] Cloudflare Preview CSP checked; model Apache-2.0 is now grounded in upstream maintainer statements; compiled notices still pending.');

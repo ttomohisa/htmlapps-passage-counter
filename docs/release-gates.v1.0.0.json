@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "assessedAt": "2026-10-13",
   "decision": "NO_GO",
-  "decisionScope": "Real-device and real-person accuracy are explicitly Future Work, not false passes. Only unresolved model redistribution/licensing conditions still block release; Cloudflare Preview CSP verified, production site integration still separate.",
+  "decisionScope": "Physical-device and field accuracy intentionally remain Future Work; exact MediaPipe model Apache 2.0 is supported by primary maintainer statements unless exceptions; compiled JS/WASM and additional standalone NOTICE conditions remain open; hosted Cloudflare CSP verified.",
   "reviewProtocol": "docs/RELEASE_READINESS_v1.0.0.md",
   "gates": [
     {
@@ -48,15 +48,16 @@
     },
     {
       "id": "LICENSE-MODEL",
-      "status": "unverified",
-      "severity": "blocker",
+      "status": "verified",
+      "severity": "release_check",
       "subject": "Authoritative license/redistribution permission for exact EfficientDet-Lite0 int8 .tflite",
       "evidence": [
-        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38339053721",
-        "https://developers.googleblog.com/mediapipe-for-raspberry-pi-and-ios/",
-        "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector"
+        "https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830",
+        "https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604",
+        "https://developers.google.com/edge/mediapipe/solutions/vision/object_detector",
+        "https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/38347201387"
       ],
-      "observation": "Exact 4,602,795-byte int8 model matches pinned SHA-256, ModelMetadata.author is MediaPipe, ModelMetadata.license is empty, GCS object has no license headers. Official use/download docs do not explicitly grant standalone HTML redistribution."
+      "observation": "MediaPipe maintainer directly states source and models are Apache 2.0 unless otherwise noted; separate object detection maintainer answer confirms object models Apache 2.0 for commercial use. Official EfficientDet-Lite0 int8 model guide links this exact model and has no indicated exception; exact 4,602,795-byte GCS SHA matched. File-local metadata license=null is not an upstream policy exception. Assessment assumes no contrary model-specific notice and requires Apache notice compliance."
     },
     {
       "id": "LICENSE-STANDALONE",
@@ -78,10 +79,10 @@
     }
   ],
   "notes": [
+    "New direct Google/MediaPipe maintainer comments clarify that source and models default to Apache 2.0 unless exceptions; no EfficientDet-Lite0 int8 exception found in official recommended model guide. The separate compiled runtime/NOTICE gate remains open.",
     "User requested that physical-device tests and real crossing precision/recall become Future Work, with the actual limitations disclosed rather than marked passed.",
     "CSP-HOST verification is scoped to the actually deployed Cloudflare PR #10 Preview of v1.0.0; it does not assert an untested Browser Kitty main-site deployment.",
     "GitHub Pages was seen serving v1.1.0 at audit time; the version differs from the PR and must not be confused with the verified v1.0.0 preview.",
-    "The exact model metadata contains no license text; model.config.json has been changed to UNVERIFIED rather than making an unsupported Apache-2.0 claim.",
     "Version 1.0.0 in source and downloadable build identifies the requested candidate, not a validated stable release.",
     "The Web Serial Terminal-style help layout and background scroll locking, including Escape, X, backdrop and mobile short-height operation, are subject to automated testing.",
     "The PDF Organizer README structure is a documentation reference only; no PDF-specific capability is attributed to Passage Counter.",

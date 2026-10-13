@@ -101,6 +101,10 @@ for(const key of ['x-goog-meta-license','x-goog-meta-licence','x-goog-meta-attri
  const value=response.headers.get(key);
  if(value)licenseHeader[key]=value.slice(0,1000);
 }
+const maintainerDefaults=[
+ {url:'https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830',statement:'MediaPipe source and models, unless otherwise noted, are Apache 2.0'},
+ {url:'https://github.com/google-ai-edge/mediapipe/issues/4906#issuecomment-1778649604',statement:'MediaPipe object detection models have Apache 2.0 commercial-use terms'}
+];
 const report={
  auditedAt:new Date().toISOString(),
  exactModel:{id:model.id,url:model.url,sha256:digest,bytes:file.length,format:'TFL3'},
@@ -110,6 +114,7 @@ const report={
  metadataParseError:parseError,
  sourceResponseLicenseHeaders:licenseHeader,
  repositoryConfigLicense:model.license,
+ upstreamMaintainerLicenseBasis:maintainerDefaults,
  licenseEvidenceScope:'Downloaded hash-verified model, TFLite embedded metadata and GCS object headers only',
  redistributionConclusion:
    embeddedMetadata?.license?.trim()?
@@ -117,7 +122,7 @@ const report={
    Object.keys(licenseHeader).length?
    'SOURCE_HAS_LICENSE_HEADER_REVIEW_WITH_EXACT_TERMS':
    'NO_EXPLICIT_MODEL_SPECIFIC_REDISTRIBUTION_LICENSE_FOUND',
- warning:'Project config and MediaPipe SDK Apache-2.0 license are not independent rights for a separately hosted model. This is a technical audit, not legal advice.'
+ warning:'File-local model metadata does not state a license, but upstream MediaPipe maintainers state that source and models default to Apache 2.0 unless an exception is noted. The official EfficientDet int8 guide has no exception. This is a technical provenance audit, not legal advice.'
 };
 await mkdir('dist',{recursive:true});
 await writeFile('dist/model-license-audit.json',JSON.stringify(report,null,2)+'\n');
@@ -125,4 +130,5 @@ console.log('[model-rights] SHA256 VERIFIED '+digest+' ('+file.length+' bytes)')
 console.log('[model-rights] metadata '+JSON.stringify(embeddedMetadata));
 console.log('[model-rights] metadata entries '+JSON.stringify(discovered));
 console.log('[model-rights] source license headers '+JSON.stringify(licenseHeader));
-console.log('[model-rights] determination '+report.redistributionConclusion);
+console.log('[model-rights] file-local evidence '+report.redistributionConclusion);
+console.log('[model-rights] external upstream Apache-2.0 model policy '+JSON.stringify(maintainerDefaults));
