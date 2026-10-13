@@ -25,6 +25,55 @@ const report={
   scope:'Public model metadata and actual downloaded candidate TFLite hashes. Different sha256 means NOT byte-identical; matching sha256 alone does not override source rights.'
 };
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+// Compare actual embedded tensor/buffer payload hashes, not merely model names
+// or metadata wrappers. This indicates shared byte-identical weight segments,
+// not an independent license grant or even complete structural equivalence.
+function fingerprint(data){
+ const safe=(p,n=4)=>{if(!Number.isSafeInteger(p)||p<0||p+n>data.length)throw Error('FlatBuffer bounds exceeded');return p};
+ const u32=p=>data.readUInt32LE(safe(p));
+ const u16=p=>data.readUInt16LE(safe(p,2));
+ const i32=p=>data.readInt32LE(safe(p));
+ function field(t,i){
+  const v=t-i32(t);safe(v);
+  const len=u16(v),p=v+4+i*2;
+  if(len<4||len>4096||p+2>v+len)return null;
+  const offset=u16(p);return offset?safe(t+offset):null;
+ }
+ const ref=p=>p===null?null:safe(p+u32(p));
+ const root=u32(0),vec=ref(field(root,4));
+ if(vec===null)throw Error('No TFLite Model.buffers table');
+ const n=u32(vec);if(n>100000)throw Error('Implausible buffer count');
+ const hashes=[];
+ for(let i=0;i<n;i++){
+  const pos=vec+4+4*i,table=pos+u32(pos);
+  const dat=ref(field(table,0));if(dat===null)continue;
+  const len=u32(dat);if(len<64)continue; // skip empty and tiny header data
+  safe(dat+4,len);
+  hashes.push({sha256:sha(data.subarray(dat+4,dat+4+len)),bytes:len});
+ }
+ return {totalBuffers:n,payloads:hashes,totalPayloadBytes:hashes.reduce((a,b)=>a+b.bytes,0)};
+}
+function payloadOverlap(reference,candidate){
+ const bag=new Map();
+ for(const item of reference.payloads){
+  const key=item.sha256+':'+item.bytes;
+  bag.set(key,(bag.get(key)||0)+1);
+ }
+ let sharedBytes=0,sharedBuffers=0;
+ for(const item of candidate.payloads){
+  const key=item.sha256+':'+item.bytes;
+  const available=bag.get(key)||0;
+  if(available>0){bag.set(key,available-1);sharedBuffers++;sharedBytes+=item.bytes;}
+ }
+ return {sharedBuffers,sharedBytes,
+  candidateCoverageRatio:candidate.totalPayloadBytes?
+   +(sharedBytes/candidate.totalPayloadBytes).toFixed(6):null,
+  referenceCoverageRatio:reference.totalPayloadBytes?
+   +(sharedBytes/reference.totalPayloadBytes).toFixed(6):null,
+  referenceTotalBuffers:reference.totalBuffers,candidateTotalBuffers:candidate.totalBuffers,
+  referencePayloadBytes:reference.totalPayloadBytes,
+  candidatePayloadBytes:candidate.totalPayloadBytes};
+}
 const dir=await mkdtemp(join(tmpdir(),'efficientdet-rights-'));
 function selectLicenseMetadata(value){
  const output={};
@@ -66,6 +115,14 @@ async function candidateFiles(root){
  return found;
 }
 try{
+ const referenceResponse=await fetch(model.url,{redirect:'follow',signal:AbortSignal.timeout(45000)});
+ if(!referenceResponse.ok)throw Error('Cannot get exact current model: '+referenceResponse.status);
+ const reference=Buffer.from(await referenceResponse.arrayBuffer());
+ if(sha(reference)!==model.sha256)throw Error('Pinned model bytes changed; fail closed');
+ const referenceFingerprint=fingerprint(reference);
+ report.target.bytes=reference.length;
+ report.target.totalBuffers=referenceFingerprint.totalBuffers;
+ report.target.payloadBytes=referenceFingerprint.totalPayloadBytes;
  for(const {id,url} of urls){
   const entry={id,url};
   const isArchive=id.startsWith('kaggle-lite');
@@ -103,6 +160,10 @@ try{
        const out=join(dir,id+'-contents');await mkdir(out);
        execFileSync('tar',['-xf',file,'-C',out],{timeout:25000,maxBuffer:500000});
        entry.tfliteFiles=await candidateFiles(out);
+       for(const info of entry.tfliteFiles){
+        const candidate=await readFile(join(out,info.path));
+        info.tensorPayloadComparison=payloadOverlap(referenceFingerprint,fingerprint(candidate));
+       }
        entry.archiveEntries=names.slice(0,24);
       }catch(error){entry.archiveError=String(error.message||error).slice(0,500);}
      }
