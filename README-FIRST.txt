@@ -1,18 +1,28 @@
-Single HTML App Template
-========================
+Passage Counter — Development entry point
+=========================================
 
-1. Read README.ja.md.
-2. Rewrite APP_SPEC.md for the new application.
-3. Update app.config.json and replace `assets\favicon.svg` with the application icon. The build uses that one file for both the browser favicon and upper-left app icon.
-4. Inspect components/ and reuse generic patterns where they fit: Undo toast for reversible actions, confirmation dialog for irreversible/high-risk actions, compact popover menus, preset/custom numeric settings, async source guards, the mobile bottom bar for persistent smartphone navigation/actions, and webrtc-qr-pairing.html for fully serverless same-LAN browser pairing. For the WebRTC component, also copy the pinned assets from examples/dependencies.webrtc-qr.json. For long 3-5 group smartphone tools, prefer mobile page tabs over one long stacked page.
-5. Give the repository to the coding LLM and tell it to read AGENTS.md first.
-6. If you add or change dependencies, sync dependencies.lock.json with scripts\sync-dependency-lock.ps1; use scripts\update-dependency.ps1 for reviewed upgrades.
-7. If the app exports files, make the output filename user-editable before export.
-8. Run build-standalone.bat on Windows. It runs scripts\check-powershell-syntax.ps1 before the build; fix parser or encoding failures instead of bypassing them.
-9. Review dist\build-size-report.json, then open dist\index.html and dist\index.self-extract.html directly and test both with the network disabled. On smartphones, also verify the help dialog can scroll to its final item.
+This repository implements Browser Kitty's Passage Counter, not the starter sample.
 
-Do not edit either generated HTML in dist\ manually.
+- Japanese usage and build: README.ja.md
+- English usage and build: README.md
+- Binding implementation requirements: APP_SPEC.md
+- v0.1.0–v1.0.0 roadmap: DEVELOPMENT_PLAN.md
+- Complete local-only HTML and CSP gate: VERIFY_OFFLINE.md
+- WASM bundling background: docs/ADR-001-EMBEDDED-MEDIAPIPE.md
+- Experimental SIMD-only policy: docs/ADR-002-SIMD-ONLY.md
+- v0.4.0 IndexedDB schema, interval recovery and CSV exports: docs/ADR-003-LOCAL-PERSISTENCE.md
+- v0.5.0 local video input, seek safety and time semantics: docs/ADR-004-LOCAL-VIDEO.md
+- v0.6.0 UI consistency, inference pacing, memory/Wake Lock/visibility gates: docs/ADR-005-PERFORMANCE-AND-UI.md
+- v0.7.0 Windows Chrome/Edge integration and physical-browser matrix: docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md
+- v0.8.0 evidence-scoped accuracy evaluation and local human annotation: docs/ADR-007-ACCURACY-EVALUATION.md
+- v0.9.0 release-preparation audit and unresolved blockers: docs/RELEASE_READINESS_v0.9.0.md
+- v0.10.0 camera-first UI and drag-the-line interaction: docs/ADR-008-LINE-DRAG-AND-UX.md
+- v1.0.0 candidate help, width, bilingual README and outstanding release gates: docs/RELEASE_READINESS_v1.0.0.md
 
-WebRTC readiness
+Canonical editable source: src/index.template.html
+Build using: scripts/check-powershell-syntax.ps1, then scripts/check-repository.ps1
+Generated artifacts: passage-counter.html, dist/index.html, dist/index.self-extract.html
+Do not edit generated HTML files manually.
 
-For custom WebRTC DataChannel layouts, set readyChannelLabel to a reliable control channel and wait for onConnected rather than raw PeerConnection connected.
+The AI model, WASM loader, SIMD WASM binary, and code must be
+present in the one-file HTML. The non-SIMD variant is intentionally omitted here.

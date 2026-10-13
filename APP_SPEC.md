@@ -1,128 +1,374 @@
-# APP_SPEC.md
+# Passage Counter / 通過カウンター — 正式アプリ仕様書
 
-This file is the product contract for the application created from this template. Replace the starter specification below before asking an LLM to build a new product.
+> **2026-10-13 オーナー指示によるv1.0.0のスコープ変更:** 本仕様に残るAndroid/iPhone/Windows実カメラ確認、30分連続稼働、実人物100件以上の方向別Precision/Recall 95%目標は、合格した扱いにはせず [Future Work](docs/FUTURE_WORK.md) に延期する。初期仕様の定量目標は履歴として残す。一方で、単一HTML・実行時不要通信ゼロ・CSPおよび正当なAIモデル再配布権限は今回の確認対象から外さない。精度・対応環境が未検証である事実はUI/READMEに明記し、高精度を保証しない。
 
-## 1. Product identity
 
-- **Working name:** Single HTML App Starter
-- **One-sentence purpose:** Demonstrate the template's local-first, responsive, bilingual, single-file application foundation.
-- **Primary users:** Developers and LLM coding agents starting a new browser utility.
-- **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and a repository-root copy of the readable build named from `repository.name` with a leading `htmlapps-` removed
+- 文書ID: `PC-SPEC-001`
+- 仕様版: `1.3`（SIMD専用・動画・v0.6.0性能安全策とBrowser Kitty共通UIを反映）
+- 作成日: 2026-10-11
+- 対象: Browser Kitty 新規アプリ
+- ステータス: 開発用仕様。未検証事項は技術検証ゲートとして明示。
+- 関連文書: [`DEVELOPMENT_PLAN.md`](./DEVELOPMENT_PLAN.md)
 
-## 2. Problem and outcome
+> **SIMD専用の検証方針（2026-10-11）:** SIMD対応環境を対象にWASMの非SIMDフォールバックを省いた単一HTMLを試験する。非SIMD環境ではカメラ権限の要求前に利用不可を表示する。正式採用にはスマホ実機での互換性・性能検証が必要。判断記録は [ADR-002](docs/ADR-002-SIMD-ONLY.md)。
 
-The starter must make the repository's constraints visible and testable without pretending to be a finished end-user product. A user can enter text, see basic counts, copy it, save it, and persist it locally.
+> **最上位の非交渉条件:** 正式配布する**1個のHTMLファイルに、実行コード・CSS・必要な画像/SVG・AIモデル・WASM本体・WASMローダー・必要なWorkerコードをすべて内包**する。アプリ実行時のCDN、モデル/WASMダウンロード、外部AI API、自動テレメトリは禁止。**v0.1.0から満たす**。達成できなければライブラリを変更し、単一HTML制約は緩めない。
 
-A successful replacement app should state here:
+## 1. 目的、対象、範囲
 
-- What concrete problem it solves.
-- Who experiences the problem.
-- What result the user gets in one session.
-- Why a local single-HTML implementation is useful.
+### 1.1 目的
 
-## 3. Core user flow
+スマートフォンまたはPCのカメラを固定し、画面上の一本の判定線を横切る**人物の通過イベント**を方向別に自動カウントする。結果を端末内に保存し、日時・方向別の集計とCSVの書き出しを可能にする。
 
-1. Open the page locally or through GitHub Pages.
-2. Enter or paste text.
-3. See character, word, and line counts update immediately.
-4. Edit the suggested output filename, then copy or download the text.
-5. Use Clear or Restore sample and undo the reversible change from the toast when needed.
-6. Reload and recover the locally saved text.
+- 入力: カメラのライブ映像。v0.5.0でローカル動画入力も試験実装。
+- 処理: ブラウザ内で人物検出→短時間追跡→線分交差判定→通過イベント確定。
+- 出力: A→B/B→Aの通過件数、時間帯別集計、手動補正履歴、CSV。
+- 解決する不便: 来客調査・通行量調査のたびに専用機材、アプリインストール、手押しカウンターを必要とすること。
 
-## 4. Functional requirements
+### 1.2 主な利用者
 
-- Provide a responsive text area.
-- Calculate Unicode-aware character count.
-- Calculate approximate word and line counts.
-- Copy text with a compatibility fallback.
-- Download UTF-8 plain text with a user-editable output filename and a predictable `.txt` extension.
-- Save the current text in local storage when available.
-- Use the reusable `AppToast.show()` Undo pattern for reversible Clear / Restore sample operations. Reserve `AppConfirm.ask()` for irreversible or high-risk actions.
-- Switch Japanese and English without reloading.
-- Use a light-only interface; do not add a dark-mode or theme switcher.
-- Expose build version, generation timestamp, and embedded dependency count.
+- 店舗担当者: 入口の入店・退店の通過数を短時間計測。
+- イベント運営者: 会場の通路・出入口の通行量を方向別に記録。
+- 施設・展示運営者: 特定ポイントの歩行者通過イベント数を計測。
 
-## 5. Data and privacy
+### 1.3 v1.0.0の対象
 
-- Input text remains in browser memory and local storage.
-- The app performs no runtime network request.
-- There is no server-side storage, login, analytics, telemetry, or tracking.
-- Download occurs only after a user action.
+**必須機能:** ライブカメラの人物カウント、判定線配置、方向別の結果、設置テスト、手動補正/Undo、計測中断、端末内保存/復帰、時間帯別集計/CSV、日英UI、単一HTML、外部通信ゼロ。
 
-## 6. Non-goals
+**追加候補:** ローカル動画からの計測。v0.5.0で実装し単一HTML/精度/安定性のゲートを通過した場合にv1.0.0へ搭載。未達なら仕様更新を伴う明示的延期とする。
 
-- Collaborative editing.
-- Cloud synchronization.
-- Rich text formatting.
-- Server-side conversion.
-- Account management.
+**対象外:** 顔認識、ユニーク来訪者識別、恒久的な個人トラッキング、年齢・性別推定、箱等の汎用物体カウント、複数カメラ/複数判定線、常時監視サーバー、映像録画、音声、クラウド同期、画面消灯中のバックグラウンド計測。
 
-## 7. UX and accessibility
+### 1.4 重要な定義
 
-- Mobile-first responsive layout from 320px upward.
-- All controls have visible labels or accessible names.
-- Keyboard focus is visible.
-- Motion respects `prefers-reduced-motion`.
-- Reversible changes provide a visible Undo action in the reusable toast.
-- Irreversible or high-risk destructive actions use the reusable confirmation component, centered on desktop and presented as a safe-area-aware bottom sheet on smartphones.
-- Status messages use an `aria-live` region.
-- If the finished app needs persistent smartphone access to 3-5 sections or workflow actions, reuse `components/mobile-bottom-bar.html` rather than inventing another fixed bottom bar. For long multi-section tools, prefer its mobile page-tab mode (`data-mobile-page-target`) so tapping a bottom tab shows only that group on smartphones while desktop still shows all sections. Keep unavailable actions disabled until their prerequisites exist.
+| 用語 | 正確な意味 |
+|---|---|
+| 通過イベント | 同一追跡対象が安定した片側から反対側へ移動し、横断と確定された1件。 |
+| A→B / B→A | 有向線分に対する2方向。UIの表示名を「入場」「退場」等に変更可能。 |
+| 自動件数 | 推論と追跡から確定されたイベントの件数。 |
+| 補正件数 | 手動で加減算された数。自動イベントは消さず、履歴へ追加。 |
+| 確定件数 | 自動件数+補正件数。「真の来客数を保証する」意味ではない。 |
+| 欠測区間 | カメラ/タブ/推論停止等で実際の通過数が不明な時間。ゼロとは扱わない。 |
+| 有効計測時間 | 映像を正常に取得して計測が有効だった区間の合計。 |
+| 単一HTML | 必要な実行時資産が全部内包された、他ファイル不要の独立HTML。 |
 
-## 8. Performance expectations
+## 2. 製品ルール（必須）
 
-- Initial UI should become interactive without network access.
-- Input updates should remain smooth for at least 100,000 characters on a typical desktop browser.
-- Avoid rebuilding large DOM sections on every keystroke.
+- `BR-001` アカウント・ログイン・専用インストールは不要。
+- `BR-002` 映像・人物情報は端末内で処理。音声入力なし。映像・静止画・個人特徴量を永続保存しない。
+- `BR-003` **モデル/WASM/ローダー/Workerを含む完全単一HTMLはv0.1.0から必須**。
+- `BR-004` ページHTMLの受信とは別に、起動・推論・保存・終了中の自動外部通信を0件にする。外部SDK telemetry、Analytics、CDN、外部フォント、外部AIを禁止。
+- `BR-005` PCとスマートフォン、日英UIに対応。スマートフォン縦画面を主導線とする。
+- `BR-006` AIカウントは誤り得る。中断・検出遅延・補正・欠測を隠さない。
+- `BR-007` 新規実装開始時の最新GitHub `htmlapps-template` を確認して準拠。テンプレートの出力ファイル名を記憶から決めない。
+- `BR-008` ブランド主色 `#16624F`、SVGアイコン、一般向け文言、アクセシブルなタップ領域。
+- `BR-009` 自動的にカメラ権限ダイアログを開かない。利用者の「カメラを開始」操作を起点に許可を要求する。
 
-## 9. Browser target
+## 3. ユーザー体験
 
-Current stable desktop and mobile versions of Chromium, Firefox, and Safari. Direct `file://` opening is required.
+### 3.1 初期画面
 
-## 10. Acceptance criteria
+- 製品名「Passage Counter / 通過カウンター」。
+- 説明: 「カメラを固定し、線を横切った人数を方向別に数えます。映像は保存・送信しません。」（通信監査完了後の製品文言）。
+- 主ボタン「カメラを開始」。副ボタン「前回の記録を見る」、動画入力搭載時のみ「動画から計測」。
+- 内包モデル展開と推論初期化時は「準備中」と表示。ダウンロード中という誤解を招かない。
+- カメラ未許可、カメラなし、WASMロード失敗等では原因・次の操作を提示。
 
-- `build-standalone.ps1` produces the readable HTML, a gzip self-extracting variant, and an exact repository-root copy named from `repository.name` with a leading `htmlapps-` removed (for example `htmlapps-tap-counter` → `tap-counter.html`).
-- Embedded asset bytes are Base64-encoded exactly once; the complete asset-bundle JSON is not wrapped in a second Base64 layer.
-- Assets configured with `gzip` / `auto` can be read through the async embedded-asset API, and the build writes `build-size-report.json`.
-- `scripts/verify-standalone.ps1` passes.
-- The self-extract loader is ASCII-only, inherits the embedded favicon from the readable HTML, and restores the source HTML byte-for-byte.
-- The generated HTML contains no unresolved build placeholder.
-- The generated HTML contains no external script, stylesheet, frame, module import, or CSS asset URL.
-- Runtime CSP includes `connect-src 'none'`.
-- The full core user flow works after opening either generated HTML directly.
-- No data leaves the page.
-- Japanese and English copy both fit at 360px width.
-- Clear happens immediately but offers Undo for long enough to recover the previous text.
-- The output filename can be edited before download; invalid filename characters are sanitized and an empty name falls back to the app slug.
+### 3.2 設定画面
 
-## 11. Open decisions for a new app
+- 背面カメラを優先し、利用可能なカメラ選択機能を提供。
+- 実映像の上にドラッグ可能な一本の判定線。両端にハンドル。線を傾けられる。
+- 既定は画面中央の水平線。線が短すぎる・無効な位置にある場合は計測開始不可。
+- 画面上にA→B/B→Aを矢印と文字で表示。「方向を反転」で入れ替え。方向ラベルは「入店」「退店」等に変更可能。
+- 検出枠・足元追跡点の表示ON/OFF。画面は必要時のみ認識領域を表示。
+- 「設置をテスト」で試行してから「計測を開始」。テスト件数は本計測へ引き継がない。
+- 設定は端末内保存可能。映像、カメラ個体の固有識別子、人物の画像は保存しない。
+- 判定線は動画フレーム固有の幅・高さに対して**正規化した座標**で保持する。`object-fit`の余白/切り抜き、前面カメラの鏡像表示、端末回転を座標変換で考慮する。
 
-Replace these with explicit decisions before implementation:
+### 3.3 計測画面
 
-- Maximum accepted input size.
-- Supported input file types.
-- Export file formats, default filename, editable filename behavior, sanitization, and extension rules.
-- Persistence strategy and reset behavior.
-- Undo/redo scope.
-- Error and recovery behavior, including stale async-result invalidation when inputs can change during processing.
-- Explicit async phases (`empty`, `ready`, `loading-runtime` if needed, `processing`, `result`, `error`) for heavy processing apps.
-- Mobile relationship between previews and their directly related controls.
-- Smartphone navigation model: bottom-tab page switching, section-scrolling bottom bar, workflow-action bar, or no fixed bottom bar.
-- Media coordinate/orientation strategy when drawing overlays.
-- Required third-party libraries.
-- Whether the app intentionally needs peer-to-peer WebRTC. If so, decide whether the fully serverless same-LAN QR pairing component is appropriate, what DataChannels are required, and how paired-device data is described to users.
-- Whether bilingual UI is required.
+- 最も大きくA→B件数とB→A件数。合計は**延べ通過件数**と表示しユニーク人数と混同させない。
+- ステータス: 「計測中」「一時停止中」「中断」「認識が遅い」「保存できません」。
+- 有効計測時間・壁時計経過時間を区別。
+- 主操作: 「一時停止」「終了」「件数を補正」。
+- 手動補正はA→B/B→A別に `+1` / `-1`。0未満にはできない。「元に戻す」は取り消しイベントとして追記する。
+- 計測中のカメラ切替/判定線移動は不可。変更時は「一時停止→変更→試験→手動再開」。追跡情報を破棄し設定区間を記録。
+- 画面隠れ・カメラ停止・権限喪失では欠測に移行。再表示だけで自動再開しない。
+- 対応端末ではScreen Wake Lockを要求し、失敗時は説明する。画面を暗くしても計測が続くとは約束しない。
+- スマホのセーフエリアと片手操作、タップ領域44×44 CSS px以上、横スクロールなし。
 
-## In-app help
+### 3.4 計測結果画面
 
-The upper-right header includes a compact help button. It opens a bilingual “使い方と注意事項” dialog containing:
+- セッション名、開始/終了日時、計測モード、壁時計経過・有効時間、欠測区間。
+- 方向別「自動カウント」「手動補正」「確定件数」。
+- 5分/15分/60分の棒グラフ・表。欠測をまたぐ区間は「一部欠測」「欠測」と表示し、0件と混同させない。
+- セッション履歴の閲覧・名前変更・CSV出力・削除。全消去や削除には確認を入れる。
+- CSVは概要・イベント明細・時間帯集計の3種類。初期ファイル名は編集可能。
+- 顔/映像の保存やエクスポート機能は付けない。
 
-- the real user workflow,
-- privacy and local-processing behavior,
-- limitations and data-loss risks,
-- any browser or device constraints relevant to the app.
+### 3.5 UI/処理状態
 
-Acceptance criteria: help content is updated together with each user-facing behavior change, contains no leftover starter instructions, and remains fully scrollable at narrow smartphone widths / short viewport heights so the final item and close control are always reachable.
+```text
+initial → loading_local_assets → ready → camera_request → configuring
+  → testing（任意）→ counting ↔ paused → finished → reviewed
 
-## WebRTC readiness requirement
+exception: unsupported / camera_denied / runtime_error / interrupted / storage_error
+```
 
-When an app uses peer-to-peer WebRTC DataChannels, define which reliable channel represents application readiness. Custom channel layouts must set `readyChannelLabel`; do not define application-ready from ICE/PeerConnection `connected` alone.
+- `camera_denied`: 再要求を連打しない。ブラウザ権限の設定を案内。
+- `unsupported`: カメラ/WASM/JS機能不足を説明し、その機能が使えないことを明示。
+- `runtime_error`: 同梱モデルやWASMの初期化失敗。外部取得へフォールバックしない。
+- `interrupted`: 欠測開始時刻を記録し停止。原因が消えても手動再開が必要。
+- `storage_error`: 保存済みと誤表示しない。メモリ上のデータをできる限り保持してCSV救出を案内。
+
+## 4. 人物検出・追跡・通過判定
+
+**v0.6.0 Draft運用基準:** AI推論は端末内で1件ずつ実行し、過去のフレームをキューに溜めない。実行時間に応じて推論間隔を105〜225msの範囲で動的調整し、fps・処理時間などの技術数値は詳細表示へ移す。長時間の極端な処理低下はカウント精度を保証できないため、中断・欠測として残す。見た目はBrowser Kitty共通ヘッダー、言語ワンタップ切替、ローカル処理の事実表示に合わせる。Worker/OffscreenCanvasは未検証の別案として扱い、実装済みと称さない。スマホ実機30分・8fps・人物精度は正式採用前に確認する。[ADR-005](docs/ADR-005-PERFORMANCE-AND-UI.md) に詳細を記録。
+
+
+### 4.1 検出器
+
+- 初期候補はMediaPipe Tasks Visionの`ObjectDetector`とEfficientDet-Lite0（int8優先）。Google公式の人物カテゴリー `person` のみ取得。
+- 代替候補はSSD MobileNetV2、またはONNX Runtime Webで動作するライセンス確認済みの人物モデル。単一HTML・性能・精度で比較する。
+- モデル実体、WASM実体のバージョンを固定し、SHA-256・配布条件・取得元をビルド時に記録。検証前に固定ハッシュを捏造しない。
+- MediaPipeの `VIDEO` モードを使う場合、`detectForVideo`へ単調増加タイムスタンプを渡す。動画ファイルはメディア時刻を別に管理。
+- 推論結果は人物検出矩形とスコア。顔認識は使用しない。
+
+### 4.2 トラッカー
+
+- 検出間のIoU、中心距離、移動予測と時間差を用い、短時間の追跡IDを付ける。
+- 状態 `tentative`→`confirmed`→`temporarily_missing`→`lost`。
+- 短い検出抜けはID維持を試み、長い抜けで強引に推測しない。
+- track IDはその計測のメモリ内限定。日をまたいだ個人識別、顔ベクトル、人物画像の保存なし。
+- 2人同時通過や交差では追跡IDの入れ替わりに注意。確証がない場合はイベントを無理に捏造しない。
+
+### 4.3 幾何判定
+
+- 線はフレーム内の正規化2点 `L0=(x0,y0), L1=(x1,y1)`。線の長さを検証。
+- 斜め撮影では人物矩形の下辺中央（足元近似）を追跡点 `P` とする。真上撮影は同精度を保証しない。
+- 符号付き距離は `(L1-L0) × (P-L0)` の符号から求める。距離量は線長・映像解像度に応じて正規化する。
+- **無限直線ではなく線分の有効範囲**で交差判定。線分の端より遠くでの移動は計測しない。
+- 描画と幾何判定は同じ動画座標を使い、CSSのミラーとA/B方向名を正しく対応させる。
+
+### 4.4 確定状態機械
+
+- トラックごとに `armed_on_A`, `armed_on_B`, `crossing_candidate`, `committed` を管理。
+- 出現後、線から十分離れた側で複数観測された場合だけ `armed`。初めから線上に現れた対象は即加算しない。
+- 線の両側にヒステリシス帯を設け、線際の微細な揺れ・停止を多重加算しない。
+- 同一IDが反対側の確定領域に到達し、連続観測または最小時間条件を満たした場合だけ **一回**イベントを発行。
+- 復路は反対側で再び待機確認ができた場合に逆方向の新しいイベントとして発行。
+- トラック対応が失われたときは無理に加算しない。時間経過による不確実性を内部診断に保持する。
+- イベントの二重コミットが起きないよう状態遷移とイベント生成を原子的に扱う。
+
+### 4.5 設置テスト
+
+- 既定30秒間。検出点/枠・通過テスト件数・処理速度を表示。
+- テスト件数を本計測に混ぜない。終了時に追跡状態をリセット。
+- 人物が映像端で途切れる、低fpsなど実測できる課題を分かりやすく通知。
+- 正解データのない「AI精度98%」等を表示しない。
+
+## 5. 保存とイベントデータ
+
+### 5.1 セッション型
+
+| 項目 | 内容 |
+|---|---|
+| `schemaVersion` | 初版 `1`。将来の移行に使用。 |
+| `sessionId` | UUID、個人識別には使用しない。 |
+| `name` | 編集可能な計測名。 |
+| `sourceType` | `camera` / `file`。 |
+| `createdAt`, `startedAt`, `endedAt` | ISO 8601日時（未終了は終了時刻null）。 |
+| `directionLabels` | A→B、B→Aの表示名。 |
+| `line` | 正規化した線端点と方向基準。 |
+| `configSegments[]` | 計測途中の設定変更と使用モデル版。 |
+| `coverageIntervals[]` | `observed` / `paused` / `missing` と開始・終了。 |
+| `events[]` | 自動イベント、手動補正、Undoの追記型ログ。 |
+| `runtimeInfo` | アプリ・モデル・閾値の版。人物/端末固有IDなし。 |
+
+### 5.2 通過イベント型
+
+| 項目 | 内容 |
+|---|---|
+| `eventId`, `sessionId` | UUIDと親セッションID。 |
+| `occurredAt` | タイムゾーン情報付きISO 8601。 |
+| `elapsedMs` | セッション開始からの経過ミリ秒。 |
+| `sourceTimeMs` | 動画ファイルの再生時刻。カメラではnull。 |
+| `direction` | `A_TO_B` / `B_TO_A`。 |
+| `kind` | `auto` / `manual_adjustment` / `undo_adjustment`。 |
+| `delta` | `+1`または`-1`。自動イベントは必ず+1。 |
+| `referenceEventId` | 補正の取り消し時に対象イベントを参照。 |
+
+- 個人識別可能なフレーム画像、音声、顔特徴量、恒久IDを保存しない。
+- 方向別の表示件数は当該方向の`delta`総和。0未満にする補正は受け付けない。
+- 手動補正は消去せず追加イベントとして記録し、Undoは相殺イベントで扱う。
+- IndexedDBへイベント発生時に逐次書き込み、必要に応じ周期チェックポイントを行う。実装上は `SessionV1` を `sessions`、イベント配列を別の `events` オブジェクトストアへ正規化する。同一トランザクションでイベントとセッションの整合性を保つ（[ADR-003](docs/ADR-003-LOCAL-PERSISTENCE.md)）。`pagehide`のみの保存には依存しない。
+- ブラウザクラッシュ時は最後に保存できたイベントまで復帰。停止していた時間は欠測、再開は明示操作。
+- 保存できない場合は「保存できません」と表示し、可能であればメモリ内結果からCSV救出。成功と誤表示しない。
+- 時計の大きな変更を検出し、イベント順序は単調増加時刻と記録順で再現可能にする。
+
+### 5.3 集計規則
+
+- 方向別自動件数 / 手動補正差分 / 確定件数をそれぞれ保持。
+- 合計は**延べ通過件数**。同じ人の往復は2イベント。ユニーク人数を表さない。
+- 入退場の差分を求められても「現場の正確な滞在人数」と断定しない（初期人数、別入口、欠測が不明のため）。
+- 5/15/60分などの集計。タイムゾーンを考慮したローカル表示。
+- 欠測を含む区間に`coverageStatus=partial/missing`を付け、未知の通過を0件と扱わない。
+
+### 5.4 CSV
+
+- 既定はUTF-8 BOM、カンマ区切り、RFC 4180相当のクォート。改行、カンマ、引用符を適切にエスケープ。
+- ユーザー編集文字列によるCSV式注入（`=`, `+`, `-`, `@` 等から始まる値）を防止する。
+- `session-summary.csv`: セッション名、日時、モデル/アプリ版、計測時間、欠測、方向別件数、自動/補正/確定。
+- `passage-events.csv`: ID、方向、kind、delta、発生時刻、経過時間、動画時刻、参照イベントID。
+- `passage-intervals.csv`: 区間時刻、粒度、有効秒、欠測秒、方向別件数、補正件数、coverageStatus。
+- CSV列識別子は英語で固定（機械可読）。UI説明を日英対応。
+
+## 6. 単一HTML・WASM・モデル — 絶対要件
+
+### 6.1 配布アーキテクチャ
+
+- 配布物は**必要資産を全て内包した1つの`.html`**。JavaScript、CSS、SVG、AIモデル、WASM、WASMローダー、必要なWorkerのソースをHTML内に埋める。
+- ビルドソースは複数ファイルで構わないが、配布HTMLが外部のJavaScript、`.tflite`、`.onnx`、`.wasm`、`.json`、`.css`、フォントファイルに依存してはならない。
+- モデルはビルド時に適法に入手、版とSHA-256を固定。配布HTML内ではbase64等のバイナリ内包形式から起動時に`Uint8Array`へ展開する。
+- 推論に必要なWASM本体とローダーはHTML内にすべて内包する。SIMD専用実験版はSIMD対応ブラウザのみを対象とし、非対応時には権限要求前に日英で利用不可を説明する。非対応ブラウザ向けのWASMを実行時に外部取得してはならない。
+- Workerは内包ソースから生成したBlob URL等で起動し、終了時にURLを解放。動作不可な環境での主スレッド代替経路も検討・実機テストする。
+- HTMLの物理サイズ・起動時間・展開メモリ・ピークメモリを実機で計測する。重複デコードや複数モデル保持は回避する。
+- 開発用外部依存やビルド時ダウンロードは許可するが、**実行時は不可**。初回起動時に通信が必要な構造は不合格。
+
+### 6.2 エンジン選定の関門
+
+1. 第一候補のMediaPipe Tasks Visionは`ObjectDetector.createFromModelBuffer()`を使い、モデルバッファで初期化する。ローダー/WASMの指定には`WasmFileset`を使用する。
+2. `wasmLoaderPath` / `wasmBinaryPath`にHTML内生成URL等を指定できるか、実際のライブラリ版・CSP・`file://`・HTTPS環境で検証。
+3. MediaPipeの公式Privacy Noticeは性能/利用指標の送信を説明している。**Web版が実際に何を通信するかは計測して確認**し、送信を止められない版は採用禁止。
+4. 内包・通信ゼロ・CSP・主要スマホで成立しない場合は、ONNX Runtime Web等の代替推論基盤へ切り替える。その際も**モデルとWASMを完全内包**する。ONNX Runtime Webには`wasmBinary`でWASMバイナリを指定する選択肢があるが、選定モデルとの互換性・実行性能は別途検証する。
+5. 利用するJS/WASM/モデルのソース・ライセンス・再配布条件・ハッシュをまとめた第三者通知を用意する。ライセンス未確認のモデルを配布しない。
+
+> APIが存在することと、当該単一HTMLが動くことは別。**このアーキテクチャが成立したと宣言できるのはv0.1.0で実際にオフライン起動を検証した後だけ**。
+
+### 6.3 CSP
+
+- `connect-src 'none'` を第一候補に検証。ただし、埋め込んだバイナリに対するブラウザ内部の`fetch(blob:)`が必要な場合は、**外部サイトへの接続を許さず`blob:`だけを必要最小限に許可**する選択肢を検討。
+- `worker-src blob:`、`script-src`のハッシュ/必要なBlob URL、WASM用`wasm-unsafe-eval`等を個別に検証する。
+- `https:`、`*`、無関係な`unsafe-eval`を広く許可しない。
+- CSPは配布HTMLのmeta設定とホスト側ヘッダーが重なる場合も確認する。実機で動かずにセキュリティポリシーを緩めて済ませない。
+- Analyticsや第三者コードが実行時通信する場合、「完全ローカル処理」とは説明しない。製品配布HTMLにはそのようなコードを含めない。
+
+### 6.4 Offline / `file://` 対応
+
+- 単一HTMLをダウンロードし、キャッシュのないプロファイルでネットワークを切断して推論できることが必須。
+- `getUserMedia()`はHTTPS/localhostや一部の`file://`などのセキュアコンテキストで利用できるが、**ファイル直開きの実際の許可/制約はOSとブラウザに依存**する。
+- HTTPS上で単一HTMLが動くことと、`file://`からカメラを使えることは別のテスト項目とし、ブラウザ別対応表を公開する。
+- 初回相当テストではService Worker・Cache Storage・CDNキャッシュを使わない。事前にHTMLだけを保存した状態で確認する。
+- 計測・ファイル保存・CSV出力の全機能が、モデル/WASM配信サーバー停止に影響されないこと。
+
+### 6.5 不合格条件
+
+- HTML以外にモデル/WASM/JSのファイルがないと実行できない。
+- 実行時にGoogle/CDN等へメトリクスを含む自動通信が発生する。
+- ネットワーク遮断でモデルロードが失敗する。
+- 単一HTML版でだけ動作しない機能がある。
+- 必要なモデル/ランタイムの再配布ライセンスが確認できない。
+
+## 7. 処理負荷・中断・長時間計測
+
+- 推論はUIスレッドを止めない構成を優先。同期的な推論をWorkerへ切り出すが、そのWorker自体もHTML内包とする。
+- `requestVideoFrameCallback`が使える場合は採用し、使えない場合は代替スケジューラ。処理中のフレームを無制限に溜めず、遅れた古いフレームを破棄する。
+- カメラプレビュー解像度と推論入力解像度を分ける。画質と処理速度を測って選択する。
+- 代表的な中級スマホの固定カメラ環境で8推論fps以上を**開発目標**。下回る端末は低速警告を表示する。これは実証済みの対応性能ではない。
+- 30分連続テストで異常終了・メモリ無制限増加・復元不能な履歴喪失なし。
+- `visibilitychange` / `pagehide` / MediaStream track `ended` を監視し、映像がない間は欠測として扱う。自動再開はしない。
+- Wake Lockが拒否・解除されたら説明。OSが非表示処理を停止し得ることを周知。
+
+## 8. プライバシー・安全性
+
+- カメラは明示操作で起動し、音声を取得しない。映像を外部送信しない。
+- カメラフレーム・顔領域・録画をIndexedDB/LocalStorageへ保存しない。ユーザーの映像は画面表示と一時推論のみ。
+- 保存するのは通過イベント、時間、方向、補正、欠測区間、判定線設定などに限定。
+- SDKの動的通信、CSP、開発時のデバッグログを監査し、第三者telemetryを許容しない。
+- 全記録削除など破壊操作では確認、直近補正ではUndoを提供。
+- 店舗・イベント・公共空間でのカメラ利用には撮影場所での掲示、同意や法令上の配慮が必要になり得る。端末内処理だけで配慮不要とは説明しない。
+- 「完全ローカル処理」「映像は保存・送信しません」という利用者向け表記は、実際の実装と通信監査結果に一致させる。
+
+## 9. ユーザビリティ・アクセシビリティ・日英対応
+
+- 設定・計測・結果の3画面を主構造とする。スマホでは1画面に全工程を長く縦積みしない。
+- ブランド主色は`#16624F`。SVGアイコン。文字・コントラスト・フォーカスを確保する。
+- タップは44×44 CSS px以上、固定UIとコンテンツが重ならずsafe areaを尊重。
+- 色だけでA/Bを識別せず、方向矢印とテキストを併記。
+- Tab、Enter、Space、Escape操作、線のキーボード微調整、ダイアログフォーカス管理。
+- カウントが高頻度に変わってもスクリーンリーダーが読み上げ続けない制御。
+- 全状態・説明・CSVガイド・ヘルプを日本語/英語に対応。専門用語（WASM/ONNX等）は診断詳細に隔離。
+
+## 10. エラーと境界条件
+
+| ID | シナリオ | UI/処理の必要動作 |
+|---|---|---|
+| EX-01 | カメラ拒否/カメラなし | 設定案内/再試行。権限の繰り返し要求なし。 |
+| EX-02 | モデル/WASM初期化失敗 | 計測開始禁止、理由と再試行。外部取得に逃げない。 |
+| EX-03 | タブ非表示/端末ロック | 欠測、停止。手動再開。 |
+| EX-04 | 低fps/カメラフリーズ | 警告、必要時停止と欠測区間記録。 |
+| EX-05 | 2人重なる/追跡喪失 | 不確実な加算を抑制。 |
+| EX-06 | 端末回転/カメラ切替 | 計測を止め設定を確認し、トラッカー初期化後に再開。 |
+| EX-07 | IndexedDB不可/容量不足 | 保存失敗を表示しCSV救出へ。 |
+| EX-08 | 再読み込み/クラッシュ | 最後の保存結果を再表示。未観測時間は欠測。 |
+| EX-09 | 同じ人が往復 | 方向ごとに1件ずつ、揺れは重複なし。 |
+| EX-10 | 線に触れただけ | 安定した反対側に抜けなければ0件。 |
+| EX-11 | セッション0件 | 「イベントはありません」、欠測の有無も説明。 |
+| EX-12 | 0件で-1補正 | 0未満にできないと説明。 |
+| EX-13 | 動画が非対応/破損 | 読めない理由。ファイル変更・送信なし。 |
+| EX-14 | 動画シーク/ループ | 再解析確認、トラッカーと結果の再初期化。 |
+| EX-15 | 保存済み記録の削除 | 誤タップ防止の確認。 |
+
+## 11. ローカル動画入力（v0.5.0で評価）
+
+**2026-10-11 Draft実装:** カメラとの入力切替、端末内ファイル選択・ドラッグ＆ドロップ、ブラウザ標準デコーダ、先頭からの動画通過解析、終了時の停止、実際の `sourceTimeMs` 出力、シーク・再解析前の確認、IndexedDBに動画内容を保存しない構成を実装した。[ADR-004](docs/ADR-004-LOCAL-VIDEO.md) を参照。5/15/60分の時間帯集計は実際に解析を行った時刻を示し、動画内時刻の集計とは区別して案内する。Chrome CIでは実動画の再生・解析経路を検証済み。Android/iOSの実機評価・現場精度評価は未完了で、正式採用判断は保留。
+
+
+- ローカル動画ファイルをブラウザ標準デコーダで開き、1本の線を設置して人物通過数を解析。
+- ファイル内容の送信/永続保存なし。必要な範囲でフレームをデコードし、ファイル全量の無駄なメモリ展開を避ける。
+- `sourceTimeMs`で動画位置を記録。シーク後は追跡時系列が破綻するため、「現在の結果を破棄して再解析しますか？」を確認。
+- MP4/WebM等はブラウザ・OSでデコードできる形式のみ対応。FFmpeg内包/動画変換は別目的なのでv1.0に含めない。
+- **v1.0の追加候補**であり必須中核ではない。条件未達時は開発計画・仕様とUIを明示的に変更して後続版へ延期する。
+
+## 12. 受入基準
+
+- `AC-01` 配布用の独立HTML1ファイルだけで、内包モデル/WASM/ローダー/必要なWorkerを使う実推論を開始できる。
+- `AC-02` クリーン状態・外部ネットワーク遮断でも推論可能。通常運用の自動外部HTTP/HTTPS通信は0件。SDKメトリクスも含む。
+- `AC-03` カメラ→判定線→方向別計測→補正/Undo→保存/CSVの一連操作が完結する。
+- `AC-04` 明るい固定カメラ・人物の重なり少・全身または足元が映るという**公称標準条件**で、調整に未使用の真値付き**100件以上**のイベントを評価し、方向一致Precision/Recallともに95%以上をリリース判定目標とする。未達なら改善または対応設置条件を根拠付きで絞り独立データで再試験。公称対応条件が1つも合格しなければNo-Go。
+- `AC-05` 立ち止まり、線付近の揺れ、往復、2人同時、短時間遮蔽、線分延長上の通行などを回帰検証する。
+- `AC-06` 30分連続試験でクラッシュ、大量メモリ蓄積、復元不能なデータ損失がない。
+- `AC-07` Windows Chrome/Edge、Android Chrome、iOS Safariで主要経路を実機確認。HTTPSと`file://`の可否は別管理し、未対応を明記。
+- `AC-08` 映像を保存・送信せず、第三者SDK/Analytics等の自動通信なし。
+- `AC-09` 日英UI、日英README、実UI日英スクリーンショット、SVG favicon、モデル/ランタイムの配布許諾記録、CIが揃う。
+- `AC-10` 画面非表示・WASMエラー・保存不可・欠測を検知して、状態と次操作を表示。欠測時間を0件と扱わない。
+
+## 13. 未確定事項と判断ゲート
+
+| 論点 | 初期候補 | 決定ゲート |
+|---|---|---|
+| モデル | EfficientDet-Lite0 int8 | 内包・ライセンス・人物検出精度・サイズ・端末速度。 |
+| 推論ライブラリ | MediaPipe Tasks Vision | WASM/loader内包・CSP・通信0・スマホ起動の実証。失敗なら代替。 |
+| 推論の実行位置 | Worker優先 | `blob:` Workerの実機成立。非対応環境の代替方法の確認。 |
+| WASM SIMD | 必須（実験中） | SIMD版のみ内包し、起動前にSIMD対応を判定。非対応端末ではカメラを起動せず案内する。iOS/Androidの実機テストが正式対応の条件。 |
+| CSP | `connect-src 'none'` 第一候補 | 内部Blob fetchの実挙動を見て、外部通信禁止を維持。 |
+| `file://` | 対応を目指す | OS/ブラウザのカメラ権限・CSP・Workerの実機結果を記載。 |
+| 動画入力 | v0.5.0で検証 | 合格なら1.0搭載、未達は正式に次版へ延期。 |
+| 物体モード | v1.0対象外 | 背景差分/物体追跡の別仕様・評価が必要。 |
+
+## 14. 参照情報（2026-10-11に確認）
+
+- Browser Kitty Guide（Project添付の共通設計原則）。
+- MediaPipe Object Detector for Web: https://developers.google.com/edge/mediapipe/solutions/vision/object_detector/web_js
+- `ObjectDetector.createFromModelBuffer()` API: https://developers.google.com/edge/api/mediapipe/js/tasks-vision.objectdetector
+- MediaPipe Fileset Resolver（`WasmFileset`）: https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/web/core/fileset_resolver.ts.template
+- MediaPipe detector models: https://developers.google.com/edge/mediapipe/solutions/vision/object_detector
+- MediaPipe Privacy Notice（利用指標の送信に関する注意）: https://developers.google.com/edge/mediapipe/solutions/tasks
+- ONNX Runtime Web の`wasmBinary`代替構成: https://github.com/microsoft/onnxruntime/blob/main/js/common/lib/env.ts
+- MDN カメラ権限: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+- MDN Screen Wake Lock: https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API
+- MDN CSP `connect-src`: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/connect-src
+
+---
+
+**固定の決定:** 単一HTML内包・外部通信0は、どのバージョンでも延期・緩和不可。実装時のPR作成は可能だが、マージはユーザー本人が行う。

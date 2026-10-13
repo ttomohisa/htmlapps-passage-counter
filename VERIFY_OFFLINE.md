@@ -1,34 +1,29 @@
-# Offline Verification
+# Single-HTML and offline verification
 
-1. Run `build-standalone.bat`.
-2. Open `dist/index.html` and `dist/index.self-extract.html` directly.
-3. Open browser developer tools and clear the Network panel.
-4. Enable offline mode or disconnect the device.
-5. Reload the local HTML.
-6. Exercise every core input, editing, preview, worker, and export flow.
-7. Confirm there is no failed external resource request and no console error.
-8. Change the suggested output filename, export, and confirm both the filename and file contents are correct.
-9. If the app can replace its primary input while processing, change the input mid-process and confirm no stale result from the old input appears.
-10. Confirm output files still open correctly.
+This SIMD-only experimental HTML includes the complete AI model, JavaScript module, SIMD WASM and its loader, and all runtime JS/CSS; non-SIMD WASM and loader must be absent.
 
-For GitHub Pages, one initial request downloads the HTML. Clear the Network panel after the page has loaded, then test the complete app flow.
+1. Run \`scripts/check-powershell-syntax.ps1\` and \`scripts/check-repository.ps1\`.
+2. Verify that the embedded asset manifest has `mediapipe/module`, `mediapipe/simd-loader`, `mediapipe/simd-wasm` and `person-model/tflite` but **not** `mediapipe/baseline-wasm` or `mediapipe/baseline-loader`.
+3. Confirm the model SHA-256 against \`model.config.json\` and the npm SHA-256 against \`dependencies.lock.json\`.
+4. Confirm \`dist/index.html\` and \`passage-counter.html\` are byte-identical; self-extract restores the readable file.
+5. Run the SIMD-only experiment CI. It uses fake Chrome camera inference, two `file://` HTML formats, a no-SIMD browser simulation (blocking camera before permission), tracking/ledger/CSV/i18n checks, and asserts no runtime external HTTP.
+6. Independently verify Android Chrome / iOS Safari on real devices; measure CPU, heat and startup. Unsupported browsers cannot use this SIMD-only build.
+7. The v0.4.0 browser CI should also test: IndexedDB session/events persistence across reload, recovery stopped after a crash, a missing coverage interval, 5/15/60 minute aggregation, CSV summary/events/intervals, confirmed deletion, and an IndexedDB-unavailable client retaining memory/CSV rescue.
+8. In v0.5.0, test true browser-decodable local videos with file picker and drag/drop, preview, seek/reanalysis confirmation, sourceTimeMs CSV, EOF finish, saved session reload without file bytes, unsupported file/error, camera regression, and `file://` playback. Inspect IndexedDB and confirm it contains **no movie bytes or Blob URL**, while output events include numeric video time.
+9. For v0.6.0, validate that the shared Browser Kitty header/hero matches PDF Fill & Sign and Wi-Fi Share structurally, the header favicon and brand SVG URI match, EN/JA toggling preserves every control, and the local-processing badge is factually supported by zero-runtime-HTTP assertions. Run header geometry checks at 320/360/390/820/1280px and save bilingual PC/mobile screenshots.
+10. Run `scripts/test-performance.mjs` and `scripts/smoke-endurance.mjs`. The latter runs 20 seconds with synthetic Chrome camera, captures diagnostic JS heap and fps, checks IndexedDB checkpoint, tab background/foreground and rotation. Never promote this to a physical-device 30-minute endurance result.
+11. For Cloudflare PR #5, confirm the Preview URL in the PR comment resolves HTTP 200 and contains the latest v0.5.0 source; workflow checks use the current branch SHA, not a guessed URL.
+12. In browser devtools, verify **zero external network requests** from model initialization through counting and export, except the original HTML page load when hosted. Retest with network disabled and a cold cache.
 
+\`connect-src blob:\` grants only local WASM Blob reads; it must not be broadened to \`https:\`, \`http:\`, \`*\` or external hosts. A static scan is not proof of zero runtime requests.
 
-## Self-extracting variant
+13. For v0.7.0, run the Windows Chrome/Edge dual-CSP integration gate and fresh-context offline file-open checks via `scripts/smoke-v07-integration.mjs`. The browser's simulated camera does not prove phone or physical-camera compatibility; see `docs/ADR-006-INTEGRATION-AND-COMPATIBILITY.md` for the required Android/iOS/manual tests and evidence matrix.
 
-Open `dist/index.html` first and confirm that the browser favicon and upper-left application brand icon use the same artwork from `assets/favicon.svg`. Then open `dist/index.self-extract.html` directly, confirm that the loading screen text is readable, the same favicon as `dist/index.html` is visible, and the loading screen disappears. Repeat the same offline checks and verify that the browser console contains no decompression or CSP errors. `scripts/verify-self-extract.ps1` also enforces an ASCII-only loader and byte-for-byte restoration of the readable HTML.
-## Optional WebRTC QR pairing component
+14. For v0.8.0, run `node scripts/test-accuracy-evaluator.mjs` and `node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --json=dist/accuracy-example.json`. The synthetic fixture **MUST NOT** satisfy the 100+ independently labeled real-event requirement. Verify the exact uploaded SVG via `scripts/smoke-header.mjs`, the no-border Wi-Fi Share Help action, and offline `scripts/smoke-annotation.mjs` with zero HTTP. Use `docs/ADR-007-ACCURACY-EVALUATION.md` for evidence collection; neither the annotation helper nor synthetic score closes actual device/accuracy gates.
 
-The starter does not enable WebRTC by default. If the application copies `components/webrtc-qr-pairing.html`, verify the connection behavior separately in addition to the normal no-CDN/API checks:
+15. v0.9.0 release preparation: generate Japanese/English desktop and mobile screenshots from the built HTML via `node scripts/capture-release-screenshots.mjs`, then run `node scripts/audit-release.mjs`. This validates PNG dimensions, version/icon/hash integrity, CSV and manifest, and emits `dist/release-audit.json`. A successful automated audit does **NOT** override any open field, mobile or model-license hard gate. See `docs/RELEASE_READINESS_v0.9.0.md`.
 
-1. Confirm `RTCPeerConnection` is created with `iceServers: []`.
-2. Confirm no signaling server, STUN, TURN, WebSocket, fetch/XHR API, or runtime CDN was added.
-3. Complete a host → joining device → host QR exchange on the same reachable LAN.
-4. Confirm Offer/Answer QR data is not shown until ICE gathering reaches `complete`.
-5. Deny camera permission and confirm the manual copy/paste signaling fallback remains usable.
-6. Test connect → disconnect → reconnect repeatedly so stale PeerConnection/DataChannel events do not corrupt the next attempt.
-7. Test a pre-connect joining-side ICE failure and confirm the Answer QR is regenerated with a fresh PeerConnection/session.
-8. Force a network failure (for example, a guest network or client-isolation environment) and confirm diagnostics explain candidate/route state without exposing IP addresses.
+16. v0.10.0 interaction/UI: run `node scripts/test-line-interaction.mjs` for rigid line-body/endpoint hit testing, then `node scripts/smoke-v010-ui.mjs` against the **actual generated single HTML** with real embedded-model initialization and browser-dispatched mouse/touch/keyboard gestures. Confirm the video stage permits mobile vertical page scrolling outside the line, and camera mode setup test is invalidated when the line moves. Preserve all prior video, CSV and privacy checks. Release decision remains No-Go in `docs/RELEASE_READINESS_v0.10.0.md`.
 
-`connect-src 'none'` remains expected. The direct WebRTC DataChannel is intentional peer-to-peer application traffic, not a hidden runtime dependency.
-
+17. v1.0.0 final UI/Help: run node scripts/smoke-help-v1.mjs after the generated standalone build. It checks the real HTML's help header X, Japanese/English content, internal scrolling, locked/restored background and focus, Escape and backdrop at 320x568 through 1280px. It also compares the header container/body edges and horizontal gutters across viewport widths. The full CI repeats camera, local video, crash recovery, CSV and outbound HTTP zero.
+18. Stable v1.0.0 must not be published solely because automatic checks pass. Review the independent real crossing, physical 30-minute device and exact model license gates in docs/RELEASE_READINESS_v1.0.0.md. No factual field evidence has been supplied in this candidate.

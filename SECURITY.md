@@ -1,56 +1,20 @@
-# Security Policy
+# Security and privacy
 
-## Supported version
-
-Security fixes target the latest version on the default branch.
-
-## Reporting a vulnerability
-
-Do not publish sensitive vulnerability details in a public issue. Use the repository owner's private security reporting channel when available.
-
-Include:
-
-- Affected commit or version.
-- Reproduction steps.
-- Expected and actual behavior.
-- Security impact.
-- A minimal test file when file parsing is involved.
-
-## Trust model
-
-The default template is a static browser application with no backend. Its primary protections are:
-
-- No ordinary runtime CDN/API connection (`connect-src 'none'`). Optional peer-to-peer WebRTC must be explicit in the product specification and must not introduce hidden signaling/STUN/TURN services.
-- Explicitly pinned and embedded third-party files.
-- Committed `dependencies.lock.json` tarball SHA-256 values verified before embedding.
-- SHA-256 records in the generated dependency manifest.
-- No analytics, telemetry, remote fonts, or silent update checks.
-- User-initiated downloads rather than automatic uploads.
-
-A generated HTML file is executable code. Distribute it through a trusted channel and verify hashes for high-trust workflows.
-
-If an app uses `components/webrtc-qr-pairing.html`, treat the paired browser as an explicit data recipient. “No server upload” does not mean “data never leaves this device.” Keep the manual signaling and `iceServers: []` boundary visible in the UI/help text, and do not silently add STUN/TURN later.
-
-## Input files
-
-Applications created from this template may parse untrusted local files. Implementations should:
-
-- Validate type, size, and structure before expensive processing.
-- Avoid unbounded allocation or recursion.
-- Handle malformed data without exposing stack traces to users.
-- Release Blob URLs, workers, canvas resources, and large buffers.
-- Make destructive transformations reversible where practical.
-- Never upload a selected file unless the product explicitly requires it and the user is clearly informed.
-
-## Dependency review
-
-Before adding or upgrading a package:
-
-- Confirm the package identity and exact version.
-- Review the scheduled dependency Issue; never treat an available update as an automatic approval to upgrade.
-- Review its license and required notices.
-- Inspect the browser bundle and package scripts.
-- Confirm every runtime support asset is embedded.
-- Refresh the selected lock entry with the dependency scripts; never hand-edit a lock hash to bypass a mismatch.
-- Rebuild with a clean cache.
-- Test with the network disabled.
+- Both camera and selected video frames are processed in memory; no face recognition or identity tracking across sessions.
+- v0.6.0 evicts decoded model/WASM byte caches and revokes MediaPipe initialization Blob URLs after successful detector startup; the compressed model/WASM remain entirely inside the HTML and can be reinflated if a new detector is created. Camera/media Blob URLs are still revoked on close/pagehide.
+- Synchronous SIMD inference uses one latest frame at a time with an adaptive interval; very-low-fps sustained operation interrupts rather than claiming reliable counts. Coverage stores observed, paused and missing time.
+- Screen Wake Lock can resolve after a session was paused; an obsolete lock is immediately released. Unexpected wake-lock release triggers a visible warning. Rotating while counting interrupts until explicit restart.
+- The v0.5.0 video mode uses a Blob URL for the user-selected File and browser-native on-demand video decoding. No whole-file FileReader/arrayBuffer, video content upload, movie storage or remote decoding service is used. The Blob URL is revoked when switching/closing sources or on page exit.
+- Video sessions persist only sourceType=`file`, numerical duration, timed passage/correction/Undo events and existing coverage metadata. Video file name, bytes, temporary Blob URL, image pixels and person IDs are not saved. Saved results can be reviewed after reloading without the source movie; no automatic video or camera restart.
+- Explicit seek/reanalysis confirmation removes the prior indexed session and events to prevent double counting; a browser-initiated seek during counting interrupts rather than guessing crossings.
+- Video only: microphone/audio is not requested, and the app does not save or upload frames.
+- In v0.4.0, indexed on-device IndexedDB stores versioned session metadata, directional event/adjustment/Undo records, the camera line geometry and observed/paused/missing intervals. It stores **no frames, photos, audio, faces, stable person IDs or camera device identifiers**. MediaPipe models/WASM are embedded and never fetched at runtime.
+- New events and their session snapshots are committed transactionally; checkpoints happen around every five seconds while counting. A sudden crash may lose not-yet-committed events. Recovery always starts stopped, marking unobserved time as missing.
+- If IndexedDB cannot open or a write fails, the UI explicitly warns; users may export in-memory events/summaries/intervals as CSV. Browser storage clearing or multiple-tab conflicts can still cause loss.
+- Camera facing preference, normalized line endpoints, optional direction labels, and detection overlay visibility may be saved in localStorage. No camera image, recording, face, or physical device identifier is persisted.
+- The 30-second calibration/test phase stores only temporary counters; its crossings are not entered in the session event log or exported.
+- The generated experimental HTML includes the model, JS, and SIMD WASM with its loader (without the non-SIMD fallback); checksums are pinned at build time. Unsupported browsers cannot request camera permission.
+- CSP permits \`connect-src blob:\` only for the embedded WASM Blob URL; remote hosts are not allowed.
+- Build-time package/model downloads do not imply permission for application runtime downloads.
+- This tool does not guarantee counting accuracy. Do not rely on it for critical safety or legal decisions.
+- Local privacy requirements, camera consent, and adequate notices remain the responsibility of the operator.

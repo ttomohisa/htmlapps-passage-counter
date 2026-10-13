@@ -142,9 +142,16 @@ function Get-AssetBytes([string]$Path, [bool]$StripSourceMapComment) {
 
 function Compress-GzipBytes([byte[]]$Bytes) {
   $output = New-Object System.IO.MemoryStream
+  # The payload is decompressed with the standard native gzip stream API.
+  # Prefer the highest compression level on modern .NET to reduce the one-HTML
+  # file; Windows PowerShell 5.1 can still use the compatible Optimal level.
+  $level = [System.IO.Compression.CompressionLevel]::Optimal
+  if ([Enum]::GetNames([System.IO.Compression.CompressionLevel]) -contains "SmallestSize") {
+    $level = [Enum]::Parse([System.IO.Compression.CompressionLevel], "SmallestSize")
+  }
   $gzip = New-Object System.IO.Compression.GZipStream -ArgumentList @(
     $output,
-    [System.IO.Compression.CompressionMode]::Compress,
+    $level,
     $true
   )
   try {
@@ -338,6 +345,75 @@ foreach ($dependency in $dependencies) {
   }
 }
 
+
+# Passage Counter: download ONLY while building, verify SHA-256 and embed the
+# complete official TFLite model into the generated HTML asset bundle.
+$modelConfigPath = Join-Path $Root "model.config.json"
+if (-not (Test-Path -LiteralPath $modelConfigPath -PathType Leaf)) {
+  throw "model.config.json is required for Passage Counter."
+}
+$modelConfig = Get-Json $modelConfigPath
+$modelHash = ([string]$modelConfig.sha256).ToLowerInvariant()
+if ($modelHash -notmatch '^[a-f0-9]{64}$') {
+  throw "model.config.json: sha256 must contain the verified 64-character SHA-256."
+}
+if ([string]$modelConfig.url -notmatch '^https://storage\.googleapis\.com/mediapipe-models/') {
+  throw "model.config.json: unexpected model download origin."
+}
+$modelCachePath = Join-Path $CacheRoot ("person-model-" + $modelHash + ".tflite")
+if (-not (Test-Path -LiteralPath $modelCachePath)) {
+  $tempModel = $modelCachePath + ".part"
+  Remove-Item -Force -ErrorAction SilentlyContinue $tempModel
+  Write-Step "Downloading pinned EfficientDet-Lite0 model for build-time embedding"
+  Invoke-WebRequest -Uri ([string]$modelConfig.url) -OutFile $tempModel -UseBasicParsing
+  Move-Item -Force $tempModel $modelCachePath
+}
+$actualModelHash = Get-Sha256FileHex $modelCachePath
+if ($actualModelHash -ne $modelHash) {
+  throw "Model SHA-256 mismatch. Expected $modelHash but got $actualModelHash. Refusing to build."
+}
+$modelBytes = [System.IO.File]::ReadAllBytes($modelCachePath)
+$modelGzip = Compress-GzipBytes $modelBytes
+$modelStored = $modelBytes
+$modelCompression = "none"
+if ($modelGzip.Length -lt $modelBytes.Length) {
+  $modelStored = $modelGzip
+  $modelCompression = "gzip"
+}
+$assetBundle.dependencies["person-model"] = [ordered]@{
+  package = "official-mediapipe-model"
+  version = [string]$modelConfig.version
+  assets = [ordered]@{
+    tflite = [ordered]@{
+      mime = "application/octet-stream"
+      compression = $modelCompression
+      originalBytes = $modelBytes.Length
+      storedBytes = $modelStored.Length
+      base64 = [Convert]::ToBase64String($modelStored)
+    }
+  }
+}
+$manifestDependencies += [ordered]@{
+  id = "person-model"
+  package = "official-mediapipe-model"
+  version = [string]$modelConfig.version
+  license = [string]$modelConfig.license
+  homepage = [string]$modelConfig.homepage
+  sourceUrl = [string]$modelConfig.url
+  locked = $true
+  assets = @(
+    [ordered]@{
+      key = "tflite"
+      path = "model.config.json (build-only URL)"
+      mime = "application/octet-stream"
+      compression = $modelCompression
+      bytes = $modelBytes.Length
+      storedBytes = $modelStored.Length
+      sha256 = $actualModelHash
+    }
+  )
+}
+
 $manifest = [ordered]@{
   schemaVersion = 2
   builder = "single-html-app-template/1.3"
@@ -352,18 +428,54 @@ $manifest = [ordered]@{
 
 Write-Step "Generating standalone HTML"
 $template = [System.IO.File]::ReadAllText($TemplatePath, [System.Text.Encoding]::UTF8)
+$apacheLicensePath = Join-Path $Root "licenses\Apache-2.0.txt"
+if (-not (Test-Path -LiteralPath $apacheLicensePath -PathType Leaf)) {
+  throw "MediaPipe Apache 2.0 license copy is required for self-contained distribution."
+}
+$apacheLicenseText = [System.IO.File]::ReadAllText($apacheLicensePath, [System.Text.Encoding]::UTF8)
+if ($apacheLicenseText -notmatch "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION" -or $apacheLicenseText.Length -lt 10000) {
+  throw "MediaPipe full Apache 2.0 license text is incomplete."
+}
+$apacheLicenseHtml = $apacheLicenseText.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;")
+$extraLicenseFiles = [ordered]@{
+  "__EIGEN_MPL_LICENSE_TEXT__" = "licenses\Eigen-MPL-2.0.txt"
+  "__EIGEN_BSD_NOTICE_TEXT__" = "licenses\Eigen-COPYING.BSD.txt"
+  "__EIGEN_MINPACK_NOTICE_TEXT__" = "licenses\Eigen-COPYING.MINPACK.txt"
+  "__EIGEN_LICENSE_README_TEXT__" = "licenses\Eigen-COPYING.README.txt"
+  "__APP_MIT_LICENSE_TEXT__" = "LICENSE"
+}
+$extraLicenseHtml = [ordered]@{}
+foreach ($item in $extraLicenseFiles.GetEnumerator()) {
+  $source = Join-Path $Root $item.Value
+  if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+    throw "Missing required offline license/notice file: $($item.Value)"
+  }
+  $fullText = [System.IO.File]::ReadAllText($source, [System.Text.Encoding]::UTF8)
+  if ($fullText.Length -lt 250) {
+    throw "Incomplete offline license/notice file: $($item.Value)"
+  }
+  $extraLicenseHtml[$item.Key] = $fullText.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;")
+}
 $assetBundleJson = ConvertTo-SafeJson $assetBundle 50
 $replacements = [ordered]@{
   "__APP_CONFIG_JSON__" = ConvertTo-SafeJson $appConfig 20
   "__BUILD_MANIFEST_JSON__" = ConvertTo-SafeJson $manifest 40
   "__EMBEDDED_ASSET_BUNDLE_JSON__" = $assetBundleJson
   "__APP_ICON_DATA_URI__" = $appIconDataUri
+  "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = $apacheLicenseHtml
+}
+foreach ($item in $extraLicenseHtml.GetEnumerator()) {
+  $replacements[$item.Key] = $item.Value
 }
 $replacementExpectedCounts = @{
   "__APP_CONFIG_JSON__" = 1
   "__BUILD_MANIFEST_JSON__" = 1
   "__EMBEDDED_ASSET_BUNDLE_JSON__" = 1
   "__APP_ICON_DATA_URI__" = 2
+  "__MEDIAPIPE_APACHE_LICENSE_TEXT__" = 1
+}
+foreach ($key in $extraLicenseFiles.Keys) {
+  $replacementExpectedCounts[$key] = 1
 }
 
 foreach ($entry in $replacements.GetEnumerator()) {

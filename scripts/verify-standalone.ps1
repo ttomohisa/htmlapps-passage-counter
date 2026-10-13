@@ -34,8 +34,17 @@ foreach ($placeholder in @($ForbiddenPlaceholders)) {
   }
 }
 
-if ($RequireNetworkBlock -and $html -notmatch "connect-src\s+'none'") {
-  throw "connect-src 'none' is missing from Content Security Policy"
+# Native WASM bundles may use fetch(blob:) for embedded module bytes. A
+# blob-only connect-src allows that internal read but never an HTTP origin.
+if ($RequireNetworkBlock) {
+  $csp = [regex]::Match($html, '<meta[^>]+http-equiv=["'']Content-Security-Policy["''][^>]+content="(?<value>[^"]+)')
+  if (-not $csp.Success) { throw "CSP meta tag is missing." }
+  $directive = [regex]::Match($csp.Groups["value"].Value, '(?:^|;)\s*connect-src\s+(?<sources>[^;]+)', 'IgnoreCase')
+  if (-not $directive.Success) { throw "CSP connect-src directive is missing." }
+  $sources = $directive.Groups["sources"].Value.Trim()
+  if ($sources -ne "'none'" -and $sources -ne "blob:") {
+    throw "Only connect-src 'none' or connect-src blob: is allowed; got: $sources"
+  }
 }
 
 if ($RequireCanonicalIcon) {

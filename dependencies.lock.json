@@ -1,5 +1,12 @@
 {
   "$schema": "./schemas/dependencies-lock.schema.json",
   "schemaVersion": 1,
-  "dependencies": []
+  "dependencies": [
+    {
+      "id": "mediapipe",
+      "package": "@mediapipe/tasks-vision",
+      "version": "0.10.35",
+      "tarballSha256": "84597a25e13d123b5f4cbe768bb72e97a2c28c7a465f0ace287d8cbe5246bff0"
+    }
+  ]
 }

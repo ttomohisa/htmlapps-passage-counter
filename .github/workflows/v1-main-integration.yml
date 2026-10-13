@@ -1,0 +1,131 @@
+name: Passage Counter v1.0.0 — main integration gate
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: passage-counter-main-release-review
+  cancel-in-progress: true
+
+jobs:
+  validate-integration:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout full integration candidate
+        uses: actions/checkout@v6
+      - name: Use pinned Node major
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Confirm app identity (not starter)
+        shell: pwsh
+        run: |
+          $app = Get-Content -Raw app.config.json | ConvertFrom-Json
+          if ($app.slug -ne "passage-counter" -or $app.version -ne "1.0.0") {
+            throw "The main integration must contain Passage Counter v1.0.0, not the template."
+          }
+          if (!(Test-Path docs/RELEASE_HANDOFF_v1.0.0.md)) {
+            throw "Release handoff and residual licensing risk must be documented."
+          }
+      - name: PowerShell syntax, source checks and both self-contained HTML builds
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+      - name: Deterministic tracking, correction ledger and accuracy tool regressions
+        shell: pwsh
+        run: |
+          node scripts/test-tracker.mjs
+          node scripts/test-tracker-stress.mjs
+          node scripts/test-line-interaction.mjs
+          node scripts/test-ledger.mjs
+          node scripts/test-session-model.mjs
+          node scripts/test-performance.mjs
+          node scripts/test-accuracy-evaluator.mjs
+      - name: Synthetic evaluation must not pass real-world accuracy acceptance
+        shell: pwsh
+        run: |
+          node scripts/evaluate-accuracy.mjs examples/accuracy/synthetic-manifest.json --json=dist/accuracy-example.json --md=dist/accuracy-example.md
+          $evidence = Get-Content -Raw dist/accuracy-example.json | ConvertFrom-Json
+          if ($evidence.gate.eligibleForReview) {
+            throw "Synthetic examples cannot qualify as 100 real, independently labelled crossings."
+          }
+      - name: Inventory exact pinned MediaPipe npm tarball and licensing
+        shell: pwsh
+        run: |
+          node scripts/audit-compiled-runtime-licenses.mjs
+          node scripts/audit-model-license.mjs
+      - name: Install CI-only browser automation (never bundled at runtime)
+        shell: pwsh
+        run: npm install --prefix .smoke --no-save --ignore-scripts playwright@1.56.1
+      - name: Re-capture authentic Japanese and English desktop/mobile screenshots
+        shell: pwsh
+        run: node scripts/capture-release-screenshots.mjs
+      - name: Validate exact model, full bundled license notices, offline outputs and Future Work
+        shell: pwsh
+        run: node scripts/audit-release.mjs
+      - name: Browser Kitty responsive app and bilingual Help with background scroll locking
+        shell: pwsh
+        run: |
+          node scripts/smoke-help-v1.mjs
+          node scripts/smoke-header.mjs
+      - name: A/B line body+endpoint dragging, counter button placement, actual mobile touch
+        shell: pwsh
+        run: node scripts/smoke-v010-ui.mjs
+      - name: Real embedded detector on Chrome/Edge with synthetic camera and offline CSP
+        shell: pwsh
+        run: node scripts/smoke-v07-integration.mjs
+      - name: IndexedDB sessions, event corrections/Undo, all CSVs and zero HTTP
+        shell: pwsh
+        run: node scripts/smoke-browser.mjs
+      - name: Local video decode, seeking, reanalysis warning and CSV
+        shell: pwsh
+        run: node scripts/smoke-video.mjs
+      - name: Offline annotation helper and mobile input regression
+        shell: pwsh
+        run: node scripts/smoke-annotation.mjs
+      - name: Simulated endurance, orientation/visibility gaps and Wake Lock
+        shell: pwsh
+        run: |
+          node scripts/smoke-endurance.mjs
+          node scripts/smoke-wakelock.mjs
+      - name: Summarize physical-field Future Work and compiled WASM notice review
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/release-audit.json) {
+            $report = Get-Content -Raw dist/release-audit.json | ConvertFrom-Json
+            Write-Host "[integration] Engineering=$($report.automatedEngineering) LegalDecision=$($report.releaseDecision)"
+            foreach ($item in $report.unresolvedReleaseGates) {
+              Write-Host "[integration] STILL REVIEW: $($item.id) $($item.subject)"
+            }
+            foreach ($item in $report.futureWork) {
+              Write-Host "[integration] FUTURE WORK (NOT PASSED): $($item.id)"
+            }
+          }
+      - name: Upload review artifacts (no auto-release, no commits)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-v1.0.0-main-integration-review
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/build-size-report.json
+            dist/dependency-manifest.json
+            dist/release-audit.json
+            dist/compiled-runtime-license-audit.json
+            dist/model-license-audit.json
+            dist/accuracy-example.json
+            dist/accuracy-example.md
+            assets/screenshot*.png
+            assets/SCREENSHOTS.md
+          retention-days: 14
+          if-no-files-found: warn
