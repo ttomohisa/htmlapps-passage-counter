@@ -542,40 +542,84 @@ footer{max-width:1240px;padding-top:3px}
 }
 
 
-/* Correction actions live in the counting card, immediately after the live
-   controls. Export remains the separate secondary card. */
-.workspace>.measure-console .correction-panel{
-  margin-top:16px;padding:16px 0 0;border-top:1px solid var(--border);min-width:0;
+
+/* Counter-card quick corrections: two visible 44px action targets in the
+   user-marked top-right corner of each direction card, plus nearby Undo. */
+.workspace>.measure-console .counter-grid{gap:8px}
+.workspace>.measure-console .counter{
+  display:grid;grid-template-columns:minmax(0,1fr) 44px;
+  grid-template-rows:auto minmax(0,1fr);
+  grid-template-areas:"label quick" "value quick";
+  gap:5px 6px;align-items:stretch;min-width:0;min-height:132px;
+  padding:10px 11px;background:#f8faf8;border-color:#dce6de;
 }
-.workspace>.measure-console .correction-panel .support-header{margin-bottom:7px}
-.workspace>.measure-console .correction-panel .support-header h2{font-size:14px;margin:0;line-height:1.4}
-.workspace>.measure-console .correction-panel .support-header p{font-size:11px;line-height:1.55}
-.workspace>.measure-console .correction-panel .workspace-eyebrow{margin-bottom:3px}
-.workspace>.measure-console .correction-panel .correction-row{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;
-  align-items:center;padding:9px 0;min-width:0;
+.workspace>.measure-console .counter .label{
+  grid-area:label;min-width:0;max-width:100%;font-size:11px;
+  line-height:1.35;align-self:start;overflow-wrap:anywhere;
 }
-.workspace>.measure-console .correction-panel .correction-row strong{
-  min-width:0;font-size:12px;line-height:1.4;overflow-wrap:anywhere;
+.workspace>.measure-console .counter strong{
+  grid-area:value;align-self:end;min-width:0;line-height:1.12;
+  font-size:clamp(28px,8.2vw,48px);letter-spacing:-.035em;
+  overflow-wrap:anywhere;
 }
-.workspace>.measure-console .correction-panel .correction-row .row{
-  flex-wrap:nowrap;justify-content:flex-end;gap:6px;min-width:0;
+.workspace>.measure-console .counter strong[data-digits="3"]{font-size:clamp(23px,6vw,33px)}
+.workspace>.measure-console .counter strong[data-digits="4"]{font-size:clamp(18px,5vw,26px)}
+.workspace>.measure-console .counter strong[data-digits="5"]{font-size:clamp(14px,4.3vw,21px)}
+.workspace>.measure-console .counter strong[data-digits="6"]{font-size:clamp(12px,3.7vw,18px)}
+.workspace>.measure-console .counter strong[data-digits="7"],
+.workspace>.measure-console .counter strong[data-digits="8"],
+.workspace>.measure-console .counter strong[data-digits="9"]{font-size:12px}
+.workspace>.measure-console .counter small{display:none}
+.workspace>.measure-console .counter-adjustments{
+  grid-area:quick;display:grid;grid-template-rows:44px 44px;
+  align-content:center;gap:5px;width:44px;min-width:44px;
 }
-.workspace>.measure-console .correction-panel .correction-row button{
-  min-width:48px;min-height:44px;padding:7px 9px;font-size:14px;
+.workspace>.measure-console .counter-adjustments button{
+  width:44px;height:44px;min-height:44px;min-width:44px;
+  padding:0 2px;display:grid;place-items:center;
+  border-radius:9px;font-size:12px;font-weight:750;
+  border:1px solid #d6e2d8;background:#fff;color:#55675a;
 }
-.workspace>.measure-console .correction-panel .undo-row{display:flex;justify-content:flex-end;padding-top:10px}
-.workspace>.measure-console .correction-panel .undo-row button{
-  min-height:44px;padding:9px 12px;font-size:12px;white-space:normal;
+.workspace>.measure-console .counter-adjustments button[id^="plus"]{
+  background:#e7f3eb;border-color:#c6dfce;color:var(--brand);
 }
+.workspace>.measure-console .counter-adjustments button:enabled:hover{border-color:#83b49a}
+.workspace>.measure-console .counter-adjustments button:disabled{opacity:.48}
+.workspace>.measure-console .total{
+  display:flex;flex-wrap:wrap;justify-content:space-between;
+  align-items:center;gap:6px 10px;padding:12px 0 13px;margin-bottom:14px;
+}
+.workspace>.measure-console .total>span{min-width:0;overflow-wrap:anywhere}
+.workspace>.measure-console .total-utilities{
+  display:flex;align-items:center;gap:8px;min-width:0;margin-left:auto;
+}
+.workspace>.measure-console .total-utilities strong{
+  font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums;
+}
+.workspace>.measure-console .undo-inline{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  width:auto;min-height:44px;min-width:44px;padding:7px 9px;
+  border-radius:9px;background:#fff;border-color:#dbe6df;
+  color:var(--brand-dark);font-size:11px;font-weight:700;white-space:nowrap;
+}
+.workspace>.measure-console .undo-inline svg{width:16px;height:16px;flex:0 0 16px}
+.workspace>.measure-console .undo-inline:disabled{opacity:.43}
 .workspace>.support-panel .export-panel{border:0;background:#fbfcfa}
 @media(max-width:820px){
   .workspace>.support-panel{display:block;min-width:0}
   .workspace>.support-panel .export-panel{border:0}
 }
 @media(max-width:610px){
-  .workspace>.measure-console .correction-panel{margin-top:14px;padding-top:14px}
-  .workspace>.measure-console .correction-panel .correction-row{padding:9px 0}
+  .workspace>.measure-console .counter{padding:10px 9px;gap:5px 4px}
+  .workspace>.measure-console .counter-grid{gap:8px}
+  .workspace>.measure-console .total{padding:10px 0 11px}
+}
+@media(max-width:350px){
+  .workspace>.measure-console .counter{padding:9px 7px;gap:3px 3px}
+  .workspace>.measure-console .counter strong{font-size:32px}
+  .workspace>.measure-console .counter strong[data-digits="3"]{font-size:22px}
+  .workspace>.measure-console .counter strong[data-digits="4"]{font-size:18px}
+  .workspace>.measure-console .undo-inline{padding:7px}
 }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
@@ -701,11 +745,40 @@ footer{max-width:1240px;padding-top:3px}
           <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
           <span class="clock" id="elapsedText">00:00:00</span>
         </div>
-        <div class="counter-grid">
-          <div class="counter"><div class="label" id="displayLabelA" data-i18n="directionA">A → B</div><strong id="countA">0</strong><small data-i18n="passed">通過</small></div>
-          <div class="counter"><div class="label" id="displayLabelB" data-i18n="directionB">B → A</div><strong id="countB">0</strong><small data-i18n="passed">通過</small></div>
+        <div class="counter-grid" id="correctionPanel">
+          <span class="sr-only" id="correctHeading" data-i18n="correctionHeading">件数を補正</span>
+          <div class="counter" data-direction="a">
+            <div class="label" id="displayLabelA" data-i18n="directionA">A → B</div>
+            <strong id="countA">0</strong>
+            <small data-i18n="passed">通過</small>
+            <div class="counter-adjustments" role="group" aria-labelledby="correctHeading correctLabelA" aria-describedby="correctionHelpText">
+              <span class="sr-only" id="correctLabelA">A → B</span>
+              <button type="button" id="minusA" data-i18n-aria-label="minusALabel" aria-label="Aから1件減らす" disabled>−1</button>
+              <button type="button" id="plusA" data-i18n-aria-label="plusALabel" aria-label="Aに1件加える" disabled>+1</button>
+            </div>
+          </div>
+          <div class="counter" data-direction="b">
+            <div class="label" id="displayLabelB" data-i18n="directionB">B → A</div>
+            <strong id="countB">0</strong>
+            <small data-i18n="passed">通過</small>
+            <div class="counter-adjustments" role="group" aria-labelledby="correctHeading correctLabelB" aria-describedby="correctionHelpText">
+              <span class="sr-only" id="correctLabelB">B → A</span>
+              <button type="button" id="minusB" data-i18n-aria-label="minusBLabel" aria-label="Bから1件減らす" disabled>−1</button>
+              <button type="button" id="plusB" data-i18n-aria-label="plusBLabel" aria-label="Bに1件加える" disabled>+1</button>
+            </div>
+          </div>
         </div>
-        <div class="total"><span data-i18n="total">延べ通過件数</span><strong id="countTotal">0</strong></div>
+        <div class="total">
+          <span data-i18n="total">延べ通過件数</span>
+          <div class="total-utilities">
+            <strong id="countTotal">0</strong>
+            <button type="button" class="undo-inline" id="undoCorrection" disabled data-i18n-aria-label="undoCorrection" aria-label="直前の補正を取り消す">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-2"/></svg>
+              <span data-i18n="undo">元に戻す</span>
+            </button>
+          </div>
+        </div>
+        <p class="sr-only" id="correctionHelpText" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
         <div class="next-action" id="nextAction" role="status" aria-live="polite" data-next="camera">
           <span class="next-kicker" id="nextActionKicker" data-i18n="nextKicker">次の操作</span>
           <strong id="nextActionTitle" data-i18n="nextStartCamera">まずカメラを開始</strong>
@@ -734,28 +807,7 @@ footer{max-width:1240px;padding-top:3px}
           <button id="finishCount" disabled data-i18n="finish">終了</button>
         </div>
         <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
-      <section class="correction-panel" id="correctionPanel" aria-labelledby="correctHeading">
-        <div class="support-header">
-          <span class="workspace-eyebrow" data-i18n="correctionEyebrow">結果の確認</span>
-          <h2 id="correctHeading" data-i18n="correctionHeading">件数を補正</h2>
-          <p class="helper" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
-        </div>
-        <div class="correction-row">
-          <strong id="correctLabelA">A → B</strong>
-          <div class="row">
-            <button type="button" id="minusA" data-i18n-aria-label="minusALabel" aria-label="Aから1件減らす" disabled>−1</button>
-            <button type="button" id="plusA" data-i18n-aria-label="plusALabel" aria-label="Aに1件加える" disabled>+1</button>
-          </div>
-        </div>
-        <div class="correction-row">
-          <strong id="correctLabelB">B → A</strong>
-          <div class="row">
-            <button type="button" id="minusB" data-i18n-aria-label="minusBLabel" aria-label="Bから1件減らす" disabled>−1</button>
-            <button type="button" id="plusB" data-i18n-aria-label="plusBLabel" aria-label="Bに1件加える" disabled>+1</button>
-          </div>
-        </div>
-        <div class="undo-row"><button type="button" id="undoCorrection" disabled data-i18n="undoCorrection">直前の補正を取り消す</button></div>
-      </section>
+
 
       </section>
     <section class="panel setup-extras" aria-label="計測の設定" data-i18n-aria-label="extrasAria">
@@ -1894,7 +1946,11 @@ footer{max-width:1240px;padding-top:3px}
         $('#displayLabelA').textContent=nameA;$('#displayLabelB').textContent=nameB;
         $('#correctLabelA').textContent=nameA;$('#correctLabelB').textContent=nameB;
         $('#miniLabelA').textContent=nameA;$('#miniLabelB').textContent=nameB;
-        $('#countA').textContent=totals.a;$('#countB').textContent=totals.b;$('#countTotal').textContent=totals.a+totals.b;
+        for(const [id,value] of [['countA',totals.a],['countB',totals.b]]){
+          const element=$('#'+id);element.textContent=value;
+          element.dataset.digits=String(value).length;
+        }
+        $('#countTotal').textContent=totals.a+totals.b;
         $('#reportA').textContent=totals.autoA;$('#reportB').textContent=totals.autoB;
         $('#reportManualA').textContent=totals.manualA>0?'+'+totals.manualA:totals.manualA;
         $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;

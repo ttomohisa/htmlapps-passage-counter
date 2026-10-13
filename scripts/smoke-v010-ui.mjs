@@ -69,32 +69,42 @@ try{
  assert(await page.locator('#testButton').isEnabled());
  assert(await page.locator('#beginCount').isHidden());
  const geometryDesktop=await page.evaluate(()=>{
-   const rect=selector=>document.querySelector(selector).getBoundingClientRect();
-   const measure=rect('.measure-console'),correction=rect('#correctionPanel');
-   const controls=rect('#sessionControls'),exportCard=rect('.support-panel');
-   return {preview:rect('#cameraStage').left,measurement:measure.left,
-     measureTop:measure.top,stageTop:rect('#cameraStage').top,
-     countBottom:rect('#countTotal').bottom,
-     controlsBottom:controls.bottom,correctionTop:correction.top,
-     correctionBottom:correction.bottom,correctionLeft:correction.left,
-     correctionRight:correction.right,measureRight:measure.right,
-     measureBottom:measure.bottom,exportLeft:exportCard.left};
+   const rect=id=>document.querySelector(id).getBoundingClientRect().toJSON();
+   const result={
+     preview:rect('#cameraStage'),measure:rect('.measure-console'),
+     cardA:rect('#countA'),cardB:rect('#countB'),
+     tileA:rect('#minusA').toJSON?null:null
+   };
+   result.tileA=document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON();
+   result.tileB=document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON();
+   for(const id of ['minusA','plusA','minusB','plusB','undoCorrection','countTotal'])
+     result[id]=rect('#'+id);
+   result.total=rect('.total');
+   return result;
  });
- assert(geometryDesktop.preview<geometryDesktop.measurement&&
-   geometryDesktop.measureTop<=geometryDesktop.stageTop,
-   'Desktop live counter must be immediately beside the camera');
- assert(geometryDesktop.countBottom<geometryDesktop.correctionTop&&
-   geometryDesktop.controlsBottom<=geometryDesktop.correctionTop+1&&
-   geometryDesktop.correctionLeft>=geometryDesktop.measurement-1&&
-   geometryDesktop.correctionRight<=geometryDesktop.measureRight+1&&
-   geometryDesktop.correctionBottom<=geometryDesktop.measureBottom+1,
-   'Correction and Undo must be below the controls, inside the counting card');
+ assert(geometryDesktop.preview.left<geometryDesktop.measure.left&&
+   geometryDesktop.measure.top<=geometryDesktop.preview.top,
+   'Desktop counter must stay adjacent to the camera');
+ for(const [card,minus,plus,number] of [
+   ['tileA','minusA','plusA','cardA'],['tileB','minusB','plusB','cardB']]){
+   const tile=geometryDesktop[card],m=geometryDesktop[minus],p=geometryDesktop[plus],n=geometryDesktop[number];
+   assert(m.left>=n.right-1&&m.top<p.top&&p.top>=m.bottom-1&&
+     m.right<=tile.right+1&&p.right<=tile.right+1&&p.bottom<=tile.bottom+1,
+     'Quick correction buttons must remain within the right side of each count tile');
+   assert(m.width>=44&&p.width>=44&&m.height>=44&&p.height>=44,
+     'Quick correction buttons need 44px touch targets');
+ }
+ assert(geometryDesktop.undoCorrection.top>=geometryDesktop.total.top-1&&
+   geometryDesktop.undoCorrection.bottom<=geometryDesktop.total.bottom+1,
+   'Undo must sit alongside the total, not in another panel');
  assert(await page.evaluate(()=>
-   document.querySelector('#correctionPanel').closest('.measure-console')!==null&&
-   document.querySelector('.export-panel').closest('.support-panel')!==null&&
-   document.querySelector('.support-panel').getAttribute('aria-labelledby')==='exportHeading'
- ),'Moved correction/export container or accessible label is wrong');
- console.log('[v010] Desktop counting totals and correction/Undo share a card; CSV export remains separate.');
+   document.querySelector('#plusA').closest('.counter')?.contains(document.querySelector('#countA'))&&
+   document.querySelector('#minusB').closest('.counter')?.contains(document.querySelector('#countB'))&&
+   document.querySelector('#undoCorrection').closest('.total')!==null&&
+   document.querySelector('#correctionPanel').classList.contains('counter-grid')&&
+   document.querySelector('.export-panel').closest('.support-panel')!==null),
+   'Quick correction controls / export must have the right DOM owners');
+ console.log('[v010] Desktop quick corrections occupy each tile top-right; Undo is beside the total.');
  // Starting the camera button can scroll the stage above the viewport;
  // bring the gesture target back into view before physical pointer input.
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
@@ -190,6 +200,11 @@ try{
  await page.locator('#undoCorrection').click();
  assert.equal(Number(await page.locator('#countA').textContent()),countBefore,
    'Relocated Undo must reverse the manual correction');
+ const bBefore=Number(await page.locator('#countB').textContent());
+ await page.locator('#plusB').click();
+ assert.equal(Number(await page.locator('#countB').textContent()),bBefore+1);
+ await page.locator('#minusB').click();
+ assert.equal(Number(await page.locator('#countB').textContent()),bBefore);
  console.log('[v010] Relocated correction +1 and Undo retain their ledger behavior.');
  console.log('[v010] Counting locks line edits; pause makes the line editable again.');
  await ctx.close();
@@ -202,38 +217,45 @@ try{
   const mobile=await context.newPage();observe(mobile,'mobile-'+width);
   await mobile.goto(origin+'/',{waitUntil:'domcontentloaded'});
   const geometry=await mobile.evaluate(()=>{
-   const rect=sel=>document.querySelector(sel).getBoundingClientRect();
-   const panel=rect('.measure-console'),correction=rect('#correctionPanel');
-   const plus=rect('#plusA'),minus=rect('#minusA'),undo=rect('#undoCorrection');
-   return {stage:rect('#cameraStage').top,measure:panel.top,
-     measureBottom:panel.bottom,measureRight:panel.right,measureLeft:panel.left,
-     count:rect('#countA').top,countBottom:rect('#countTotal').bottom,
-     correction:correction.top,correctionBottom:correction.bottom,
-     correctionLeft:correction.left,correctionRight:correction.right,
-     plus:plus.toJSON(),minus:minus.toJSON(),undo:undo.toJSON(),
-     extras:rect('.setup-extras').top,exports:rect('.support-panel').top,
-     exportRight:rect('.support-panel').right,
+   const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();
+   return {
+     stage:rect('#cameraStage'),measure:rect('.measure-console'),
+     cardA:rect('#countA'),cardB:rect('#countB'),
+     tileA:document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON(),
+     tileB:document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON(),
+     minusA:rect('#minusA'),plusA:rect('#plusA'),
+     minusB:rect('#minusB'),plusB:rect('#plusB'),
+     undo:rect('#undoCorrection'),total:rect('.total'),
+     next:rect('#nextAction'),extras:rect('.setup-extras'),
+     exports:rect('.support-panel'),
      scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,
-     touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction};
+     touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction
+   };
   });
   assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
-  assert(geometry.stage<geometry.measure&&geometry.measure<geometry.count&&
-    geometry.countBottom<geometry.correction&&
-    geometry.correctionBottom<=geometry.measureBottom+1&&
-    geometry.measureBottom<geometry.extras&&geometry.extras<geometry.exports,
-    'Correction must follow the count within the same card, above settings and exports at '+width);
-  assert(geometry.correctionLeft>=geometry.measureLeft-1&&
-    geometry.correctionRight<=geometry.measureRight+1,
-    'Correction panel escapes the count card at '+width);
-  assert(geometry.plus.width>=44&&geometry.minus.width>=44&&
-    geometry.plus.height>=44&&geometry.minus.height>=44&&
-    geometry.undo.height>=44,
-    'Correction and Undo tap targets must remain at least 44px at '+width);
-  assert(geometry.plus.left>=geometry.minus.right-1&&
-    geometry.plus.right<=geometry.correctionRight+1&&
-    geometry.undo.right<=geometry.correctionRight+1&&
-    geometry.exportRight<=geometry.viewWidth+1,
-    'Correction button row / export overflows at '+width);
+  assert(geometry.stage.top<geometry.measure.top&&
+    geometry.measure.top<geometry.tileA.top&&
+    geometry.tileA.bottom<=geometry.total.top+1&&
+    geometry.total.bottom<=geometry.next.top+1&&
+    geometry.measure.bottom<geometry.extras.top&&
+    geometry.extras.top<geometry.exports.top,
+    'Counters and quick corrections must precede setup/settings/exports at '+width);
+  for(const [tileKey,minusKey,plusKey,numberKey] of [
+    ['tileA','minusA','plusA','cardA'],['tileB','minusB','plusB','cardB']]){
+    const card=geometry[tileKey],minus=geometry[minusKey],plus=geometry[plusKey],num=geometry[numberKey];
+    assert(minus.width>=44&&minus.height>=44&&plus.width>=44&&plus.height>=44,
+      'Quick corrections need 44px touch targets at '+width);
+    assert(minus.left>=num.right-1&&minus.top<plus.top&&
+      plus.top>=minus.bottom-1&&plus.bottom<=card.bottom+1&&
+      minus.right<=card.right+1&&plus.right<=card.right+1,
+      'Quick corrections overlap the count or escape tile at '+width);
+  }
+  assert(geometry.undo.height>=44&&
+    geometry.undo.top>=geometry.total.top-1&&
+    geometry.undo.bottom<=geometry.total.bottom+1&&
+    geometry.undo.right<=geometry.measure.right+1&&
+    geometry.exports.right<=geometry.viewWidth+1,
+    'Undo or export clips the card at '+width);
   assert(await mobile.locator('#testCard').isHidden(),
     'Setup check must remain hidden until a camera is ready');
   assert(geometry.measureRight<=geometry.viewWidth+1,
