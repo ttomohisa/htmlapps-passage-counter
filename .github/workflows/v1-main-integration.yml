@@ -96,13 +96,16 @@ jobs:
         run: |
           node scripts/smoke-endurance.mjs
           node scripts/smoke-wakelock.mjs
-      - name: Summarize physical-field Future Work and compiled WASM notice review
+      - name: Summarize physical-field Future Work and accepted compiled WASM provenance exception
         if: always()
         shell: pwsh
         run: |
           if (Test-Path dist/release-audit.json) {
             $report = Get-Content -Raw dist/release-audit.json | ConvertFrom-Json
-            Write-Host "[integration] Engineering=$($report.automatedEngineering) LegalDecision=$($report.releaseDecision)"
+            Write-Host "[integration] Engineering=$($report.automatedEngineering) OwnerReleaseDecision=$($report.releaseDecision) (not legal clearance)"
+            foreach ($item in $report.acceptedReleaseExceptions) {
+              Write-Host "[integration] RISK ACCEPTED; SOURCE/NOTICE UNVERIFIED: $($item.id) $($item.expectedWasmSha256)"
+            }
             foreach ($item in $report.unresolvedReleaseGates) {
               Write-Host "[integration] STILL REVIEW: $($item.id) $($item.subject)"
             }

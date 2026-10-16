@@ -1,6 +1,8 @@
 # MediaPipe Tasks Vision v0.10.35 compiled runtime — exact artifact and notice review
 
 **Audit date:** 2026-10-13
+
+> **Release update (2026-10-16):** The project owner authorized a **risk-managed GO** for the existing SHA-locked v1.0.0 despite incomplete exact WASM-to-Eigen source/NOTICE provenance. This does **not** verify the corresponding source, waive MPL obligations, or certify complete legal clearance. See [decision and reassessment triggers](WASM_GO_RISK_DECISION_2026-10-16.md). Earlier NO_GO language below is the contemporaneous audit snapshot, superseded **as a release decision only**.
 **Distribution:** Passage Counter, both self-contained HTML outputs with original `@mediapipe/tasks-vision@0.10.35` ES module, matching SIMD JavaScript loader and WASM.
 **Source of truth:** SHA-pinned npm tarball **actually downloaded and bundled** by the repository build, not the current npm latest or generic MediaPipe guidance.
 

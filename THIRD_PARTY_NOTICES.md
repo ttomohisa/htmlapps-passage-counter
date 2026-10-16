@@ -1,6 +1,6 @@
-# Third-party notices — Passage Counter v1.0.0 draft
+# Third-party notices — Passage Counter v1.0.0
 
-These notices describe the **pinned build-time sources**. They are not an independent legal opinion or a statement that every stable-release redistribution gate is closed.
+These notices describe the **pinned build-time sources**. The owner approved a **risk-managed GO** for the exact unchanged runtime hashes on 2026-10-16. This is **not legal clearance**, and exact WASM corresponding source/full third-party NOTICE mapping remain unverified. [Decision and reassessment triggers](docs/WASM_GO_RISK_DECISION_2026-10-16.md).
 
 ## MediaPipe Tasks Vision (JavaScript, SIMD WASM, loader)
 
@@ -41,6 +41,6 @@ This extra license text is a conservative compliance measure, not an assertion t
 
 - Passage Counter application source: MIT, see [LICENSE](LICENSE).
 - Build dependencies are downloaded only at build time; production app never relies on an external model/WASM server.
-- The generated HTML carries full Apache-2.0 text in Help. The *model* license assessment is supported by the upstream maintainer statement above. **Additional compiled-JS/WASM third-party NOTICE and source-availability obligations remain under review.**
+- The generated HTML carries full Apache-2.0 text in Help. The *model* license assessment is supported by the upstream maintainer statement above. **The exact compiled-JS/WASM third-party NOTICE and corresponding-source inventory remains unverified; the owner accepted that residual evidence risk for these fixed artifacts rather than marking the obligation satisfied.**
 
 See [docs/RELEASE_READINESS_v1.0.0.md](docs/RELEASE_READINESS_v1.0.0.md) for the remaining formal approval conditions.

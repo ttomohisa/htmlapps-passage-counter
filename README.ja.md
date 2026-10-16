@@ -8,13 +8,13 @@
 
 カメラまたは端末内の動画を使い、画面上の線を人物が横切った回数を **A→B／B→A の方向別に記録する** Browser Kittyの単一HTMLツールです。インストール・アカウント登録・動画のアップロードは不要です。
 
-**v1.0.0の確認状況：** カメラ／動画・単一HTML・CSV等の自動検証に加え、Cloudflare PreviewでCSPの実配信・モデル起動を確認しました。**実機30分試験と実人物100件以上の精度評価はFuture Work**であり、達成・保証したものではありません。**モデル自体はMediaPipe公式メンテナーのApache 2.0共通方針で再配布の根拠を確認しました**（別途例外の指定がある場合を除きます）。残るのは同梱JS/WASMの追加NOTICE・ソース提供義務などの確認です。正式リリースはまだ未承認です。[リリース判定](docs/RELEASE_READINESS_v1.0.0.md) ／ [Future Work](docs/FUTURE_WORK.md) ／ [ライセンス・CSP監査](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
+**v1.0.0の確認状況：** カメラ／動画・単一HTML・CSV等の自動検証に加え、Cloudflare PreviewでCSPの実配信・モデル起動を確認しました。**実機30分試験と実人物100件以上の精度評価はFuture Work**であり、達成・保証したものではありません。**モデル自体はMediaPipe公式メンテナーのApache 2.0共通方針で再配布の根拠を確認しました**（別途例外の指定がある場合を除きます）。同梱WASMと対応ソースの厳密な対応、および第三者NOTICEの完全な網羅性は未確認です。2026年10月16日、対象バイナリを固定して残存リスクを明示的に受け入れ、**条件付きGO**としました（法的な完全適合を保証するものではありません）。[リリース判定](docs/RELEASE_READINESS_v1.0.0.md) ／ [Future Work](docs/FUTURE_WORK.md) ／ [ライセンス・CSP監査](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
 ## デモ
 
 ### [GitHub PagesでPassage Counterを開く](https://ttomohisa.github.io/htmlapps-passage-counter/)
 
-公開済みのGitHub Pages版がある場合、その内容は開発中のPRに含まれるv1.0.0候補版と異なることがあります。v1.0.0の確認には、該当するGitHub PRのPreviewリンクを利用してください。
+GitHub Pages版は`main`から配信されます。特定のリリースを検証する際には、表示されるバージョンと最新のデプロイ結果を確認してください。
 
 Webページへのアクセス時はHTMLの取得に通信が発生します。読み込み後のAI推論やカメラ・選択動画の処理は端末内で実行し、入力映像を外部へ送信しません。
 

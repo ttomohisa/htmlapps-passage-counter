@@ -1,6 +1,8 @@
 # Passage Counter v1.0.0 — main integration handoff
 
 Date: 2026-10-13
+
+> **2026-10-16 update:** Integration PR #13 was merged into `main`; the proposed integration instructions below are historical. The project owner has now made a **risk-managed GO** decision for the SHA-pinned MediaPipe runtime after exact source/NOTICE provenance remained unavailable. This is **not legal clearance**. See [current decision](WASM_GO_RISK_DECISION_2026-10-16.md) and [machine-readable gates](release-gates.v1.0.0.json).
 Release scope: **limited, unvalidated-person-counting tool**, only with disclosed constraints. **Do not represent it as an independently validated visitor counter.**
 
 ## Branch/PR approach
