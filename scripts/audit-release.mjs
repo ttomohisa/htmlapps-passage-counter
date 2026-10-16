@@ -18,25 +18,29 @@ assert(Array.isArray(gates.gates)&&gates.gates.length>=7);
 const unresolved=gates.gates.filter(g=>g.severity==='blocker'&&
   g.status!=='verified'&&g.status!=='passed');
 const futureWork=gates.gates.filter(g=>g.severity==='future_work');
-const requiredBlockers=['LICENSE-STANDALONE'];
+const licenseException=gates.gates.find(g=>g.id==='LICENSE-STANDALONE');
 const modelLicenseGate=gates.gates.find(g=>g.id==='LICENSE-MODEL');
 assert(modelLicenseGate?.status==='verified'&&modelLicenseGate?.evidence?.some(x=>x.includes('issuecomment-5997480830')),
   'Model Apache 2.0 assessment must be based on actual MediaPipe maintainer policy, not merely local config');
 const deferred=['AC-04','AC-06','AC-07-WIN','AC-07-ANDROID','AC-07-IOS'];
-for(const id of requiredBlockers){
- const value=gates.gates.find(g=>g.id===id);
- assert(value,'License gate '+id+' must not disappear');
- assert(value.severity==='blocker');
-}
+assert(licenseException,'LICENSE-STANDALONE must not disappear');
+assert.equal(licenseException.status,'risk_accepted');
+assert.equal(licenseException.severity,'release_exception');
+assert.equal(licenseException.releaseAcceptance?.notLegalClearance,true,
+ 'Risk acceptance must never be presented as legal clearance');
+assert.equal(licenseException.releaseAcceptance?.date,'2026-10-16');
+assert.equal(licenseException.expectedNpmTarballSha256,'84597a25e13d123b5f4cbe768bb72e97a2c28c7a465f0ace287d8cbe5246bff0');
+assert.equal(licenseException.expectedWasmSha256,'6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc');
+assert.equal(licenseException.expectedWasmBytes,11153617);
+assert(licenseException.residualRisk?.includes('NOT verified corresponding source'));
 for(const id of deferred){
  const value=gates.gates.find(g=>g.id===id);
  assert(value,'Future Work gate '+id+' must not disappear');
  assert(value.severity==='future_work'&&value.status==='future_work',
    'Deferred field evidence must not be marked tested or removed: '+id);
 }
-assert(unresolved.length>0,'Remaining compiled runtime/standalone NOTICE blockers must stay explicit');
-assert.equal(gates.decision,'NO_GO',
-  'A release GO still requires complete standalone notice review and manual signoff');
+assert.equal(unresolved.length,0,'GO cannot ignore unaccepted blockers');
+assert.equal(gates.decision,'GO','GO requires the owner-approved, SHA-scoped exception');
 const output=config.build.output;
 const selfOutput=config.build.selfExtract?.output;
 assert(typeof output==='string'&&typeof selfOutput==='string','Configured HTML output missing');
@@ -70,6 +74,10 @@ assert(runtimeAsset,'SIMD MediaPipe missing from manifest');
 assert.equal(runtimeAsset.package,'@mediapipe/tasks-vision');
 assert.equal(runtimeAsset.version,dependencies.dependencies.find(x=>x.id==='mediapipe').version);
 assert.equal(runtimeAsset.tarballSha256,locked.dependencies.find(x=>x.id==='mediapipe').tarballSha256);
+assert.equal(runtimeAsset.tarballSha256,licenseException.expectedNpmTarballSha256,
+ 'The exact npm archive must remain in the accepted scope');
+assert.equal(runtimeAsset.assets.find(x=>x.key==='simd-wasm')?.sha256,
+ licenseException.expectedWasmSha256,'The exact SIMD WASM must remain in the accepted scope');
 const assetKeys=runtimeAsset.assets.map(x=>x.key);
 for(const key of ['module','simd-loader','simd-wasm'])
  assert(assetKeys.includes(key),'Embedded MediaPipe asset missing: '+key);
@@ -133,11 +141,13 @@ const provenance=await read('assets/SCREENSHOTS.md');
 assert(provenance.includes('pre-count')&&provenance.includes('camera-off'),
   'Screenshot provenance must explain zero-count and camera-off conditions');
 const docs=await read('docs/RELEASE_READINESS_v1.0.0.md');
-assert(docs.includes('NO-GO')&&docs.includes('LICENSE-MODEL'),
-  'Release readiness document must expose licensing and field blockers');
+assert(docs.includes('risk-managed GO')&&docs.includes('LICENSE-MODEL')&&
+ docs.includes('LICENSE-STANDALONE')&&docs.includes('not legal clearance'),
+  'Release memo must disclose risk and the remaining source/NOTICE gap');
 const report={
  schemaVersion:1,appVersion:expectedVersion,
- automatedEngineering:'PASS',releaseDecision:'NO_GO',
+ automatedEngineering:'PASS',releaseDecision:'GO',
+ releaseDecisionBasis:'Owner accepted SHA-scoped provenance risk; NOT legal clearance',
  auditIsNotLegalAdvice:true,
  distribution:{
   readable:{path:output,bytes:htmlBytes.length,sha256:sha(htmlBytes)},
@@ -152,14 +162,19 @@ const report={
  },
  readmeScreenshots:pics,
  unresolvedReleaseGates:unresolved.map(g=>({id:g.id,subject:g.subject,status:g.status})),
+ acceptedReleaseExceptions:[{id:licenseException.id,status:licenseException.status,
+   expectedNpmTarballSha256:licenseException.expectedNpmTarballSha256,
+   expectedWasmSha256:licenseException.expectedWasmSha256,
+   correspondingSourceVerified:false,completeBinaryThirdPartyNoticeSetVerified:false,
+   notLegalClearance:true,acceptanceDate:licenseException.releaseAcceptance.date}],
  futureWork:futureWork.map(g=>({id:g.id,subject:g.subject,status:g.status})),
  hostedCsp:{cloudflarePreview:'verified',productionSite:'not covered by this standalone audit'},
- note:'CI verifies reproducibility only. Owner deferred physical-device and real-count accuracy to Future Work; specific model redistribution and all standalone NOTICE obligations remain unverified.'
+ note:'CI verifies reproducibility, not full legal clearance. The model has maintainer Apache-2.0 support; compiled npm WASM corresponding-source and full notices remain unverified but have an explicit owner release exception. Real-device and accuracy work remain deferred.'
 };
 await mkdir('dist',{recursive:true});
 await writeFile('dist/release-audit.json',JSON.stringify(report,null,2)+'\n','utf8');
 console.log('[release-audit] PASS mechanical integrity: '+htmlBytes.length+' + '+wrapperBytes.length+' bytes');
 console.log('[release-audit] PASS 4 genuine README screenshots, pinned model/SIMD, SVG/license/notices');
-console.log('[release-audit] NO_GO legal: '+unresolved.map(g=>g.id).join(', '));
+console.log('[release-audit] GO: owner-accepted source/NOTICE evidence risk; not legal clearance ('+licenseException.id+')');
 console.log('[release-audit] Future Work (not passed): '+futureWork.map(g=>g.id).join(', '));
-console.log('[release-audit] Cloudflare Preview CSP checked; model Apache-2.0 is now grounded in upstream maintainer statements; compiled notices still pending.');
+console.log('[release-audit] Prior Cloudflare Preview CSP checked; exact compiled runtime source and notices are NOT verified.');

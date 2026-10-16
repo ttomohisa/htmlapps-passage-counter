@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-16 — v1.0.0 licensing disposition (no runtime change)
+
+- The owner authorized **risk-managed GO** for the unchanged pinned MediaPipe 0.10.35 WASM after exact npm-to-Eigen source and complete third-party NOTICE mapping could not be established from upstream evidence.
+- The license gate now records an explicit **accepted risk**, not a verified corresponding-source claim. Release checks fail if npm/WASM fingerprints or risk-acceptance metadata change, and report the exception.
+- The earlier 2026-10-13 candidate NO-GO entries below are historical snapshots, superseded by the October 16 decision only. No new physical camera, mobile endurance or real-count precision testing is claimed.
+- [Source and NOTICE decision record](docs/WASM_GO_RISK_DECISION_2026-10-16.md).
+
 ## [1.0.0] — 2026-10-13 (candidate UI/documentation milestone; stable **NO-GO**)
 
 - Rewrote the Japanese/English Help dialog using Web Serial Terminal as the *layout* reference: compact header, accessible 44px X close button, scrollable Basics / Privacy / Limitations sections and a factual caution about counting accuracy.

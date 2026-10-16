@@ -1,6 +1,8 @@
 # Passage Counter — Model redistribution and deployed CSP audit
 
 Date: **2026-10-13**
+
+> **Status note (2026-10-16):** This document preserves the original model/CSP forensic record. Model licensing now has upstream Apache-2.0 support. For the compiled WASM source/NOTICE mismatch, the owner recorded a [risk-managed GO](WASM_GO_RISK_DECISION_2026-10-16.md) for the unchanged pinned assets, **not a finding that all corresponding-source obligations were proven satisfied**. Historical NO-GO wording below should not be read as the current release decision.
 Scope: the SHA-pinned EfficientDet-Lite0 int8 model and the *actually served* Cloudflare PR #10 Preview / public GitHub Pages HTTP responses. This is a technical evidence review, **not a lawyer's opinion**.
 
 ## October 13 update — direct upstream model licensing evidence

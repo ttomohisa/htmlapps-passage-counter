@@ -8,13 +8,13 @@
 
 Passage Counter is a Browser Kitty tool for counting **person-crossing events in two directions (A→B and B→A)**, using a live fixed camera or a video already on the device. It is delivered as one HTML file and does not require an account, installation or video uploads.
 
-**v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. MediaPipe maintainers' published **Apache 2.0 default covering source and models** provides a strong redistribution basis for the existing EfficientDet-Lite0 int8 (no contrary exception found). The separately bundled JS/WASM third-party NOTICE and covered-source obligations remain under review, so stable release approval is still pending. [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
+**v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. MediaPipe maintainers' published **Apache 2.0 default covering source and models** provides a strong redistribution basis for the existing EfficientDet-Lite0 int8 (no contrary exception found). The exact npm WASM's corresponding source and full transitive NOTICE mapping remain unverified. On 2026-10-16 the owner approved a **risk-managed GO** for these unchanged binary hashes (not legal clearance). [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
 ## Live demo
 
 ### [Open Passage Counter on GitHub Pages](https://ttomohisa.github.io/htmlapps-passage-counter/)
 
-A deployed GitHub Pages version may differ from the v1.0.0 candidate in the development PR. Use that PR's Cloudflare Preview link to inspect the candidate.
+GitHub Pages deploys from `main`. Verify the displayed version and current deployment status when checking a specific release.
 
 Opening the hosted page downloads its HTML. Once loaded, person detection, camera frames and selected videos are processed locally on the device, not uploaded to a server.
 
@@ -138,7 +138,7 @@ The full requirements, testing and design notes are in [APP_SPEC.md](APP_SPEC.md
 - **Future Work:** Actual 100+ independently annotated real crossings, the 95% per-direction precision/recall goal, physical Android/iPhone/Windows tests and 30-minute endurance remain unverified. [Deferred validation plan](docs/FUTURE_WORK.md).
 - **Still blocking release:** Additional compiled JS/WASM third-party NOTICE/covered-source obligations. The model's Apache 2.0 basis is documented by upstream maintainer replies. [Model-license evidence](docs/EFFICIENTDET_MODEL_LICENSE_2026-10-13.md).
 
-The single-file Help dialog includes MediaPipe's full Apache 2.0 text, Eigen's MPL-2.0/BSD notice material, and the application's MIT license. The precise WASM-to-source build mapping remains under review, especially for the MPL source-availability requirement. [Compiled runtime licensing audit](docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md).
+The single-file Help dialog includes MediaPipe's full Apache 2.0 text, Eigen's MPL-2.0/BSD notice material, and the application's MIT license. The precise WASM-to-source build mapping remains unverified, especially for MPL source-availability obligations. The owner's documented risk acceptance does not certify legal compliance. [Decision](docs/WASM_GO_RISK_DECISION_2026-10-16.md) · [Compiled runtime audit](docs/MEDIAPIPE_RUNTIME_LICENSE_2026-10-13.md).
 
 ## Dependencies and model
 
