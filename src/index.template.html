@@ -368,6 +368,7 @@ footer{max-width:1240px;padding-top:3px}
   .report{margin-top:14px}
 }
 @media(max-width:610px){
+  footer{display:none}
   .page-intro{padding:0 1px 15px;gap:10px}
   .page-intro h1{font-size:21px}
   .page-intro p{font-size:12px}
@@ -955,7 +956,7 @@ body.help-scroll-locked{
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · v1.0.0 · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle">
   <div class="help-dialog-head">
@@ -1002,6 +1003,7 @@ body.help-scroll-locked{
       <h4 data-i18n="appLicenseTitle">Passage Counter — MIT License</h4>
       <pre id="embeddedAppMitLicense">__APP_MIT_LICENSE_TEXT__</pre>
     </details>
+    <p class="helper" id="helpVersion">v1.0.0</p>
   </div>
 </dialog>
 <!-- APP:HELP:END -->
@@ -1238,7 +1240,7 @@ body.help-scroll-locked{
         },
         en: {
           language:'Language',subTitle:'People crossing counter · v1.0.0',help:'Help',privacyShort:'No account · On-device processing',
-          brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Entirely local processing',
+          brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Fully local processing',
           title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag anywhere along the line to move it without changing its angle or length. Drag an end handle to adjust it. Arrow keys move the whole line.',lineHelp:'Drag the line itself to move it. Drag an end circle to change the angle or length.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',

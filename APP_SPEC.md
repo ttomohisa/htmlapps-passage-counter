@@ -372,3 +372,8 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 ---
 
 **固定の決定:** 単一HTML内包・外部通信0は、どのバージョンでも延期・緩和不可。実装時のPR作成は可能だが、マージはユーザー本人が行う。
+
+## Mobile footer and Help metadata
+
+- Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.
+- Verify JA/EN desktop, breakpoint boundaries, narrow phones and short viewports, including Help final-item reachability, existing scrolling/dismissal, functional controls and repeated localization. No physical serial/camera capability is claimed from synthetic CI tests.
