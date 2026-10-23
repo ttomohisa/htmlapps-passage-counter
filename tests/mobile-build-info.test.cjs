@@ -1,0 +1,9 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'../src/index.template.html'),'utf8');
+function media(bp){const css=html.match(/<style>([\s\S]*?)<\/style>/)[1];const start=css.search(new RegExp('@media\\s*\\(max-width:\\s*'+bp+'px\\)\\s*\\{'));assert.ok(start>=0);const open=css.indexOf('{',start);let depth=1,end=open+1;for(;end<css.length&&depth;end++){if(css[end]==='{')depth++;if(css[end]==='}')depth--;}return css.slice(open+1,end-1);}
+function helpBody(cls){const help=html.match(/<dialog[^>]*id="helpDialog"[^>]*>([\s\S]*?)<\/dialog>/)[1];const start=help.indexOf('<div class="'+cls+'"');assert.ok(start>=0);let depth=0,end=-1;for(const m of help.slice(start).matchAll(/<div\b[^>]*>|<\/div>/g)){depth+=m[0].startsWith('</')?-1:1;if(depth===0){end=start+m.index;break;}}return help.slice(start,end);}
+test('only informational footer hides at existing compact 610px workflow',()=>assert.match(media(610),/(?:^|})\s*footer\s*\{\s*display:\s*none;?\s*\}/));
+test('existing version moves after licenses; live diagnostics remain in workspace',()=>{
+ const body=helpBody('help-dialog-body');assert.match(body,/<\/details>\s*<p class="helper" id="helpVersion">v1\.0\.0<\/p>\s*$/);assert.equal(html.split('id="helpVersion"').length-1,1);assert.doesNotMatch(html.match(/<footer>([^]*?)<\/footer>/)[1],/v1\.0\.0/);const main=html.match(/<main\b[^>]*>([^]*?)<\/main>/)[1];for(const id of ['diagnosticDetails','detectorInfo','statusPill'])assert.match(main,new RegExp('id="'+id+'"'));
+});
+test('exact local-processing badge uses canonical English, detailed privacy remains distinct',()=>{assert.match(html,/localBadge:'Fully local processing'/);assert.doesNotMatch(html,/localBadge:'Entirely local processing'/);assert.ok(html.includes("footer:'Camera, video and session records are processed on this device and are not uploaded.'"));});

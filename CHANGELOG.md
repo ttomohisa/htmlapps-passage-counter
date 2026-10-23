@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.
+
 ## 2026-10-16 — v1.0.0 licensing disposition (no runtime change)
 
 - The owner authorized **risk-managed GO** for the unchanged pinned MediaPipe 0.10.35 WASM after exact npm-to-Eigen source and complete third-party NOTICE mapping could not be established from upstream evidence.
