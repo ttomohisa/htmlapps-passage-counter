@@ -707,6 +707,7 @@ body.help-scroll-locked{
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 /* v1.1 operational layout. Focus is optional; exports remain reachable. */
+.file-drop summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13px;font-weight:650;overflow-wrap:anywhere}.file-drop[open] summary{margin-bottom:10px}
 .operation-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.operation-tools button{font-size:12px;padding:8px 12px}
 .operation-note,.latest-crossing{font-size:12px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
 #crossingFeedback{position:absolute;z-index:4;transform:translate(-50%,-50%);background:var(--brand);color:#fff;padding:7px 12px;border:2px solid #fff;border-radius:20px;font-weight:750;pointer-events:none;max-width:90%;overflow-wrap:anywhere}
@@ -790,7 +791,8 @@ body.help-scroll-locked{
         </label>
         <p class="source-caption" data-i18n="sourceHint">カメラで計測するか、端末の動画を解析します。</p>
       </div>
-      <div class="file-drop" id="videoSourceBox" hidden>
+      <details class="file-drop" id="videoSourceBox" hidden open>
+        <summary id="videoSourceSummary" data-i18n="videoSourceSettings">動画ファイルと解析方法</summary>
         <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
         <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
         <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
@@ -798,7 +800,7 @@ body.help-scroll-locked{
         <select id="analysisMode"><option value="sequential" data-i18n="sequentialMode">順番に解析（0.1秒間隔）</option><option value="realtime" data-i18n="realtimeMode">再生しながら解析</option></select>
         <p class="helper" data-i18n="samplingNote">順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。</p>
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
-      </div>
+      </details>
 
       <div class="camera-launch" id="cameraLaunch">
         <div class="actions" id="cameraActions">
@@ -1189,7 +1191,7 @@ body.help-scroll-locked{
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v1.0.0では判定線の移動操作と画面構成を改善しました。実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
+          prototypeNote:'実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',
           helpBasicsTitle:'基本操作',
@@ -1305,7 +1307,7 @@ body.help-scroll-locked{
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v1.0.0 improves counting-line interaction and the workflow layout. Accuracy and long-duration physical-phone tests remain unverified.',
+          prototypeNote:'Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',
           helpBasicsTitle:'Basic steps',
@@ -1790,7 +1792,7 @@ body.help-scroll-locked{
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
       Object.assign(translations.ja, {
-        analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
+        videoSourceSettings:'動画ファイルと解析方法',analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
         samplingNote:'順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。',
         linePresets:'判定線の配置',horizontalLine:'横線',verticalLine:'縦線',centerLine:'中央に戻す',
         footNote:'検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。',
@@ -1808,7 +1810,7 @@ body.help-scroll-locked{
         helpFocus:'計測中は集中表示になります。「設定・記録も表示」で戻せます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。'
       });
       Object.assign(translations.en, {
-        analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
+        videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
         samplingNote:'Sequential analysis waits for each sample to finish. It does not analyze every frame and may take longer than the video duration.',
         linePresets:'Counting line placement',horizontalLine:'Horizontal',verticalLine:'Vertical',centerLine:'Center line',
         footNote:'The bottom center of each detection box approximates the feet. Place the line where this point will cross.',
@@ -2394,6 +2396,8 @@ body.help-scroll-locked{
         $('#videoFile').disabled=state.sourceBusy||state.restoring;
         $('#cameraActions').hidden=fileMode;
         $('#videoSourceBox').hidden=!fileMode;
+        if(!state.videoReady)$('#videoSourceBox').open=true;
+        $('#videoSourceSummary').textContent=state.videoReady?state.videoFilename+' · '+tr($('#analysisMode').value==='sequential'?'sequentialMode':'realtimeMode'):tr('videoSourceSettings');
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
         $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
@@ -2794,10 +2798,14 @@ body.help-scroll-locked{
           y=Math.max(g.y+14,Math.min(g.y+g.height-14,y));
           ctx.beginPath();ctx.roundRect(x-labelWidth/2,y-12,labelWidth,24,6);ctx.fill();
           ctx.fillStyle='#fff';
-          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+0.5);
+          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+0.5,labelWidth-12);
         };
-        badge('A → B · '+countName('A_TO_B'),cx-nx*40,cy-ny*40);
-        badge('B → A · '+countName('B_TO_A'),cx+nx*40,cy+ny*40);
+        badge('A',cx-nx*36,cy-ny*36);
+        badge('B',cx+nx*36,cy+ny*36);
+        // Keep long direction names away from the line, including vertical lines.
+        const keyX=g.x+g.width/2;
+        badge('A → B · '+countName('A_TO_B'),keyX,g.y+20);
+        badge('B → A · '+countName('B_TO_A'),keyX,g.y+48);
         ctx.textAlign='start';ctx.textBaseline='alphabetic';
         if($('#showDetections').checked)state.detections.forEach(d=>{
           const x=g.x+d.originX*g.sx,y=g.y+d.originY*g.sx;
@@ -2997,7 +3005,7 @@ body.help-scroll-locked{
           state.filePreviewing=false;
           state.lastProcessedSourceMs=-1;
           await initEmbeddedDetector();
-          state.phase='ready';
+          state.phase='ready';$('#videoSourceBox').open=false;
           state.videoErrorKey=null;inferencePacer.reset();
           zeroTracks();renderState(tr('videoReady'));draw();
           loop();

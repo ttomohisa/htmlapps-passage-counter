@@ -125,6 +125,7 @@ try{
       await page.locator('#plusA').click();
       const count=Number(await page.locator('#countA').textContent());
       assert(count>=1,'Manual correction failed on '+channel);
+      await page.locator('#focusToggle').click(); // expose reset and exports without stopping counting
       // Escape must cancel destructive reset, retaining the count.
       await page.locator('#resetButton').click();
       assert(await page.locator('#confirmDialog').isVisible());
@@ -132,7 +133,6 @@ try{
       assert(!(await page.locator('#confirmDialog').isVisible()));
       assert.equal(Number(await page.locator('#countA').textContent()),count);
       const download=page.waitForEvent('download');
-      await page.locator('#focusToggle').click(); // focus view intentionally folds record controls
       await page.locator('#downloadButton').click();
       const csv=await readFile(await(await download).path(),'utf8');
       assert(csv.startsWith('\ufeff'),'CSV BOM lost');

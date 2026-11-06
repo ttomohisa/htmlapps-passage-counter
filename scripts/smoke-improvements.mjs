@@ -34,6 +34,7 @@ try{
  await page.locator('#videoFile').setInputFiles({name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
  await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
  assert.equal(await page.locator('#analysisMode').inputValue(),'sequential');
+ assert.equal(await page.locator('#videoSourceBox').getAttribute('open'),null,'Loaded file settings collapse beside the preview');
  await page.locator('#lineVertical').click();
  await page.locator('#setupOptions').evaluate(e=>e.open=true);
  await page.locator('#labelA').fill('入場 <test>');await page.locator('#labelA').dispatchEvent('input');
@@ -52,6 +53,8 @@ try{
  await page.locator('#plusA').click();
  assert.equal(await page.locator('#reportFinalA').textContent(),'1');
  await mkdir('test-results/improvements',{recursive:true});
+ await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
+ await page.locator('#setupOptions').evaluate(e=>e.open=false);
  await page.locator('#sessionName').fill('Sample video · manual correction +1');
  for(const lang of ['ja','en']){
   if(await page.locator('html').getAttribute('lang')!==lang)await page.locator('#languageButton').click();
