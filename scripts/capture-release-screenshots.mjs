@@ -1,98 +1,70 @@
-// v0.9 README screenshots captured from the genuine generated application.
-// Fresh camera-off contexts; never fabricate people, detection or model scores.
+// Capture genuine UI with a browser-encoded synthetic local video and an audited
+// manual correction. No camera, injected counts or detector scores are used.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
-
 const html=await readFile('dist/index.html');
 const config=JSON.parse(await readFile('app.config.json','utf8'));
-assert.equal(config.version,'1.1.0');
-const server=createServer((req,res)=>{
- if(req.url==='/'){
-  res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
-  res.end(html);
- }else{res.writeHead(404);res.end('Not found');}
-});
+const server=createServer((req,res)=>{res.writeHead(200,{'Content-Type':'text/html;charset=utf-8','Cache-Control':'no-store'});res.end(html);});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
-let browser;
-const results=[];
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const records=[];
 try{
- browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-default-browser-check']});
  await mkdir('assets',{recursive:true});
- const cases=[
-  {filename:'screenshot.png',lang:'ja',width:1280,height:800,fullPage:false},
-  {filename:'screenshot-en.png',lang:'en',width:1280,height:800,fullPage:false},
-  {filename:'screenshot-mobile.png',lang:'ja',width:390,height:844,fullPage:true},
-  {filename:'screenshot-mobile-en.png',lang:'en',width:390,height:844,fullPage:true}
- ];
- for(const entry of cases){
-  const context=await browser.newContext({
-    viewport:{width:entry.width,height:entry.height},
-    deviceScaleFactor:1,locale:entry.lang==='ja'?'ja-JP':'en-US',
-    reducedMotion:'reduce',serviceWorkers:'block'
-  });
-  const errors=[],network=[];
-  await context.route('**/*',route=>{
-    const url=route.request().url();
-    if(/^https?:\/\//i.test(url)&&!url.startsWith(origin+'/')){
-      network.push(url);return route.abort();
-    }
-    return route.continue();
-  });
-  const page=await context.newPage();
+ for(const lang of ['ja','en'])for(const width of [1360,390]){
+  const context=await browser.newContext({viewport:{width,height:900},locale:lang==='ja'?'ja-JP':'en-US',reducedMotion:'reduce'});
+  const page=await context.newPage(),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:30_000});
-  await page.waitForFunction(()=>
-    document.querySelector('#versionBadge')?.textContent==='v1.1.0' &&
-    document.querySelector('#savedList .saved-empty')!==null &&
-    document.querySelector('#cameraStart')?.disabled===false,
-    null,{timeout:15000});
-  if(await page.locator('html').getAttribute('lang')!==entry.lang)
-    await page.locator('#languageButton').click();
-  assert.equal(await page.locator('html').getAttribute('lang'),entry.lang);
-  assert.equal(await page.locator('#countTotal').textContent(),'0',
-    'README screenshot must not fake measurement counts');
-  assert(!(await page.locator('#cameraFeed').evaluate(v=>Boolean(v.srcObject))),
-    'No camera frames should be captured for README images');
-  assert.equal(await page.locator('#helpDialog').isVisible(),false,
-    'Do not capture with a modal covering content');
-  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),
-    'Horizontal overflow in '+entry.filename);
-  // Stable explicitly exemplary labels avoid date changes or personal input.
-  await page.locator('#sessionName').fill(entry.lang==='ja'?'計測前（例）':'Before counting (example)');
-  await page.locator('#outputFilename').fill('passage-counter');
-  await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0)});
-  await page.locator('#pageTitle').waitFor({state:'visible'});
-  const dest='assets/'+entry.filename;
-  await page.screenshot({path:dest,fullPage:entry.fullPage,animations:'disabled',caret:'hide'});
-  const image=await readFile(dest);
-  assert(image.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),
-    'Output is not PNG: '+dest);
-  const record={file:dest,lang:entry.lang,width:image.readUInt32BE(16),
-    height:image.readUInt32BE(20),bytes:image.length,cameraUsed:false,syntheticCounts:false};
-  assert.equal(record.width,entry.width);
-  assert(record.height>=entry.height,'Screenshot unexpectedly cropped');
-  assert.deepEqual(errors,[],'Unhandled script errors in '+dest);
-  assert.deepEqual(network,[],'External network was attempted in '+dest);
-  results.push(record);
-  console.log('[screenshot] '+dest+' '+record.width+'x'+record.height+' '+record.bytes+' B');
+  page.on('request',r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith(origin))requests.push(r.url());});
+  await page.goto(origin);
+  if(await page.locator('html').getAttribute('lang')!==lang)await page.locator('#languageButton').click();
+  const bytes=await page.evaluate(async()=>{
+   const c=document.createElement('canvas');c.width=480;c.height=320;const ctx=c.getContext('2d');
+   const stream=c.captureStream(12),recorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8'}),chunks=[];
+   const done=new Promise(r=>recorder.onstop=r);recorder.ondataavailable=e=>chunks.push(e.data);
+   let i=0;function draw(){
+    ctx.fillStyle='#eaf0eb';ctx.fillRect(0,0,480,320);ctx.fillStyle='#d0dbd2';ctx.fillRect(0,270,480,50);
+    const x=70+(i++%15)*22;ctx.fillStyle='#16624f';ctx.beginPath();ctx.arc(x,90,22,0,Math.PI*2);ctx.fill();
+    ctx.fillRect(x-20,120,40,100);ctx.fillRect(x-18,220,12,50);ctx.fillRect(x+6,220,12,50);
+    ctx.fillStyle='#536b5e';ctx.font='14px system-ui';ctx.fillText('SAMPLE VIDEO',16,28);
+   }
+   draw();recorder.start();const timer=setInterval(draw,83);
+   await new Promise(r=>setTimeout(r,1300));clearInterval(timer);recorder.stop();await done;stream.getTracks().forEach(t=>t.stop());
+   return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
+  });
+  await page.locator('#sourceMode').selectOption('file');
+  await page.locator('#videoFile').setInputFiles({name:'sample-video.webm',mimeType:'video/webm',buffer:Buffer.from(bytes)});
+  await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
+  await page.locator('#lineVertical').click();
+  await page.locator('#setupOptions').evaluate(e=>e.open=true);
+  await page.locator('#labelA').fill(lang==='ja'?'入場':'Entry');await page.locator('#labelB').fill(lang==='ja'?'退場':'Exit');
+  await page.locator('#roiEnabled').check();
+  await page.locator('#sessionName').fill(lang==='ja'?'サンプル動画・手動補正 +1':'Sample video · manual correction +1');
+  await page.locator('#setupOptions').evaluate(e=>e.open=false);
+  await page.locator('#beginCount').click();
+  await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
+  await page.locator('#plusA').click();await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
+  await page.locator('#outputFilename').fill('passage-counter-sample');
+  await page.locator('#pageTitle').click();
+  await page.evaluate(()=>scrollTo(0,0));
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);
+  const filename=width===390?(lang==='ja'?'screenshot-mobile.png':'screenshot-mobile-en.png'):(lang==='ja'?'screenshot.png':'screenshot-en.png');
+  const file='assets/'+filename;await page.screenshot({path:file,fullPage:width===390,animations:'disabled'});
+  const image=await readFile(file);records.push({file,lang,width:image.readUInt32BE(16),height:image.readUInt32BE(20),bytes:image.length});
+  console.log('[screenshots] '+file+' '+records.at(-1).width+'x'+records.at(-1).height);
   await context.close();
  }
  await writeFile('assets/SCREENSHOTS.md',[
-  '# Passage Counter README screenshot provenance','',
-  'All four PNGs were captured from the real generated Passage Counter v1.1.0 interface',
-  'using automated Windows Chrome (desktop viewport 1280x800, mobile 390x844 full-page).',
-  'These show a **pre-count, camera-off state** with genuine 0 crossing events.',
-  'The session title is marked as an example; no live camera or people were used.',
-  'Capture command: node scripts/capture-release-screenshots.mjs',
-  'Screenshots are generated offline with no model download, personal data or telemetry.','',
-  ...results.map(x=>'- '+x.file+': '+x.width+'x'+x.height+', '+x.lang+', '+x.bytes+' bytes'),
-  ''
- ].join('\n'),'utf8');
- console.log('[screenshot] PASS: 4 actual UI screenshots, two languages, desktop/mobile, no external requests');
-}finally{
- if(browser)await browser.close();
- await new Promise(resolve=>server.close(resolve));
-}
+  '# Passage Counter screenshot provenance','',
+  `Captured from the genuine generated v${config.version} UI using Windows Chrome.`,
+  'These are camera-off screenshots of a local synthetic video encoded with MediaRecorder.',
+  'The illustrated input says SAMPLE VIDEO. The +1 is a manual correction made with the app button and recorded in the event ledger.',
+  'No counts, detection boxes, model scores or runtime states are injected. Any automatic inference is the embedded model processing the sample.',
+  'This demonstrates the video/result workflow and is not evidence of real-person accuracy.',
+  'Capture command: node scripts/capture-release-screenshots.mjs','',
+  ...records.map(r=>`- ${r.file}: ${r.width}x${r.height}, ${r.lang}, ${r.bytes} bytes`),''
+ ].join('\n'));
+}finally{await browser.close();await new Promise(r=>server.close(r));}

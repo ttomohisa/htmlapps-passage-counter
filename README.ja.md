@@ -33,7 +33,7 @@ Webページへのアクセス時はHTMLの取得に通信が発生します。�
 
 ![Passage Counterのスマートフォン画面](assets/screenshot-mobile.png)
 
-画像は生成された実際のアプリ画面を撮影したもので、カメラ開始前・計測0件の状態です。[撮影方法](assets/SCREENSHOTS.md)
+画像はサンプル動画を読み込み、アプリのボタンで手動補正を1件加えた実際の画面です。実人物の認識精度を示すものではありません。[撮影方法](assets/SCREENSHOTS.md)
 
 ## 主な機能
 

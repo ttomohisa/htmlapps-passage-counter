@@ -33,7 +33,7 @@ Opening the hosted page downloads its HTML. Once loaded, person detection, camer
 
 ![Passage Counter mobile, English](assets/screenshot-mobile-en.png)
 
-These are captures of the actual generated app before the camera is opened, showing zero genuine events. [Screenshot provenance](assets/SCREENSHOTS.md)
+The screenshots show a local sample video and an actual +1 manual correction made with the app button. They do not demonstrate real-person counting accuracy. [Screenshot provenance](assets/SCREENSHOTS.md)
 
 ## Features
 
