@@ -705,6 +705,31 @@ body.help-scroll-locked{
 .embedded-license-notice h4{font-size:12px;line-height:1.55;margin:16px 0 5px;color:var(--brand-dark);overflow-wrap:anywhere}
 .embedded-license-notice pre{font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:white;border:1px solid var(--border);padding:12px;border-radius:8px;max-height:240px;overflow:auto}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* v1.1 operational layout. Focus is optional; exports remain reachable. */
+.operation-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.operation-tools button{font-size:12px;padding:8px 12px}
+.operation-note,.latest-crossing{font-size:12px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
+#crossingFeedback{position:absolute;z-index:4;transform:translate(-50%,-50%);background:var(--brand);color:#fff;padding:7px 12px;border:2px solid #fff;border-radius:20px;font-weight:750;pointer-events:none;max-width:90%;overflow-wrap:anywhere}
+.roi-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.roi-fields label{font-size:12px}
+#roiError{color:var(--danger)}.check-observations{font-size:12px;line-height:1.7;white-space:pre-line;margin-top:10px}
+#focusToggle{margin-bottom:10px}.live-dock{display:none}.result-tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+#resultText{display:block;width:100%;min-height:180px;font:13px/1.6 system-ui;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px}
+#resultText[hidden]{display:none}.report dl{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.timeline-item .direction-bars{display:grid;gap:5px}.timeline-item .bar span.direction-b{background:#fff;border:2px solid var(--brand)}
+.timeline-item[data-coverage="partial"] .direction-bars,.timeline-item[data-coverage="missing"] .direction-bars{background:repeating-linear-gradient(135deg,transparent 0 5px,#d8e2de 5px 7px);padding:4px;border-radius:5px}
+#appMain[data-focused="true"] .setup-extras,#appMain[data-focused="true"] .support-panel,#appMain[data-focused="true"] #savedSessions{display:none}
+#appMain[data-focused="true"] .source-bar,#appMain[data-focused="true"] #videoSourceBox,#appMain[data-focused="true"] .camera-launch,#appMain[data-focused="true"] .line-toolbar,#appMain[data-focused="true"] .operation-tools,#appMain[data-focused="true"] .operation-note,#appMain[data-focused="true"] #nextAction,#appMain[data-focused="true"] #setupFlow,#appMain[data-focused="true"] .count-footnote{display:none}
+@media(max-width:820px){
+ body.has-live-dock{padding-bottom:calc(85px + env(safe-area-inset-bottom))}
+ .live-dock:not([hidden]){display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:fixed;z-index:80;bottom:0;left:0;right:0;padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border)}
+ .live-dock button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;min-height:54px;padding:6px}.live-dock svg{width:18px;height:18px}
+ body.has-live-dock .toast{bottom:calc(90px + env(safe-area-inset-bottom))}
+ #appMain[data-focused="true"] .workspace{gap:10px}#appMain[data-focused="true"] .camera-stage{aspect-ratio:4/3;min-height:150px;max-height:48dvh}
+ #appMain[data-focused="true"] .page-intro,#appMain[data-focused="true"] .session-controls,#appMain[data-focused="true"] #timelineSection{display:none}
+ #appMain[data-focused="true"] .measure-console{padding:12px}#appMain[data-focused="true"] .counter strong{font-size:36px}
+ .roi-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 </style>
 </head><body>
 
@@ -715,7 +740,7 @@ body.help-scroll-locked{
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.0.0</span></p>
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.1.0</span></p>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -769,6 +794,9 @@ body.help-scroll-locked{
         <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
         <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
         <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
+        <label for="analysisMode" data-i18n="analysisMode">解析方法</label>
+        <select id="analysisMode"><option value="sequential" data-i18n="sequentialMode">順番に解析（0.1秒間隔）</option><option value="realtime" data-i18n="realtimeMode">再生しながら解析</option></select>
+        <p class="helper" data-i18n="samplingNote">順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。</p>
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
       </div>
 
@@ -787,6 +815,7 @@ body.help-scroll-locked{
           <circle class="gesture-endpoint" data-endpoint="1" cx="880" cy="500" r="31"/>
         </svg>
         <div class="mini-counts" id="mobileCounts" hidden aria-hidden="true"><span><span id="miniLabelA">A→B</span><strong id="miniA">0</strong></span><span><span id="miniLabelB">B→A</span><strong id="miniB">0</strong></span></div>
+        <div id="crossingFeedback" hidden aria-hidden="true"></div>
         <div class="camera-placeholder" id="cameraPlaceholder">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="12" width="40" height="28" rx="5"/><circle cx="24" cy="26" r="8"/><path d="M15 12l3-5h12l3 5"/></svg>
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
@@ -798,6 +827,11 @@ body.help-scroll-locked{
         </div>
         <button class="minor reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
       </div>
+      <div class="operation-tools" role="group" data-i18n-aria-label="linePresets" aria-label="判定線の配置">
+        <button id="lineHorizontal" type="button" data-i18n="horizontalLine">横線</button><button id="lineVertical" type="button" data-i18n="verticalLine">縦線</button><button id="lineCenter" type="button" data-i18n="centerLine">中央に戻す</button>
+      </div>
+      <p class="operation-note" data-i18n="footNote">検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。</p>
+      <p class="latest-crossing" id="latestCrossing" aria-live="off"></p>
       <div class="context-message" id="statusDetails" role="status" aria-live="polite" data-i18n="instruction">カメラを開始すると、判定線を調整できます。</div>
       <div class="video-footer">
         <span id="recognitionStatus" role="status" aria-live="polite">準備前</span>
@@ -827,6 +861,7 @@ body.help-scroll-locked{
           <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
           <span class="clock" id="elapsedText">00:00:00</span>
         </div>
+        <button id="focusToggle" type="button" aria-pressed="false" data-i18n="focusOn">計測に集中</button>
         <div class="counter-grid" id="correctionPanel">
           <span class="sr-only" id="correctHeading" data-i18n="correctionHeading">件数を補正</span>
           <div class="counter" data-direction="a">
@@ -880,6 +915,7 @@ body.help-scroll-locked{
         <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
           <strong id="testRemaining" role="timer" aria-live="off"></strong>
           <span id="testMessage"></span>
+          <p id="testObservations" class="check-observations"></p>
         </div>
       </section>
 
@@ -903,6 +939,16 @@ body.help-scroll-locked{
           <label for="labelA"><span data-i18n="directionALabel">A→Bの名称</span><input id="labelA" type="text" maxlength="24" placeholder="A→B"></label>
           <label for="labelB"><span data-i18n="directionBLabel">B→Aの名称</span><input id="labelB" type="text" maxlength="24" placeholder="B→A"></label>
         </div>
+        <fieldset class="area-settings"><legend data-i18n="countingArea">計測する範囲</legend>
+          <label class="toggle"><input type="checkbox" id="roiEnabled"><span data-i18n="useArea">範囲を指定する</span></label>
+          <div class="roi-fields" id="roiFields" hidden>
+            <label><span data-i18n="areaLeft">左端（%）</span><input id="roiLeft" type="number" min="0" max="95" value="10" step="1"></label>
+            <label><span data-i18n="areaRight">右端（%）</span><input id="roiRight" type="number" min="5" max="100" value="90" step="1"></label>
+            <label><span data-i18n="areaTop">上端（%）</span><input id="roiTop" type="number" min="0" max="95" value="10" step="1"></label>
+            <label><span data-i18n="areaBottom">下端（%）</span><input id="roiBottom" type="number" min="5" max="100" value="95" step="1"></label>
+          </div><p id="roiError" class="helper" role="status" hidden data-i18n="areaInvalid">幅と高さが5%以上になる範囲を指定してください。</p>
+          <p class="helper" data-i18n="areaNote">枠内に足元がある人だけを追跡します。判定線の両側に余裕を残してください。映像全体の認識処理は行います。</p>
+        </fieldset>
         <p class="helper" data-i18n="cameraOrientationNote">画面の鏡像反転は行いません。判定線と映像の向きを一致させます。</p>
       </details>
 
@@ -923,6 +969,8 @@ body.help-scroll-locked{
         <div id="coverageSummary" class="coverage-mini" aria-live="off" hidden></div>
         <label class="inline-field" for="outputFilename"><span data-i18n="outputFilename">出力ファイル名</span><input id="outputFilename" type="text" maxlength="100" spellcheck="false" autocomplete="off" value="passage-counter" aria-describedby="fileHint"></label>
         <p class="helper" id="fileHint" data-i18n="fileHint">CSVにはファイルの種類を付けて保存します。</p>
+        <div class="result-tools"><button id="bundleButton" disabled data-i18n="bundleCsv">CSVをまとめて保存（ZIP）</button><button id="copyResult" disabled data-i18n="copyResult">結果をコピー</button></div>
+        <textarea id="resultText" readonly hidden data-i18n-aria-label="copyFallback" aria-label="コピー用の計測結果"></textarea>
         <div class="export-actions">
           <button id="downloadButton" disabled data-i18n="download">イベントCSV</button>
           <button id="summaryButton" disabled data-i18n="exportSummary">概要CSV</button>
@@ -935,6 +983,7 @@ body.help-scroll-locked{
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
     <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
     <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
+    <dl><div><dt id="reportLabelA">A → B</dt><dd id="reportFinalA">0</dd></div><div><dt id="reportLabelB">B → A</dt><dd id="reportFinalB">0</dd></div><div><dt data-i18n="covered">有効計測</dt><dd id="reportObserved">—</dd></div><div><dt data-i18n="missingCoverage">欠測</dt><dd id="reportMissing">—</dd></div><div><dt data-i18n="correctionCount">補正操作</dt><dd id="reportCorrections">0</dd></div></dl>
     <p class="helper" data-i18n="prototypeNote">判定線を移動しやすくしました。実環境の精度確認はまだ完了していません。</p>
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
@@ -957,6 +1006,11 @@ body.help-scroll-locked{
 </main>
 <!-- APP:END -->
 <footer><span id="footerName">通過カウンター</span> · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<nav id="liveDock" class="live-dock" hidden data-i18n-aria-label="measurementActions" aria-label="計測操作">
+  <button id="dockPause" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span data-i18n="pause">一時停止</span></button>
+  <button id="dockResume" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 4 12 8-12 8Z"/></svg><span data-i18n="resume">再開</span></button>
+  <button id="dockFinish" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg><span data-i18n="finish">終了</span></button>
+</nav>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle">
   <div class="help-dialog-head">
@@ -986,6 +1040,9 @@ body.help-scroll-locked{
       <li data-i18n="helpLimitStorage">保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。</li>
     </ul>
     <p class="help-dialog-note" data-i18n="helpImportant">計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。</p>
+    <p data-i18n="helpImprovements">足元の点が線を横切る位置に判定線を置き、横線・縦線・中央ボタンで調整できます。範囲指定は設定内の左右上下の割合で行います。設置チェックは目視の通過回数と照合してください。表示は精度の保証ではありません。</p>
+    <p data-i18n="helpSampling">動画は既定で0.1秒間隔の位置を順番に解析します。全フレームではなく、短い通過を見落とす可能性があります。再生しながら解析する方法も選べます。時間帯別の集計は動画内時刻ではなく、解析を行った実際の時刻です。</p>
+    <p data-i18n="helpFocus">計測中は集中表示になります。「設定・記録も表示」で戻せます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。</p>
     <details class="embedded-license-notice" id="embeddedLicenseNotice">
       <summary data-i18n="thirdPartyLicenseTitle">ソフトウェアとモデルのライセンス</summary>
       <p data-i18n="thirdPartyLicenseNote">MediaPipe Tasks VisionとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。</p>
@@ -1003,7 +1060,7 @@ body.help-scroll-locked{
       <h4 data-i18n="appLicenseTitle">Passage Counter — MIT License</h4>
       <pre id="embeddedAppMitLicense">__APP_MIT_LICENSE_TEXT__</pre>
     </details>
-    <p class="helper" id="helpVersion">v1.0.0</p>
+    <p class="helper" id="helpVersion">v1.1.0</p>
   </div>
 </dialog>
 <!-- APP:HELP:END -->
@@ -1361,6 +1418,51 @@ body.help-scroll-locked{
       const stage = $('#cameraStage');
       const gesture = $('#lineGestureLayer');
       const ctx = overlay.getContext('2d');
+      // OPERATIONS:BEGIN
+      function validArea(a){
+        return Boolean(a&&[a.x,a.y,a.w,a.h].every(Number.isFinite)&&
+          a.x>=0&&a.y>=0&&a.w>=0.05-1e-9&&a.h>=0.05-1e-9&&a.x+a.w<=1.000001&&a.y+a.h<=1.000001);
+      }
+      function inCountingArea(p,a){return !a||(p.x>=a.x&&p.x<=a.x+a.w&&p.y>=a.y&&p.y<=a.y+a.h);}
+      function linePreset(kind,previous=[{x:.12,y:.5},{x:.88,y:.5}]){
+        if(kind==='vertical')return [{x:.5,y:.12},{x:.5,y:.88}];
+        if(kind==='horizontal')return [{x:.12,y:.5},{x:.88,y:.5}];
+        const dx=previous[1].x-previous[0].x,dy=previous[1].y-previous[0].y;
+        return [{x:.5-dx/2,y:.5-dy/2},{x:.5+dx/2,y:.5+dy/2}];
+      }
+      function* sampleTimes(durationMs,stepMs=100){
+        if(!Number.isFinite(durationMs)||durationMs<=0)return;
+        if(!Number.isFinite(stepMs)||stepMs<=0)throw Error('Invalid sampling step');
+        const last=Math.max(0,Math.ceil(durationMs)-1);
+        for(let ms=0;ms<last;ms+=stepMs)yield ms;
+        yield last;
+      }
+      // ZIP method 0 (stored), UTF-8 names, CRC32; the files are small CSVs.
+      function zipFiles(files){
+        const enc=new TextEncoder(),locals=[],central=[];let offset=0;
+        const header=size=>{const bytes=new Uint8Array(size);return {bytes,v:new DataView(bytes.buffer)};};
+        for(const file of files){
+          const name=enc.encode(file.name),data=enc.encode(file.text);let crc=0xffffffff;
+          for(const b of data){crc^=b;for(let n=0;n<8;n++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}
+          crc=(crc^0xffffffff)>>>0;
+          const l=header(30);l.v.setUint32(0,0x04034b50,true);l.v.setUint16(4,20,true);
+          l.v.setUint16(6,0x800,true);l.v.setUint16(12,33,true);l.v.setUint32(14,crc,true);
+          l.v.setUint32(18,data.length,true);l.v.setUint32(22,data.length,true);l.v.setUint16(26,name.length,true);
+          locals.push(l.bytes,name,data);
+          const c=header(46);c.v.setUint32(0,0x02014b50,true);c.v.setUint16(4,20,true);c.v.setUint16(6,20,true);
+          c.v.setUint16(8,0x800,true);c.v.setUint16(14,33,true);c.v.setUint32(16,crc,true);
+          c.v.setUint32(20,data.length,true);c.v.setUint32(24,data.length,true);c.v.setUint16(28,name.length,true);
+          c.v.setUint32(42,offset,true);central.push(c.bytes,name);offset+=30+name.length+data.length;
+        }
+        const centralSize=central.reduce((n,b)=>n+b.length,0),end=header(22);
+        end.v.setUint32(0,0x06054b50,true);end.v.setUint16(8,files.length,true);end.v.setUint16(10,files.length,true);
+        end.v.setUint32(12,centralSize,true);end.v.setUint32(16,offset,true);
+        const output=new Uint8Array(offset+centralSize+22);let pos=0;
+        for(const part of [...locals,...central,end.bytes]){output.set(part,pos);pos+=part.length;}
+        return output;
+      }
+      // OPERATIONS:END
+
       // LEDGER:BEGIN
       // Append-only correction history. Trial crossings never enter this ledger.
       function createCountingLedger(){
@@ -1682,10 +1784,47 @@ body.help-scroll-locked{
         fileNeedsReanalysis:false,
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
         fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
-        previewTargetMs:0
+        previewTargetMs:0,area:null,areaValid:true,focused:false,lastCrossing:null,feedbackTimer:null,
+        analysisGeneration:0,sampleCursorMs:-1,sequentialRunning:false,testQuality:null
       };
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
+      Object.assign(translations.ja, {
+        analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
+        samplingNote:'順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。',
+        linePresets:'判定線の配置',horizontalLine:'横線',verticalLine:'縦線',centerLine:'中央に戻す',
+        footNote:'検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。',
+        countingArea:'計測する範囲',useArea:'範囲を指定する',areaLeft:'左端（%）',areaRight:'右端（%）',areaTop:'上端（%）',areaBottom:'下端（%）',
+        areaInvalid:'左右・上下の順序と0〜100%を確認し、幅と高さを5%以上にしてください。',
+        areaNote:'枠内に足元がある人だけを追跡します。判定線の両側に余裕を残してください。映像全体の認識処理は行います。',
+        focusOn:'計測に集中',focusOff:'設定・記録も表示',latestNone:'まだ通過の記録はありません。',latestPassage:'直近の通過：{name} · {seconds}秒前',
+        checkNone:'通過0件：人が通らなかった場合と、検出できなかった場合は区別できません。実際に通って確認してください。',
+        checkCompare:'実際に通った回数・方向と照合してください。この結果は認識精度を保証しません。',
+        checkSpeed:'処理速度：{fps}回/秒 · 認識した映像：{samples}回',checkSlow:'処理が遅く、通過を見落とす可能性があります。',checkNoSamples:'認識した映像がありません。カメラや処理状態を確認してください。',
+        bundleCsv:'CSVをまとめて保存（ZIP）',copyResult:'結果をコピー',copyFallback:'コピー用の計測結果',copiedResult:'結果をコピーしました',copySelect:'コピーできませんでした。表示された結果を選択してコピーしてください。',
+        correctionCount:'補正操作',measurementActions:'計測操作',sampleProgress:'動画の解析：{percent}% · 0.1秒間隔',
+        helpImprovements:'足元の点が線を横切る位置に判定線を置き、横線・縦線・中央ボタンで調整できます。範囲指定は設定内の左右上下の割合で行います。設置チェックは目視の通過回数と照合してください。表示は精度の保証ではありません。',
+        helpSampling:'動画は既定で0.1秒間隔の位置を順番に解析します。全フレームではなく、短い通過を見落とす可能性があります。再生しながら解析する方法も選べます。時間帯別の集計は動画内時刻ではなく、解析を行った実際の時刻です。',
+        helpFocus:'計測中は集中表示になります。「設定・記録も表示」で戻せます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。'
+      });
+      Object.assign(translations.en, {
+        analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
+        samplingNote:'Sequential analysis waits for each sample to finish. It does not analyze every frame and may take longer than the video duration.',
+        linePresets:'Counting line placement',horizontalLine:'Horizontal',verticalLine:'Vertical',centerLine:'Center line',
+        footNote:'The bottom center of each detection box approximates the feet. Place the line where this point will cross.',
+        countingArea:'Counting area',useArea:'Limit counting to an area',areaLeft:'Left (%)',areaRight:'Right (%)',areaTop:'Top (%)',areaBottom:'Bottom (%)',
+        areaInvalid:'Check boundary order and the 0–100% range. Width and height must each be at least 5%.',
+        areaNote:'Only people with their foot point inside the rectangle are tracked. Leave space on both sides of the line. Recognition still processes the full image.',
+        focusOn:'Focus on counting',focusOff:'Show settings and records',latestNone:'No crossings recorded yet.',latestPassage:'Latest crossing: {name} · {seconds} s ago',
+        checkNone:'No crossings: this cannot distinguish no one passing from a missed detection. Walk across the line to check.',
+        checkCompare:'Compare the counts and directions with what you observed. This result does not guarantee accuracy.',
+        checkSpeed:'Processing: {fps} samples/s · {samples} images analyzed',checkSlow:'Processing is slow and may miss crossings.',checkNoSamples:'No images analyzed. Check the camera and processing status.',
+        bundleCsv:'Save all CSVs (ZIP)',copyResult:'Copy results',copyFallback:'Results to copy',copiedResult:'Results copied',copySelect:'Could not copy. Select and copy the displayed results.',
+        correctionCount:'Correction actions',measurementActions:'Measurement actions',sampleProgress:'Video analysis: {percent}% · 0.1 s samples',
+        helpImprovements:'Place the line where the foot point crosses. Use Horizontal, Vertical or Center line to adjust it. Set area boundaries as percentages in settings. Compare calibration counts with observed crossings; the report does not guarantee accuracy.',
+        helpSampling:'By default, video analysis samples sequentially every 0.1 seconds. It does not analyze every frame and may miss brief crossings. Playback analysis is also available. Time buckets use actual analysis wall-clock time, not positions within the video.',
+        helpFocus:'Counting starts in focus view. Choose Show settings and records to exit. On phones, the bottom bar pauses, resumes or finishes measurement. Export all three CSVs in a ZIP or copy results. The ZIP never includes video.'
+      });
       function tr(key){return translations[language][key]||translations.en[key]||key;}
       // PERSIST:BEGIN
       // The queue serializes a snapshot and each matching event in one IndexedDB
@@ -1782,8 +1921,9 @@ body.help-scroll-locked{
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting')pauseCount();
         if(!keepStream)closeCamera();
+        $('#resultText').hidden=true;$('#resultText').value='';
         ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;
-        state.sessionStart=null;currentSession=null;zeroTracks();invalidateTest();
+        state.sessionStart=null;currentSession=null;state.lastCrossing=null;state.focused=false;zeroTracks();invalidateTest();
         state.fileNeedsReanalysis=false;state.lastProcessedSourceMs=-1;
         state.phase=hasActiveSource()?'ready':'idle';
         $('#report').hidden=true;
@@ -1830,6 +1970,9 @@ body.help-scroll-locked{
           if(Array.isArray(session.line)&&session.line.length===2){
             line[0]={...session.line[0]};line[1]={...session.line[1]};
           }
+          const config=session.configSegments?.at(-1);
+          state.reverse=config?.reversed===true;state.area=validArea(config?.area)?{...config.area}:null;
+          $('#analysisMode').value=config?.analysisMode==='realtime'?'realtime':'sequential';syncAreaFields();
           state.startTime=Date.parse(session.startedAt)||0;
           state.sessionStart=session.startedAt;
           state.elapsedMs=timeline.durations(session).observedMs;
@@ -1886,6 +2029,7 @@ body.help-scroll-locked{
       }
       function saveSetup(){
         const value={line:line.map(p=>({...p})),reverse:state.reverse,
+          area:state.area,analysisMode:$('#analysisMode').value,
           cameraFacing:$('#cameraFacing').value,showDetections:$('#showDetections').checked,
           labelA:$('#labelA').value.slice(0,24),labelB:$('#labelB').value.slice(0,24)};
         try{localStorage.setItem(SETUP_KEY,JSON.stringify(value));}catch{}
@@ -1898,6 +2042,8 @@ body.help-scroll-locked{
             Number.isFinite(pt.x)&&Number.isFinite(pt.y)&&pt.x>=0.03&&pt.x<=0.97&&pt.y>=0.03&&pt.y<=0.97)){
             line[0]={x:p.line[0].x,y:p.line[0].y};line[1]={x:p.line[1].x,y:p.line[1].y};
           }
+          state.area=validArea(p.area)?{...p.area}:null;syncAreaFields();
+          $('#analysisMode').value=p.analysisMode==='realtime'?'realtime':'sequential';
           state.reverse=p.reverse===true;
           $('#cameraFacing').value=p.cameraFacing==='user'?'user':'environment';
           $('#showDetections').checked=p.showDetections!==false;
@@ -1915,6 +2061,12 @@ body.help-scroll-locked{
         $('#testRemaining').textContent=state.phase==='testing'?
           tr('remaining').replace('{seconds}',String(remaining)):
           tr(state.testCancelled?'testInterrupted':'testCompleted');
+        const quality=state.phase==='testing'?inferencePacer.snapshot(performance.now()):state.testQuality;
+        $('#testObservations').textContent=[
+          quality?.samples?tr('checkSpeed').replace('{fps}',quality.fps).replace('{samples}',quality.samples):tr('checkNoSamples'),
+          quality?.slow?tr('checkSlow'):'',
+          state.testA+state.testB===0?tr('checkNone'):tr('checkCompare')
+        ].filter(Boolean).join('\n');
         $('#testMessage').textContent=tr('trialCounts')
           .replace('{a}',countName('A_TO_B')+' '+state.testA)
           .replace('{b}',countName('B_TO_A')+' '+state.testB);
@@ -1934,7 +2086,8 @@ body.help-scroll-locked{
         document.title=language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
         $('#labelA').placeholder=tr('directionA');
         $('#labelB').placeholder=tr('directionB');
-        updateStorageNotice();renderSavedSessions();renderTimeline();renderState();
+        $('#helpVersion').textContent='v'+APP_CONFIG.version;
+        updateStorageNotice();renderSavedSessions();renderTimeline();renderState();draw();
       }
       function toast(message, actionLabel, onAction){
         const root=$('#appToast'),button=$('#appToastAction');
@@ -2005,7 +2158,7 @@ body.help-scroll-locked{
           const empty=document.createElement('p');empty.className='saved-empty';
           empty.textContent=tr('noIntervalRows');root.append(empty);return;
         }
-        const last=entries.slice(-16),max=Math.max(1,...last.map(entry=>Math.max(0,entry.totalA+entry.totalB)));
+        const last=entries.slice(-16),max=Math.max(1,...last.flatMap(entry=>[entry.totalA,entry.totalB]));
         for(const item of last){
           const container=document.createElement('div');container.className='timeline-item';
           container.dataset.coverage=item.coverageStatus;
@@ -2015,9 +2168,12 @@ body.help-scroll-locked{
           });
           const summary=document.createElement('div');summary.className='meta';
           summary.textContent=countName('A_TO_B')+': '+item.totalA+' · '+countName('B_TO_A')+': '+item.totalB;
-          const bar=document.createElement('div');bar.className='bar';
-          const value=document.createElement('span');value.style.width=
-            Math.max(0,Math.min(100,100*(item.totalA+item.totalB)/max))+'%';bar.append(value);
+          const bar=document.createElement('div');bar.className='direction-bars';bar.setAttribute('aria-hidden','true');
+          for(const [index,total] of [item.totalA,item.totalB].entries()){
+            const track=document.createElement('div');track.className='bar';
+            const value=document.createElement('span');value.className=index?'direction-b':'direction-a';
+            value.style.width=Math.max(0,Math.min(100,100*total/max))+'%';track.append(value);bar.append(track);
+          }
           const coverageText=document.createElement('div');coverageText.className='coverage';
           coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
             missing:'coverageMissing'})[item.coverageStatus])+
@@ -2087,8 +2243,107 @@ body.help-scroll-locked{
         $('#nextActionDescription').textContent=tr(copy[1]);
         return next;
       }
+      function syncAreaFields(){
+        const a=state.area;$('#roiEnabled').checked=Boolean(a);$('#roiFields').hidden=!a;
+        if(a)for(const [id,value] of [['roiLeft',a.x],['roiRight',a.x+a.w],['roiTop',a.y],['roiBottom',a.y+a.h]])$('#'+id).value=String(Math.round(value*100));
+        state.areaValid=true;$('#roiError').hidden=true;
+      }
+      function updateArea(){
+        if(['counting','testing','loading','done'].includes(state.phase))return;
+        const enabled=$('#roiEnabled').checked;$('#roiFields').hidden=!enabled;
+        const read=id=>$('#'+id).value.trim()===''?NaN:Number($('#'+id).value)/100;
+        const x=read('roiLeft'),y=read('roiTop');
+        const a={x,y,w:read('roiRight')-x,h:read('roiBottom')-y};
+        state.areaValid=!enabled||validArea(a);$('#roiError').hidden=state.areaValid;
+        for(const id of ['roiLeft','roiRight','roiTop','roiBottom'])$('#'+id).setAttribute('aria-invalid',String(!state.areaValid));
+        if(state.areaValid){state.area=enabled?a:null;saveSetup();}
+        zeroTracks();invalidateTest();draw();renderState();
+      }
+      function renderOperations(){
+        const live=['counting','paused','interrupted'].includes(state.phase)&&Boolean(state.startTime);
+        $('#appMain').dataset.focused=String(state.focused&&live);
+        $('#focusToggle').hidden=!live;$('#focusToggle').setAttribute('aria-pressed',String(state.focused&&live));
+        $('#focusToggle').textContent=tr(state.focused?'focusOff':'focusOn');
+        $('#liveDock').hidden=!live;document.body.classList.toggle('has-live-dock',live);
+        $('#dockPause').disabled=state.phase!=='counting';
+        $('#dockResume').disabled=!['paused','interrupted'].includes(state.phase)||!hasActiveSource()||!state.detector||!state.areaValid||(!isFileMode()&&!state.testCompleted)||state.fileNeedsReanalysis;
+        $('#dockFinish').disabled=!live;
+        const latest=state.lastCrossing;
+        $('#latestCrossing').textContent=latest?tr('latestPassage').replace('{name}',countName(latest.direction))
+          .replace('{seconds}',String(Math.max(0,Math.floor((performance.now()-latest.at)/1000)))):tr('latestNone');
+      }
+      function showCrossing(event){
+        state.lastCrossing={direction:event.direction,at:performance.now()};
+        const feedback=$('#crossingFeedback');
+        const p=event.crossedAt||{x:(line[0].x+line[1].x)/2,y:(line[0].y+line[1].y)/2};
+        const g=layoutInfo();
+        feedback.style.left=(g.x+p.x*g.width)+'px';feedback.style.top=(g.y+p.y*g.height)+'px';
+        feedback.textContent=(event.direction==='A_TO_B'?'A → B':'B → A')+' +1';feedback.hidden=false;
+        clearTimeout(state.feedbackTimer);state.feedbackTimer=setTimeout(()=>{feedback.hidden=true;},900);
+      }
+      function cancelSequential(){
+        state.analysisGeneration++;state.sequentialRunning=false;
+        state.pendingSeekCancel?.();state.pendingSeekCancel=null;
+      }
+      function seekSample(ms,generation){
+        return new Promise((resolve,reject)=>{
+          let settled=false;
+          const finish=error=>{
+            if(settled)return;settled=true;clearTimeout(timer);
+            video.removeEventListener('seeked',onSeek);video.removeEventListener('error',onError);
+            if(state.pendingSeekCancel===cancel)state.pendingSeekCancel=null;
+            if(error)reject(error);else resolve();
+          };
+          const cancel=()=>finish(new DOMException('Analysis cancelled','AbortError'));
+          const onSeek=()=>generation===state.analysisGeneration?finish():cancel();
+          const onError=()=>finish(Error('Video seek failed'));
+          const timer=setTimeout(()=>finish(Error('Video seek timeout')),12000);
+          state.pendingSeekCancel=cancel;
+          if(generation!==state.analysisGeneration)return cancel();
+          if(!video.seeking&&Math.abs(video.currentTime-ms/1000)<0.0005&&video.readyState>=2)return finish();
+          video.addEventListener('seeked',onSeek);video.addEventListener('error',onError);
+          state.fileInternalSeek=true;video.currentTime=ms/1000;
+        });
+      }
+      async function runSequential(){
+        cancelSequential();
+        const generation=state.analysisGeneration;state.sequentialRunning=true;
+        cancelAnimationFrame(state.frameHandle);video.pause();
+        try{
+          for(const ms of sampleTimes(state.videoDurationMs)){
+            if(ms<=state.sampleCursorMs)continue;
+            if(generation!==state.analysisGeneration||state.phase!=='counting')return;
+            await seekSample(ms,generation);
+            if(generation!==state.analysisGeneration||state.phase!=='counting'||document.visibilityState!=='visible')return;
+            analyzeFrame(performance.now(),ms,true);state.sampleCursorMs=ms;
+            draw();renderVideoTime();
+            $('#recognitionStatus').textContent=tr('sampleProgress').replace('{percent}',String(Math.min(100,Math.round(100*(ms+1)/state.videoDurationMs))));
+            // Let controls, paint, and visibility events run between samples.
+            await new Promise(resolve=>setTimeout(resolve,0));
+          }
+          if(generation===state.analysisGeneration&&state.phase==='counting')finishCount();
+        }catch(error){
+          if(generation===state.analysisGeneration&&error.name!=='AbortError'){
+            console.warn('[Passage Counter] Sequential analysis failed',error);interrupt(tr('videoPlaybackFailed'));
+          }
+        }finally{if(generation===state.analysisGeneration)state.sequentialRunning=false;}
+      }
+      function analyzeFrame(now,sourceMs,sequential=false){
+        const timestamp=Math.max(now,state.lastTimestamp+0.1);state.lastTimestamp=timestamp;
+        const started=performance.now(),result=state.detector.detectForVideo(video,timestamp);
+        inferencePacer.record(now,performance.now()-started);
+        const quality=inferencePacer.snapshot(now);
+        const detections=(result.detections||[]).filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person')).map(d=>d.boundingBox);
+        state.detections=detections;state.fps=quality.fps;
+        $('#detectorInfo').textContent='EfficientDet-Lite0 · '+quality.fps+' fps · '+quality.meanMs+' ms · '+detections.length+' boxes · '+quality.skipped+' deferred · '+quality.gaps+' gaps';
+        if(!sequential&&quality.mustInterrupt&&state.phase==='counting')interrupt(tr('recognitionAutoStopped'));
+        else if(!isFileMode()||(state.phase==='counting'&&!state.fileNeedsReanalysis))trackPeople(detections,isFileMode()?sourceMs:now);
+        updateRecognitionStatus();
+      }
+
       function renderState(message){
         const phase=state.phase,sourceAvailable=hasActiveSource(),fileMode=isFileMode();
+        renderOperations();
         $('#appMain').dataset.phase=phase;
         $('#appMain').dataset.source=fileMode?'file':'camera';
         updateRecognitionStatus();
@@ -2100,7 +2355,7 @@ body.help-scroll-locked{
           idle:'instruction',loading:'loading',ready:'settingLine',testing:'testingMessage',counting:'counting',
           paused:'pausedText',done:'finished',error:(fileMode?state.videoErrorKey:state.errorKey)||'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
-        const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
+        const validLine=state.areaValid&&Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
         $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
           message||(!validLine&&sourceAvailable?tr('lineTooShort'):
             fileMode&&phase==='ready'?tr('videoReady'):
@@ -2118,6 +2373,11 @@ body.help-scroll-locked{
         $('#reportManualA').textContent=totals.manualA>0?'+'+totals.manualA:totals.manualA;
         $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;
         $('#reportTotal').textContent=totals.a+totals.b;
+        $('#reportFinalA').textContent=totals.a;$('#reportFinalB').textContent=totals.b;
+        $('#reportLabelA').textContent=nameA;$('#reportLabelB').textContent=nameB;
+        $('#reportCorrections').textContent=ledger.history().filter(e=>e.kind==='correction').length;
+        const reportDur=currentSession?timeline.durations(currentSession):{observedMs:0,missingMs:0};
+        $('#reportObserved').textContent=formatElapsed(reportDur.observedMs);$('#reportMissing').textContent=formatElapsed(reportDur.missingMs);
         $('#miniA').textContent=phase==='testing'?state.testA:totals.a;
         $('#miniB').textContent=phase==='testing'?state.testB:totals.b;
         $('#mobileCounts').hidden=!['counting','testing'].includes(phase);
@@ -2125,6 +2385,10 @@ body.help-scroll-locked{
         $('#elapsedText').textContent=formatElapsed(elapsed);
         $('#reportElapsed').textContent=formatElapsed(elapsed);
         const testing=phase==='testing';
+        for(const id of ['analysisMode','lineHorizontal','lineVertical','lineCenter','roiEnabled','roiLeft','roiRight','roiTop','roiBottom'])
+          $('#'+id).disabled=['counting','testing','loading','done'].includes(phase)||state.sourceBusy||(['lineHorizontal','lineVertical','lineCenter'].includes(id)&&!sourceAvailable);
+        $('#analysisMode').disabled=$('#analysisMode').disabled||Boolean(state.startTime);
+        $('#bundleButton').disabled=!state.startTime;$('#copyResult').disabled=!state.startTime;
         $('#sourceMode').value=state.sourceMode;
         $('#sourceMode').disabled=state.sourceBusy||state.restoring;
         $('#videoFile').disabled=state.sourceBusy||state.restoring;
@@ -2393,9 +2657,9 @@ body.help-scroll-locked{
         if(!width||!height)return;
         const boxes=detections.map(d=>({
           x:d.originX/width,y:d.originY/height,w:d.width/width,h:d.height/height
-        }));
+        })).filter(b=>inCountingArea({x:b.x+b.w/2,y:b.y+b.h},state.area));
         const events=tracker.update(boxes,now,line,state.reverse);
-        if(state.phase==='counting'||state.phase==='testing') for(const event of events) recordCrossing(event.direction);
+        if(state.phase==='counting'||state.phase==='testing') for(const event of events){showCrossing(event);recordCrossing(event.direction);}
       }
       function refreshTimelineIfDue(){
         const now=Date.now();
@@ -2487,6 +2751,12 @@ body.help-scroll-locked{
         ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
         if(!hasActiveSource()){gesture.setAttribute('hidden','');return;}
         const g=layoutInfo();
+        if(state.area){
+          const a=state.area;ctx.fillStyle='#0005';ctx.beginPath();ctx.rect(g.x,g.y,g.width,g.height);
+          ctx.rect(g.x+a.x*g.width,g.y+a.y*g.height,a.w*g.width,a.h*g.height);ctx.fill('evenodd');
+          ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+          ctx.strokeRect(g.x+a.x*g.width,g.y+a.y*g.height,a.w*g.width,a.h*g.height);ctx.setLineDash([]);
+        }
         const x0=g.x+line[0].x*g.width,y0=g.y+line[0].y*g.height;
         const x1=g.x+line[1].x*g.width,y1=g.y+line[1].y*g.height;
         // The SVG receives pointer input only on the line or endpoint handles:
@@ -2518,12 +2788,16 @@ body.help-scroll-locked{
         const cx=(aPx.x+bPx.x)/2,cy=(aPx.y+bPx.y)/2;
         const badge=(text,x,y)=>{
           ctx.fillStyle='rgba(15,48,39,.92)';
-          ctx.beginPath();ctx.roundRect(x-13,y-12,26,24,6);ctx.fill();
-          ctx.fillStyle='#fff';ctx.font='bold 13px system-ui';
+          ctx.font='bold 12px system-ui';
+          const labelWidth=Math.min(g.width-12,Math.max(26,ctx.measureText(text).width+16));
+          x=Math.max(g.x+labelWidth/2+2,Math.min(g.x+g.width-labelWidth/2-2,x));
+          y=Math.max(g.y+14,Math.min(g.y+g.height-14,y));
+          ctx.beginPath();ctx.roundRect(x-labelWidth/2,y-12,labelWidth,24,6);ctx.fill();
+          ctx.fillStyle='#fff';
           ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+0.5);
         };
-        badge('A',cx-nx*36,cy-ny*36);
-        badge('B',cx+nx*36,cy+ny*36);
+        badge('A → B · '+countName('A_TO_B'),cx-nx*40,cy-ny*40);
+        badge('B → A · '+countName('B_TO_A'),cx+nx*40,cy+ny*40);
         ctx.textAlign='start';ctx.textBaseline='alphabetic';
         if($('#showDetections').checked)state.detections.forEach(d=>{
           const x=g.x+d.originX*g.sx,y=g.y+d.originY*g.sx;
@@ -2602,6 +2876,7 @@ body.help-scroll-locked{
       // Use Blob-backed browser-native decoding. Never FileReader/arrayBuffer a
       // complete movie, never save the File/Blob to IndexedDB, never upload it.
       function releaseLocalVideo(){
+        cancelSequential();state.sampleCursorMs=-1;state.lastCrossing=null;
         if(!state.videoUrl)return;
         video.pause();
         state.filePreviewing=false;
@@ -2715,6 +2990,8 @@ body.help-scroll-locked{
           if(!video.videoWidth||!video.videoHeight)throw Error('Video dimensions unavailable');
           const duration=await getFiniteVideoDuration();
           state.videoDurationMs=Math.max(0,Math.round(duration*1000));
+          $('#analysisMode').querySelector('[value=sequential]').disabled=!state.videoDurationMs;
+          if(!state.videoDurationMs){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
           state.videoReady=true;
           state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
@@ -2822,6 +3099,7 @@ body.help-scroll-locked{
         $('#detectorInfo').textContent='EfficientDet-Lite0 · SIMD';
       }
       function closeCamera(){
+        cancelSequential();
         if(state.phase==='testing')finishTest(true);
         if(state.videoUrl)releaseLocalVideo();
         if(state.phase==='counting')interrupt(tr('lostCamera'));
@@ -2863,7 +3141,7 @@ body.help-scroll-locked{
         }
       }
       function loop(now=performance.now()){
-        if(!hasActiveSource())return;
+        if(!hasActiveSource()||state.sequentialRunning)return;
         const fileMode=isFileMode();
         if(fileMode&&video.paused){state.frameHandle=0;return;}
         const sourceMs=fileMode?fileMediaTimeMs():null;
@@ -2888,27 +3166,7 @@ body.help-scroll-locked{
               }
               state.lastProcessedSourceMs=sourceMs;
             }
-            const timestamp=Math.max(now,state.lastTimestamp+0.1);
-            state.lastTimestamp=timestamp;
-            const started=performance.now();
-            const result=state.detector.detectForVideo(video,timestamp);
-            const elapsed=performance.now()-started;
-            inferencePacer.record(now,elapsed);
-            const quality=inferencePacer.snapshot(now);
-            const detections=(result.detections||[])
-              .filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person'))
-              .map(d=>d.boundingBox);
-            state.detections=detections;
-            state.fps=quality.fps;
-            $('#detectorInfo').textContent='EfficientDet-Lite0 · '+
-              quality.fps+' fps · '+quality.meanMs+' ms · '+detections.length+
-              ' boxes · '+quality.skipped+' inference attempts deferred · '+quality.gaps+' gaps';
-            if(quality.mustInterrupt&&state.phase==='counting'){
-              interrupt(tr('recognitionAutoStopped'));
-            }else if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis)){
-              trackPeople(detections,fileMode?sourceMs:now);
-            }
-            updateRecognitionStatus();
+            analyzeFrame(now,sourceMs);
             analyzed=true;
           }catch(err){
             console.error('[Passage Counter] Inference failed',err);
@@ -2944,18 +3202,21 @@ body.help-scroll-locked{
       function startTest(){
         if(!state.detector||!state.stream||!['ready','paused'].includes(state.phase))return;
         if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
-        state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
+        if(!state.areaValid)return;
+        state.testQuality=null;state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
         state.testA=0;state.testB=0;state.testStartedAt=performance.now();state.testEndedAt=0;
         inferencePacer.reset();
         state.phase='testing';zeroTracks();renderState();lockScreen();
       }
       function finishTest(cancelled=false){
         if(state.phase!=='testing')return;
+        state.testQuality=inferencePacer.snapshot(performance.now());
         state.testEndedAt=performance.now();state.testCompleted=!cancelled;state.testCancelled=cancelled;
         state.phase=state.testReturnPhase;zeroTracks();unlockScreen();
         renderState(tr(cancelled?'testCancelled':'testReady'));
       }
       function beginCount(){
+        if(!state.areaValid)return;
         if(!state.detector||!hasActiveSource()){toast(tr('notReady'));return;}
         if(!isFileMode()&&!state.testCompleted){toast(tr('testRequired'));return;}
         if(state.fileNeedsReanalysis){toast(tr('videoSeekingMessage'));return;}
@@ -2970,7 +3231,7 @@ body.help-scroll-locked{
             if(video.currentTime>0.001){
               state.fileInternalSeek=true;video.currentTime=0;
             }
-            state.lastProcessedSourceMs=-1;
+            state.lastProcessedSourceMs=-1;state.sampleCursorMs=-1;
           }
         }
         if(!currentSession){
@@ -2984,12 +3245,16 @@ body.help-scroll-locked{
         if(!state.startTime){state.startTime=now;state.sessionStart=new Date(now).toISOString();}
         currentSession.configSegments.push({startedAt:new Date(now).toISOString(),
           directionLabels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
-          line:line.map(p=>({...p})),reversed:state.reverse,
+          line:line.map(p=>({...p})),reversed:state.reverse,area:state.area?{...state.area}:null,
+          analysisMode:$('#analysisMode').value,sampleStepMs:100,
           modelVersion:'EfficientDet-Lite0-int8-1'});
         inferencePacer.reset();
+        if(!state.startTime||state.phase==='ready')state.focused=true;
         state.lastActive=performance.now();state.phase='counting';
         transitionSession('counting');zeroTracks();renderState();renderTimeline();
-        if(isFileMode()){
+        if(isFileMode()&&$('#analysisMode').value==='sequential'&&state.videoDurationMs>0){
+          void runSequential();lockScreen();
+        }else if(isFileMode()){
           video.play().catch(err=>{
             console.warn('[Passage Counter] Local playback was blocked',err);
             if(state.phase==='counting')interrupt(tr('videoPlaybackFailed'));
@@ -2999,12 +3264,14 @@ body.help-scroll-locked{
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
+        cancelSequential();
         state.elapsedMs+=performance.now()-state.lastActive;
         state.phase='paused';transitionSession('paused','user-paused');
         if(isFileMode())video.pause();
         unlockScreen();zeroTracks();renderState();renderTimeline();
       }
       function interrupt(msg){
+        cancelSequential();
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting'){state.elapsedMs+=performance.now()-state.lastActive;}
         state.phase='interrupted';transitionSession('interrupted','visibility-camera-or-inference');
@@ -3014,6 +3281,7 @@ body.help-scroll-locked{
       function finishCount(){
         if(state.phase==='counting')state.elapsedMs+=performance.now()-state.lastActive;
         if(!['counting','paused','interrupted'].includes(state.phase))return;
+        cancelSequential();state.focused=false;
         state.phase='done';transitionSession('done','finished');
         if(isFileMode()){video.pause();state.filePreviewing=false;}
         else closeCamera();
@@ -3032,8 +3300,9 @@ body.help-scroll-locked{
         if(typeof value!=='number'&&/^[\s]*[=+\-@]/.test(text))text="'"+text;
         return '"'+text.replace(/"/g,'""')+'"';
       }
+      function csvText(rows){return '\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';}
       function downloadRows(rows,filename){
-        const text='\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';
+        const text=csvText(rows);
         const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
         const a=document.createElement('a');a.href=url;a.download=filename;a.click();
         setTimeout(()=>URL.revokeObjectURL(url),1800);
@@ -3042,7 +3311,7 @@ body.help-scroll-locked{
         const base=normalizedFilename().replace(/\.csv$/i,'');
         return kind==='events'?base+'.csv':base+'-'+kind+'.csv';
       }
-      function exportCsv(){
+      function exportCsv(asRows=false){
         if(!state.startTime){toast(tr('noEvents'));return;}
         const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of',
           'session_id','source_time_ms','event_kind_v1','reference_event_id']];
@@ -3050,9 +3319,10 @@ body.help-scroll-locked{
           countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
           currentSession?.sessionId||'',e.sourceTimeMs??'',
           ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('events'));
       }
-      function exportSummary(){
+      function exportSummary(asRows=false){
         if(!currentSession||!state.startTime)return;
         const counts=ledger.summary(),dur=timeline.durations(currentSession),end=currentSession.endedAt||new Date().toISOString();
         const wall=Math.max(0,Date.parse(end)-Date.parse(currentSession.startedAt));
@@ -3063,9 +3333,10 @@ body.help-scroll-locked{
           currentSession.startedAt,currentSession.endedAt||'',Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',
           APP_CONFIG.version,'EfficientDet-Lite0-int8-1',wall,dur.observedMs,dur.pausedMs,dur.missingMs,
           counts.autoA,counts.manualA,counts.a,counts.autoB,counts.manualB,counts.b,counts.a+counts.b]];
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('summary'));
       }
-      function exportIntervals(){
+      function exportIntervals(asRows=false){
         if(!currentSession||!state.startTime)return;
         const size=Number($('#aggregationMinutes').value)||5;
         const buckets=timeline.aggregation(currentSession,ledger.history(),size);
@@ -3078,7 +3349,29 @@ body.help-scroll-locked{
           entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
           entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
         ]);
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('intervals'));
+      }
+      function exportBundle(){
+        if(!currentSession||!state.startTime)return;
+        const files=[['events',exportCsv(true)],['summary',exportSummary(true)],['intervals',exportIntervals(true)]]
+          .map(([kind,rows])=>({name:csvName(kind),text:csvText(rows)}));
+        const bytes=zipFiles(files),url=URL.createObjectURL(new Blob([bytes],{type:'application/zip'}));
+        const link=document.createElement('a');link.href=url;link.download=normalizedFilename().replace(/\.csv$/i,'')+'.zip';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1800);
+      }
+      async function copyResults(){
+        if(!currentSession||!state.startTime)return;
+        const totals=ledger.summary(),dur=timeline.durations(currentSession);
+        const text=[currentSession.name,countName('A_TO_B')+': '+totals.a,countName('B_TO_A')+': '+totals.b,
+          tr('total')+': '+(totals.a+totals.b),tr('covered')+': '+formatElapsed(dur.observedMs),
+          tr('pausedCoverage')+': '+formatElapsed(dur.pausedMs),tr('missingCoverage')+': '+formatElapsed(dur.missingMs),
+          tr('correctionCount')+': '+ledger.history().filter(e=>e.kind==='correction').length,
+          currentSession.startedAt+' – '+(currentSession.endedAt||tr('active')),
+          tr('countNote')].join('\n');
+        const box=$('#resultText');box.value=text;box.hidden=false;
+        try{await navigator.clipboard.writeText(text);toast(tr('copiedResult'));}
+        catch{box.focus();box.select();toast(tr('copySelect'));}
       }
       async function resetCounts(){
         const sessionId=currentSession?.sessionId||null;
@@ -3094,7 +3387,8 @@ body.help-scroll-locked{
         state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
         zeroTracks();invalidateTest();
         state.fileNeedsReanalysis=false;
-        state.lastProcessedSourceMs=-1;
+        state.lastProcessedSourceMs=-1;state.sampleCursorMs=-1;state.lastCrossing=null;state.focused=false;
+        $('#resultText').hidden=true;$('#resultText').value='';
         state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
       }
@@ -3134,6 +3428,13 @@ body.help-scroll-locked{
         if(event.clientX<bounds.left||event.clientX>bounds.right||
            event.clientY<bounds.top||event.clientY>bounds.bottom)helpDialog.close();
       });
+      $('#focusToggle').addEventListener('click',()=>{state.focused=!state.focused;renderOperations();draw();});
+      $('#dockPause').addEventListener('click',pauseCount);$('#dockResume').addEventListener('click',beginCount);$('#dockFinish').addEventListener('click',finishCount);
+      for(const [id,kind] of [['lineHorizontal','horizontal'],['lineVertical','vertical'],['lineCenter','center']])$('#'+id).addEventListener('click',()=>{
+        if(!canEditLine())return;const points=linePreset(kind,line);line[0]=points[0];line[1]=points[1];zeroTracks();invalidateTest();saveSetup();draw();renderState();
+      });
+      for(const id of ['roiEnabled','roiLeft','roiRight','roiTop','roiBottom'])$('#'+id).addEventListener('change',updateArea);
+      $('#analysisMode').addEventListener('change',()=>{if(!['counting','testing'].includes(state.phase))saveSetup();});
       $('#cameraStart').addEventListener('click',startCamera);
       $('#sourceMode').addEventListener('change',event=>switchVideoSource(event.target.value));
       $('#videoFile').addEventListener('change',event=>{
@@ -3179,17 +3480,18 @@ body.help-scroll-locked{
       });
       video.addEventListener('seeked',()=>{
         if(!isFileMode())return;
-        state.fileInternalSeek=false;state.lastProcessedSourceMs=-1;
-        zeroTracks();renderVideoTime();draw();
+        state.fileInternalSeek=false;
+        if(!state.sequentialRunning){state.lastProcessedSourceMs=-1;zeroTracks();}
+        renderVideoTime();draw();
       });
       video.addEventListener('ended',()=>{
         if(!isFileMode())return;
         state.filePreviewing=false;
-        if(state.phase==='counting')finishCount();
+        if(state.phase==='counting'&&!state.sequentialRunning)finishCount();
         renderState();
       });
       video.addEventListener('pause',()=>{
-        if(isFileMode()&&state.phase==='counting'&&!video.ended)interrupt(tr('videoPlaybackFailed'));
+        if(isFileMode()&&state.phase==='counting'&&!state.sequentialRunning&&!video.ended)interrupt(tr('videoPlaybackFailed'));
         if(isFileMode()&&state.filePreviewing){state.filePreviewing=false;renderState();}
       });
       $('#cameraStop').addEventListener('click',closeCamera);
@@ -3208,7 +3510,7 @@ body.help-scroll-locked{
         if(currentSession)queueSnapshot();
       });
       for(const id of ['#labelA','#labelB']){
-        $(id).addEventListener('input',()=>{saveSetup();renderState();});
+        $(id).addEventListener('input',()=>{saveSetup();renderState();draw();});
       }
       $('#minusA').addEventListener('click',()=>correction('A_TO_B',-1));
       $('#plusA').addEventListener('click',()=>correction('A_TO_B',1));
@@ -3218,6 +3520,7 @@ body.help-scroll-locked{
       $('#beginCount').addEventListener('click',beginCount);
       $('#pauseCount').addEventListener('click',pauseCount);
       $('#finishCount').addEventListener('click',finishCount);
+      $('#bundleButton').addEventListener('click',exportBundle);$('#copyResult').addEventListener('click',copyResults);
       $('#downloadButton').addEventListener('click',exportCsv);
       $('#summaryButton').addEventListener('click',exportSummary);
       $('#intervalsButton').addEventListener('click',exportIntervals);
@@ -3259,6 +3562,7 @@ body.help-scroll-locked{
         previousViewportOrientation=orientation;
       });
       state.clockTimer=setInterval(()=>{
+        renderOperations();
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
           else formatTestStatus();

@@ -10,6 +10,17 @@ Passage Counter is a Browser Kitty tool for counting **person-crossing events in
 
 **v1.0.0 verification:** Browser/CSV/standalone tests and the actual Cloudflare Preview CSP/model startup have passed. **30-minute physical-device tests and accuracy evaluation on 100+ real crossings are explicitly Future Work**, not achieved claims. MediaPipe maintainers' published **Apache 2.0 default covering source and models** provides a strong redistribution basis for the existing EfficientDet-Lite0 int8 (no contrary exception found). The exact npm WASM's corresponding source and full transitive NOTICE mapping remain unverified. On 2026-10-16 the owner approved a **risk-managed GO** for these unchanged binary hashes (not legal clearance). [Release decision](docs/RELEASE_READINESS_v1.0.0.md) · [Future Work](docs/FUTURE_WORK.md) · [Licensing and CSP audit](docs/LICENSING_CSP_AUDIT_2026-10-13.md)
 
+## Changes in v1.1.0
+
+- Optional focus view and a phone dock for pause, resume and finish.
+- Crossing-position +1 feedback, latest direction and foot-point placement guidance.
+- Calibration reports measured samples, speed and counts for comparison with observed traffic.
+- Video defaults to sequential samples every 0.1 seconds. This does not analyze every frame, may miss brief crossings and may take longer than playback. The existing playback analysis mode remains available.
+- Horizontal, vertical and center line presets. Percentage-based counting-area boundaries filter tracked foot points while the model still processes the full image.
+- Separate directional bars, hatched missing periods, a ZIP containing all three CSVs and copyable results.
+
+Video time buckets use actual analysis time, not media positions. Physical-device endurance and field accuracy evaluation remain incomplete.
+
 ## Live demo
 
 ### [Open Passage Counter on GitHub Pages](https://ttomohisa.github.io/htmlapps-passage-counter/)

@@ -33,7 +33,7 @@ try{
     const page=await context.newPage();
     page.on('pageerror',e=>errors.push(width+': '+e.message));
     await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
-    assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
+    assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
     const initial=await page.evaluate(()=>{
       const h=document.querySelector('.header-inner'),m=document.querySelector('.shell.main');
       const rect=e=>e.getBoundingClientRect();

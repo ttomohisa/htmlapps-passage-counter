@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0] - 2026-11-07
+
+- Add measurement focus view, safe-area phone controls, crossing feedback and foot-point guidance.
+- Add measured calibration observations, line presets and optional counting-area boundaries.
+- Add cancellable sequential 100 ms video analysis while preserving playback mode.
+- Add directional timeline bars, missing-period hatching, final result summary, ZIP CSV export and clipboard fallback.
+- Preserve embedded assets, correction audit records and all existing field-verification limitations.
+
 ## Unreleased
 
 - Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.

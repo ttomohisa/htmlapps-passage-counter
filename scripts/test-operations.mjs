@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const source=readFileSync('src/index.template.html','utf8');
+const chunk=source.match(/\/\/ OPERATIONS:BEGIN([\s\S]*?)\/\/ OPERATIONS:END/);
+assert(chunk,'Operational helpers are missing');
+const ops=vm.runInNewContext(`(()=>{${chunk[1]};return {validArea,inCountingArea,linePreset,sampleTimes,zipFiles};})()`,{TextEncoder,Uint8Array,DataView});
+assert(ops.validArea({x:0,y:0,w:1,h:1}));
+assert(ops.validArea({x:.9,y:.9,w:.95-.9,h:.95-.9}),'exact 5% boundaries must be accepted');
+for(const a of [null,{x:.9,y:0,w:.2,h:1},{x:0,y:NaN,w:1,h:1},{x:0,y:0,w:0,h:1}])assert(!ops.validArea(a));
+assert(ops.inCountingArea({x:.5,y:.8},null));
+assert(!ops.inCountingArea({x:.1,y:.8},{x:.2,y:.2,w:.6,h:.6}));
+assert(ops.inCountingArea({x:.5,y:.8},{x:.2,y:.2,w:.6,h:.6}));
+assert.equal(ops.linePreset('vertical')[0].x,ops.linePreset('vertical')[1].x);
+assert.equal(ops.linePreset('horizontal')[0].y,ops.linePreset('horizontal')[1].y);
+assert.equal(ops.linePreset('center',[{x:.1,y:.1},{x:.3,y:.7}])[1].y,.8);
+assert.deepEqual(Array.from(ops.sampleTimes(255)),[0,100,200,254]);
+assert.deepEqual(Array.from(ops.sampleTimes(100)),[0,99]);
+assert.deepEqual(Array.from(ops.sampleTimes(1)),[0]);
+assert.deepEqual(Array.from(ops.sampleTimes(0)),[]);
+const bytes=ops.zipFiles([{name:'日本語.csv',text:'\ufeff"a","b"\r\n'},{name:'summary.csv',text:'hello'}]);
+const v=new DataView(bytes.buffer);assert.equal(v.getUint32(0,true),0x04034b50);
+assert.equal(v.getUint16(6,true),0x800);assert.equal(v.getUint16(8,true),0);
+const end=bytes.length-22;assert.equal(v.getUint32(end,true),0x06054b50);assert.equal(v.getUint16(end+10,true),2);
+let crc=0xffffffff;const data=new TextEncoder().encode('\ufeff"a","b"\r\n');
+for(const b of data){crc^=b;for(let n=0;n<8;n++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}
+assert.equal(v.getUint32(14,true),(crc^0xffffffff)>>>0);
+console.log('[operations] PASS area bounds, foot points, presets, fixed sampling, ZIP headers/UTF8/CRC');
