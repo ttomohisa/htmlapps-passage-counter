@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
 const html=await readFile('dist/index.html');
@@ -21,7 +23,11 @@ try{
   const c=document.createElement('canvas');c.width=320;c.height=240;const x=c.getContext('2d');
   const stream=c.captureStream(15),r=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8'}),chunks=[];
   const done=new Promise(resolve=>r.onstop=resolve);r.ondataavailable=e=>chunks.push(e.data);
-  r.start();let i=0;const t=setInterval(()=>{x.fillStyle=i++%2?'#16624f':'#fff';x.fillRect(0,0,320,240);},66);
+  r.start();let i=0;const t=setInterval(()=>{
+   x.fillStyle='#eff3ef';x.fillRect(0,0,320,240);x.fillStyle='#d7dfd8';x.fillRect(0,190,320,50);
+   const px=40+(i++%20)*11;x.fillStyle='#16624f';x.beginPath();x.arc(px,60,16,0,Math.PI*2);x.fill();x.fillRect(px-16,80,32,70);
+   x.fillRect(px-15,150,10,40);x.fillRect(px+5,150,10,40);
+  },66);
   await new Promise(resolve=>setTimeout(resolve,1600));clearInterval(t);r.stop();await done;stream.getTracks().forEach(t=>t.stop());
   return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
  });
@@ -45,6 +51,16 @@ try{
  await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
  await page.locator('#plusA').click();
  assert.equal(await page.locator('#reportFinalA').textContent(),'1');
+ await mkdir('test-results/improvements',{recursive:true});
+ await page.locator('#sessionName').fill('Sample video · manual correction +1');
+ for(const lang of ['ja','en']){
+  if(await page.locator('html').getAttribute('lang')!==lang)await page.locator('#languageButton').click();
+  for(const width of [390,1360]){
+   await page.setViewportSize({width,height:900});await page.evaluate(()=>scrollTo(0,0));
+   await page.screenshot({path:`test-results/improvements/${lang}-${width}.png`,fullPage:true});
+  }
+ }
+ await page.setViewportSize({width:390,height:844});
  await page.locator('#outputFilename').fill('trial/日本語.csv');
  const download=page.waitForEvent('download');await page.locator('#bundleButton').click();
  const file=await download;assert.equal(file.suggestedFilename(),'trial-日本語.zip');
@@ -62,6 +78,18 @@ try{
  assert.equal(await page.locator('#cameraFeed').getAttribute('src'),null);
  if(await page.locator('html').getAttribute('lang')!=='en')await page.locator('#languageButton').click();
  assert.match(await page.locator('#bundleButton').textContent(),/ZIP/);
+ for(const variant of ['index.html','index.self-extract.html']){
+  const local=await context.newPage();local.on('pageerror',e=>errors.push(variant+': '+e.message));
+  local.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});
+  await local.goto(pathToFileURL(resolve('dist',variant)).href);
+  await local.locator('#sourceMode').selectOption('file');
+  await local.locator('#videoFile').setInputFiles({name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
+  await local.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
+  await local.locator('#beginCount').click();
+  await local.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
+  assert.equal(await local.locator('#analysisMode').inputValue(),'sequential');
+  await local.close();
+ }
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
  console.log('[improvements] PASS sequential decode/pause/resume/finish, area freeze/restore, ZIP/copy, JA/EN and widths');
  await context.close();
