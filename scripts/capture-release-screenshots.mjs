@@ -48,7 +48,8 @@ try{
   await page.locator('#plusA').click();await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
   await page.waitForFunction(()=>document.querySelector('#savedList .saved-session small')?.textContent.includes('A→B 1'));
   await page.locator('#outputFilename').fill('passage-counter-sample');
-  await page.locator('#pageTitle').click();
+  await page.locator('#outputFilename').press('Tab');
+  await page.evaluate(()=>document.activeElement?.blur());
   await page.evaluate(()=>scrollTo(0,0));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);

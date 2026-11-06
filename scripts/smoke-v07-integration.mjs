@@ -125,7 +125,7 @@ try{
       await page.locator('#plusA').click();
       const count=Number(await page.locator('#countA').textContent());
       assert(count>=1,'Manual correction failed on '+channel);
-      await page.locator('#focusToggle').click(); // expose reset and exports without stopping counting
+      await page.locator('#dockSettings').click(); // expose reset and exports without stopping counting
       // Escape must cancel destructive reset, retaining the count.
       await page.locator('#resetButton').click();
       assert(await page.locator('#confirmDialog').isVisible());

@@ -7,6 +7,7 @@
 - Add cancellable sequential 100 ms video analysis while preserving playback mode.
 - Add directional timeline bars, missing-period hatching, final result summary, ZIP CSV export and clipboard fallback.
 - Refresh saved-session totals after manual correction and Undo without requiring a reload.
+- Address screenshot review: remove duplicate direction keys, hide the phone local badge, show only fps, group phone counts with the preview and simplify state-dependent controls.
 - Preserve embedded assets, correction audit records and all existing field-verification limitations.
 
 ## Unreleased

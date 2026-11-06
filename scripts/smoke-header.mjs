@@ -62,7 +62,8 @@ try{
   assert.equal(design.version,'v1.1.0');
   assert(design.scrollWidth<=width+1,'Horizontal overflow at '+width+'px');
   assert(design.brand.right<=design.actions.left+2,'Header action overlaps app name at '+width);
-  assert(design.badge.top>=design.hero.top-1 &&
+  assert.equal(await page.locator('.local-badge').isVisible(),width>820,'Local badge hidden on phones');
+  if(width>820)assert(design.badge.top>=design.hero.top-1 &&
     design.badge.right<=design.hero.right+1 &&
     design.badge.bottom<=design.hero.bottom+1,
     'Local processing badge escapes the introductory block at '+width);

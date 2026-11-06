@@ -121,10 +121,10 @@ try {
   }, null, { timeout: 90_000 });
   assert(await page.locator('#cameraFeed').evaluate(video => video.videoWidth > 0), 'Camera should provide frames');
   await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
-  assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
+  assert.match(await page.locator('#detectorInfo').textContent(), /^\d+(\.\d+)? fps$/);
   console.log('[perf] Synthetic Chrome camera and bundled model ready after '+(Date.now()-cameraStartMs)+'ms; not a mobile benchmark.');
   assert(await page.locator('#recognitionStatus').isVisible(),'Plain-language recognition status not shown');
-  assert(await page.locator('#diagnosticDetails').count()===1,'Processing metrics details are missing');
+  assert(await page.locator('#processingSpeed').count()===1,'Processing speed is missing');
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
 
   // Verify real detectForVideo passes with the only bundled SIMD loader,

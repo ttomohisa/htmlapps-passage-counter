@@ -389,3 +389,10 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 - Timeline bars show directions separately; partial/missing buckets use hatching plus the existing text. For video, buckets continue to represent analysis wall-clock time, not media time.
 - Result summary includes final directional counts, active/missing duration and manual correction action count. Three existing BOM CSV exports can also be downloaded together in a native stored ZIP. A copy action exposes selectable text if Clipboard API access fails. No video is exported.
 - Existing unverified physical device/30-minute/100+ real crossing accuracy gates remain open. No dependency, model or CSP permission is changed.
+
+
+## v1.1.0 screenshot review corrections (2026-11-07)
+
+Phone layouts (<=820px) hide the local-processing badge; Help retains the processing/privacy explanation. The public processing display contains fps only, with existing plain-language state/slow warnings. Developer model/timing/deferred/gap counters are not exposed.
+
+Only A/B side markers remain on the image. Direction totals and correction buttons use one DOM instance: above the preview on phones, in the adjacent console on desktop. Phone preview height is bounded while counting; the fixed dock shows the applicable pause/resume action, finish, and settings/return. Ready sources also provide a setup-check/start action in the dock. Routine state boxes, unused alternatives and empty history messages are reduced; interruption reasons remain visible.
