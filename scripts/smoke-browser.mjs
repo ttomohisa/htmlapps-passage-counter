@@ -338,6 +338,7 @@ try {
   await failedPage.locator('#beginCount').click();
   await failedPage.locator('#plusB').click();
   assert.equal((await failedPage.locator('#countB').textContent()).trim(),'1');
+  await failedPage.locator('#focusToggle').click(); // expose records without stopping counting
   const rescue=failedPage.waitForEvent('download');
   await failedPage.locator('#downloadButton').click();
   const rescueCsv=await readFile(await (await rescue).path(),'utf8');
