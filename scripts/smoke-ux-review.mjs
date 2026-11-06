@@ -22,7 +22,16 @@ try{
   assert.equal(await page.locator('.local-badge').isVisible(),!mobile,'Local badge visibility at '+width);
   assert.equal(await page.getByText('処理の詳細',{exact:true}).count(),0,'No developer diagnostics control');
   await page.locator('#cameraStart').click();await page.waitForFunction(()=>!document.querySelector('#testButton').disabled,null,{timeout:60000});
-  if(mobile){assert(await page.locator('#dockStart').isVisible());await page.locator('#dockStart').click();await page.locator('#dockStart').click();await page.locator('#dockStart').click();}
+  if(mobile){
+   await page.locator('#cameraStage').scrollIntoViewIfNeeded();
+   const endpoints=await page.locator('#lineMoveTarget').evaluate(el=>{
+    const r=document.querySelector('#lineGestureLayer').getBoundingClientRect();
+    return {x1:r.left+Number(el.getAttribute('x1')),y1:r.top+Number(el.getAttribute('y1')),x2:r.left+Number(el.getAttribute('x2')),y2:r.top+Number(el.getAttribute('y2'))};
+   });
+   await page.mouse.move(endpoints.x2,endpoints.y2);await page.mouse.down();await page.mouse.move(endpoints.x1+3,endpoints.y1,{steps:6});await page.mouse.up();
+   assert(await page.locator('#dockStart').isDisabled(),'Dock must reject an invalid short counting line');
+   await page.locator('#lineHorizontal').click();
+   assert(await page.locator('#dockStart').isVisible());await page.locator('#dockStart').click();await page.locator('#dockStart').click();await page.locator('#dockStart').click();}
   else{await page.locator('#testButton').click();await page.locator('#testButton').click();await page.locator('#beginCount').click();}
   await page.waitForFunction(()=>document.querySelector('#appMain').dataset.phase==='counting');
   await page.waitForFunction(()=>/^\d+(\.\d+)? fps$/.test(document.querySelector('#detectorInfo').textContent));
@@ -37,6 +46,10 @@ try{
    assert(await page.locator('.measure-console').isHidden(),'No empty duplicate count panel during measurement');
    assert(await page.locator('#dockPause').isVisible());assert(await page.locator('#dockResume').isHidden());
    await page.locator('#dockPause').click();assert(await page.locator('#dockPause').isHidden());assert(await page.locator('#dockResume').isVisible());
+   await page.locator('#overlay').focus();await page.keyboard.press('ArrowRight');
+   assert(await page.locator('#dockResume').isHidden(),'Re-check replaces resume after moving the line');
+   assert(await page.locator('#dockStart').isVisible());await page.locator('#dockStart').click();await page.locator('#dockStart').click();
+   assert(await page.locator('#dockResume').isVisible());
    await page.locator('#dockResume').click();await page.locator('#dockSettings').click();
    assert(await page.locator('#setupOptions').isVisible());await page.locator('#dockSettings').click();
    assert.equal(await page.locator('#appMain').getAttribute('data-focused'),'true');

@@ -33,6 +33,11 @@ try{
  });
  await page.locator('#videoFile').setInputFiles({name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
  await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
+ await page.locator('#cameraFeed').evaluate(v=>{v.play=()=>Promise.reject(new DOMException('Controlled preview rejection','NotAllowedError'));});
+ await page.locator('#previewVideo').click();
+ assert(await page.locator('#statusDetails').isVisible(),'Explicit preview playback errors must remain visible');
+ assert.match(await page.locator('#statusDetails').textContent(),/動画を再生できません|Cannot play this video/);
+ await page.locator('#cameraFeed').evaluate(v=>{delete v.play;});
  assert.equal(await page.locator('#analysisMode').inputValue(),'sequential');
  assert.equal(await page.locator('#videoSourceBox').getAttribute('open'),null,'Loaded file settings collapse beside the preview');
  await page.locator('#lineVertical').click();

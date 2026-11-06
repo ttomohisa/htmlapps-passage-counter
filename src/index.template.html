@@ -733,15 +733,17 @@ body.help-scroll-locked{
 
 
 /* Review: one measurement surface and only ordinary processing information. */
+#statusDetails[data-kind="error"]{background:#fff0ed;color:#8a3931;border-left-color:#bd6658}
 .processing-speed{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap;color:var(--muted)}
 .workspace-eyebrow{display:none}
 .counter-summary{min-width:0;scroll-margin-top:80px}
 .counter-summary .measure-heading{margin-bottom:10px;align-items:center}
 .summary-state{font-size:11px;color:var(--brand);display:block;line-height:1.5}
-#focusToggle{font-size:12px;min-height:36px;padding:7px 10px;margin-bottom:10px}
+#focusToggle{font-size:12px;min-height:44px;padding:7px 10px;margin-bottom:10px}
 #appMain[data-has-source="true"] .page-intro{display:none}
-#appMain[data-phase="counting"] #statusDetails,#appMain[data-phase="ready"] #statusDetails{display:none}
+#appMain[data-phase="counting"] #statusDetails[data-explicit="false"],#appMain[data-phase="ready"] #statusDetails[data-explicit="false"]{display:none}
 #appMain[data-phase="counting"] #nextAction,#appMain[data-phase="paused"] #nextAction,#appMain[data-phase="interrupted"] #nextAction,#appMain[data-phase="done"] #nextAction{display:none}
+#appMain[data-phase="done"] #measureWorkflow{display:none}
 #appMain[data-phase="counting"] #setupFlow,#appMain[data-phase="paused"] #setupFlow,#appMain[data-phase="interrupted"] #setupFlow,#appMain[data-phase="done"] #setupFlow{display:none}
 #appMain[data-phase="interrupted"] #statusDetails,#appMain[data-phase="error"] #statusDetails{background:#fff5ed;border-left-color:#bd7655;color:#734b36;font-size:12px;padding:10px 12px}
 #appMain[data-phase="paused"] #statusDetails{background:#f4f6f4;color:var(--muted);font-size:12px;padding:8px 10px}
@@ -769,7 +771,7 @@ body.help-scroll-locked{
  .counter-summary #focusToggle{display:none}
  .camera-stage{aspect-ratio:16/9;min-height:145px}
  #appMain[data-focused="true"] .camera-stage{height:min(34dvh,calc(100dvh - 390px));min-height:120px;max-height:300px;aspect-ratio:auto}
- #appMain[data-focused="true"] .measure-console{display:none}
+ #appMain[data-focused="true"] .measure-console,#appMain[data-phase="done"] .measure-console{display:none}
  #appMain[data-focused="true"] .video-panel{padding-bottom:8px}
  #appMain[data-focused="true"] .workspace{gap:0}
  #appMain[data-focused="true"] .workspace-topline{padding-bottom:8px}
@@ -2347,16 +2349,18 @@ body.help-scroll-locked{
         $('#appMain').dataset.focused=String(state.focused&&live);
         $('#focusToggle').hidden=!live;$('#focusToggle').setAttribute('aria-pressed',String(state.focused&&live));
         $('#focusToggle').textContent=tr(state.focused?'focusOff':'focusOn');
-        const preparing=hasActiveSource()&&Boolean(state.detector)&&['ready','testing'].includes(state.phase)&&!state.startTime;
+        const needsTest=!isFileMode()&&!state.testCompleted;
+        const preparing=hasActiveSource()&&Boolean(state.detector)&&
+          (['ready','testing'].includes(state.phase)||(['paused','interrupted'].includes(state.phase)&&needsTest))&&
+          (!state.startTime||needsTest||state.phase==='testing');
         const dockVisible=live||preparing;
-        $('#liveDock').hidden=!dockVisible;$('#liveDock').dataset.preparing=String(preparing);
+        $('#liveDock').hidden=!dockVisible;$('#liveDock').dataset.preparing=String(preparing&&!live);
         document.body.classList.toggle('has-live-dock',dockVisible);
         $('#dockStart').hidden=!preparing;
-        const needsTest=!isFileMode()&&!state.testCompleted;
         $('#dockStartLabel').textContent=tr(state.phase==='testing'?'stopTest':needsTest?'startTest':'beginCount');
-        $('#dockStart').disabled=!state.areaValid||state.sourceBusy;
+        $('#dockStart').disabled=!state.areaValid||Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08||state.sourceBusy;
         $('#dockPause').hidden=state.phase!=='counting';
-        $('#dockResume').hidden=!live||state.phase==='counting';
+        $('#dockResume').hidden=!live||state.phase==='counting'||preparing;
         $('#dockFinish').hidden=!live;
         $('#dockSettingsLabel').textContent=tr(live?(state.focused?'focusOff':'focusOn'):'settingsShort');
         $('#dockSettings').setAttribute('aria-expanded',String(live&&!state.focused));
@@ -2454,6 +2458,8 @@ body.help-scroll-locked{
           paused:'pausedText',done:'finished',error:(fileMode?state.videoErrorKey:state.errorKey)||'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
         const validLine=state.areaValid&&Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
+        $('#statusDetails').dataset.explicit=String(Boolean(message)&&message!==tr('videoReady'));
+        $('#statusDetails').dataset.kind=message===tr('videoPlaybackFailed')?'error':'normal';
         $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
           message||(!state.areaValid?tr('areaInvalid'):!validLine&&sourceAvailable?tr('lineTooShort'):
             fileMode&&phase==='ready'?tr('videoReady'):
@@ -3315,6 +3321,7 @@ body.help-scroll-locked{
       }
       function beginCount(){
         if(!state.areaValid)return;
+        if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08){toast(tr('lineTooShort'));return;}
         if(!state.detector||!hasActiveSource()){toast(tr('notReady'));return;}
         if(!isFileMode()&&!state.testCompleted){toast(tr('testRequired'));return;}
         if(state.fileNeedsReanalysis){toast(tr('videoSeekingMessage'));return;}
