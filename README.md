@@ -12,7 +12,8 @@ Passage Counter is a Browser Kitty tool for counting **person-crossing events in
 
 ## Changes in v1.1.0
 
-- Optional focus view and a phone dock for pause, resume and finish.
+- Phone counts, correction buttons and preview are grouped together. The bottom dock shows pause or resume, finish and settings; desktop keeps counts beside the preview.
+- Only A/B side markers remain over the image. Processing speed is shown in fps, and the local-processing header badge is hidden on phones.
 - Crossing-position +1 feedback, latest direction and foot-point placement guidance.
 - Calibration reports measured samples, speed and counts for comparison with observed traffic.
 - Video defaults to sequential samples every 0.1 seconds. This does not analyze every frame, may miss brief crossings and may take longer than playback. The existing playback analysis mode remains available.
