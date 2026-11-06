@@ -57,6 +57,8 @@ try{
    const geometry=await page.evaluate(()=>({frame:document.querySelector('#cameraStage').getBoundingClientRect().toJSON(),console:document.querySelector('.measure-console').getBoundingClientRect().toJSON()}));
    assert(geometry.console.left>=geometry.frame.right,'PC counts/actions adjacent to frame');
    await page.locator('#pauseCount').click();await page.locator('#beginCount').click();
+   const top=await page.locator('#counterHeading').boundingBox();
+   assert(top.y>=65&&top.y<150,'PC counting heading remains below the header after start/resume');
   }
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:`test-results/ux-review/counting-${width}.png`,fullPage:false});

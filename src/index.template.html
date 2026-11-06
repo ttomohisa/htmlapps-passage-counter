@@ -737,6 +737,7 @@ body.help-scroll-locked{
 .processing-speed{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap;color:var(--muted)}
 .workspace-eyebrow{display:none}
 .counter-summary{min-width:0;scroll-margin-top:80px}
+.workspace{scroll-margin-top:80px}
 .counter-summary .measure-heading{margin-bottom:10px;align-items:center}
 .summary-state{font-size:11px;color:var(--brand);display:block;line-height:1.5}
 #focusToggle{font-size:12px;min-height:44px;padding:7px 10px;margin-bottom:10px}
@@ -2333,7 +2334,7 @@ body.help-scroll-locked{
         focused?.focus({preventScroll:true});
       }
       function showMeasurement(){
-        if(matchMedia('(max-width:820px)').matches)$('#counterSummary').scrollIntoView({block:'start'});
+        $(matchMedia('(max-width:820px)').matches?'#counterSummary':'.workspace').scrollIntoView({block:'start'});
       }
       function toggleWorkspace(){
         const live=Boolean(state.startTime)&&['counting','paused','interrupted'].includes(state.phase);
