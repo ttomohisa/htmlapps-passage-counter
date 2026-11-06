@@ -6,6 +6,7 @@
 - Add measured calibration observations, line presets and optional counting-area boundaries.
 - Add cancellable sequential 100 ms video analysis while preserving playback mode.
 - Add directional timeline bars, missing-period hatching, final result summary, ZIP CSV export and clipboard fallback.
+- Refresh saved-session totals after manual correction and Undo without requiring a reload.
 - Preserve embedded assets, correction audit records and all existing field-verification limitations.
 
 ## Unreleased

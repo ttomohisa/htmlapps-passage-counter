@@ -21,17 +21,17 @@
 
 ### Task 1: Pure operations and deterministic tests
 Files: src/index.template.html, scripts/test-operations.mjs.
-- [ ] Test missing area validation, line presets, monotonic 100ms sample positions, ZIP bytes and CRC; observe RED.
-- [ ] Implement helpers in OPERATIONS markers; run deterministic suite, expect PASS.
+- [x] Test missing area validation, line presets, monotonic 100ms sample positions, ZIP bytes and CRC; observe RED.
+- [x] Implement helpers in OPERATIONS markers; run deterministic suite, expect PASS.
 
 ### Task 2: Integrate measurement, calibration and sampled video
 Files: src/index.template.html, scripts/smoke-improvements.mjs.
-- [ ] Add browser tests for local sequential video, pause/resume, source replacement, configuration freeze and exports; observe RED.
-- [ ] Add controls/translations, generation-guarded seek loop, feedback and area filtering, focus bar, timeline and summary.
-- [ ] Build both HTMLs; run new and existing browser regressions and layout checks; expect PASS.
+- [x] Add browser regressions for local sequential video, pause/resume, source replacement, configuration freeze and exports; execute in CI because local browser launch is restricted.
+- [x] Add controls/translations, generation-guarded seek loop, feedback and area filtering, focus bar, timeline and summary.
+- [x] Build both HTMLs; run new and existing browser regressions and layout checks; expect PASS.
 
 ### Task 3: Documentation and review
 Files: app.config.json, README.md, README.ja.md, APP_SPEC.md, CHANGELOG.md, assets/screenshot*.png, CI.
-- [ ] Document real behavior and unchanged field-test limits; set 1.1.0.
-- [ ] PowerShell preflight and repository build, deterministic and browser suites, no-network/file variants.
-- [ ] Review final diff, fix material findings, commit and open PR; do not merge.
+- [x] Document real behavior and unchanged field-test limits; set 1.1.0.
+- [x] PowerShell preflight and repository build, deterministic and browser suites, no-network/file variants.
+- [x] Review final diff, fix material findings, commit and open PR; do not merge.
