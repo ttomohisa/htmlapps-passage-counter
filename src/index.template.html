@@ -2687,7 +2687,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const event=ledger.correct(direction,delta,effectiveElapsed(),fileMediaTimeMs());
         if(!event){toast(tr('negativeBlocked'));return;}
-        queueSnapshot(event);renderState();renderTimeline();
+        void queueSnapshot(event).then(refreshSavedSessions);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
           actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
       }
@@ -2695,7 +2695,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const entry=ledger.undo(effectiveElapsed(),eventId,fileMediaTimeMs());
         if(!entry){toast(tr('undoUnavailable'));return;}
-        queueSnapshot(entry);renderState();renderTimeline();toast(tr('undone'));
+        void queueSnapshot(entry).then(refreshSavedSessions);renderState();renderTimeline();toast(tr('undone'));
       }
       // LINE_INTERACTION:BEGIN
       // Pure geometry shared by mouse, finger, stylus and keyboard. A translation

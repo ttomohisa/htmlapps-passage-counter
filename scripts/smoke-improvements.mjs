@@ -52,6 +52,7 @@ try{
  await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
  await page.locator('#plusA').click();
  assert.equal(await page.locator('#reportFinalA').textContent(),'1');
+ await page.waitForFunction(()=>document.querySelector('#savedList .saved-session small')?.textContent.includes('A→B 1'),null,{timeout:10000});
  await mkdir('test-results/improvements',{recursive:true});
  await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
  await page.locator('#setupOptions').evaluate(e=>e.open=false);

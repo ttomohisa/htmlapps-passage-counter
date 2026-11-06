@@ -46,6 +46,7 @@ try{
   await page.locator('#beginCount').click();
   await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
   await page.locator('#plusA').click();await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
+  await page.waitForFunction(()=>document.querySelector('#savedList .saved-session small')?.textContent.includes('A→B 1'));
   await page.locator('#outputFilename').fill('passage-counter-sample');
   await page.locator('#pageTitle').click();
   await page.evaluate(()=>scrollTo(0,0));
