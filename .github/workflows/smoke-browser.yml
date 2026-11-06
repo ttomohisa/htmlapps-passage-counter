@@ -77,5 +77,6 @@ jobs:
           path: |
             test-results/improvements/
             test-results/ux-review/
+            test-results/help-copy/
           if-no-files-found: ignore
           retention-days: 7

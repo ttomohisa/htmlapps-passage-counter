@@ -688,6 +688,17 @@ body.help-scroll-locked{
 }
 #helpDialog .help-dialog-body p{margin:7px 0 0}
 #helpDialog .help-dialog-body ol,#helpDialog .help-dialog-body ul{margin:7px 0 0;padding-left:21px}
+#helpDialog .help-steps li{padding:0 0 14px 4px}
+#helpDialog .help-steps li:last-child{padding-bottom:0}
+#helpDialog .help-steps li::marker{color:var(--brand);font-weight:700}
+#helpDialog .help-steps strong{display:block;color:var(--text);font-size:14px}
+#helpDialog .help-steps p{margin-top:3px}
+#helpDialog .help-dialog-body ul li+li{margin-top:9px}
+#helpDialog .help-topic{border-top:1px solid var(--border);margin-top:12px;padding-top:3px}
+#helpDialog .help-topic summary{cursor:pointer;min-height:44px;padding:11px 0;box-sizing:border-box;color:var(--brand);font-size:13px;font-weight:700;line-height:1.6;overflow-wrap:anywhere}
+#helpDialog .help-topic[open]{padding-bottom:8px}
+#helpDialog .help-topic p{margin-top:0}
+#helpDialog .help-topic p+p{margin-top:8px}
 #helpDialog .help-dialog-note{
   margin-top:14px!important;padding:11px 12px;
   border:1px solid #bdd5c6;border-radius:10px;
@@ -816,8 +827,8 @@ body.help-scroll-locked{
 <main class="shell main" id="appMain" data-phase="idle" data-source="camera">
   <section class="page-intro" aria-labelledby="pageTitle">
     <div class="hero-copy">
-      <h1 id="pageTitle" data-i18n="title">カメラや動画で、通過した人を数える</h1>
-      <p data-i18n="intro">カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。</p>
+      <h1 id="pageTitle" data-i18n="title">通過した人を数える</h1>
+      <p data-i18n="intro">カメラ・動画で、通過を方向別に記録。</p>
     </div>
     <div class="local-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1085,29 +1096,43 @@ body.help-scroll-locked{
     </button>
   </div>
   <div class="help-dialog-body" id="helpDialogBody">
-    <h3 data-i18n="helpBasicsTitle">基本操作</h3>
-    <ol>
-      <li data-i18n="helpStep1">スマホやPCを固定して「カメラを開始」を押すか、「端末の動画」から動画を選びます。カメラは開始時に権限を確認します。</li>
-      <li data-i18n="helpStep2">映像上の判定線をドラッグすると線全体が移動し、両端の白丸では長さ・角度を変更できます。「A/B方向を反転」で通過方向を切り替えます。</li>
-      <li data-i18n="helpStep3">カメラの場合は30秒の設置チェックで通過方向を確認します。チェック中の件数は本計測に入りません。判定線を動かしたら再チェックしてください。</li>
-      <li data-i18n="helpStep4">「計測を開始」を押すと方向別の通過回数を記録します。計測中は一時停止・再開・終了できます。端末の動画は先頭から解析し、最後まで進むと終了します。</li>
-      <li data-i18n="helpStep5">数え間違いは各方向の「−1」「＋1」で補正できます。「元に戻す」は直前の補正を取り消します。補正・UndoはCSVの履歴に残ります。</li>
-      <li data-i18n="helpStep6">イベント・概要・時間帯別の3種類のCSVを保存できます。「保存した計測」では同じブラウザ内の記録を確認できます。</li>
+    <h3 data-i18n="helpBasicsTitle">まずは4ステップ</h3>
+    <ol class="help-steps">
+      <li><strong data-i18n="helpStep1Title">映像を選ぶ</strong><p data-i18n="helpStep1">端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。</p></li>
+      <li><strong data-i18n="helpStep2Title">数える位置に線を置く</strong><p data-i18n="helpStep2">人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。</p></li>
+      <li><strong data-i18n="helpStep3Title">カメラの映り方を確認する</strong><p data-i18n="helpStep3">30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。</p></li>
+      <li><strong data-i18n="helpStep4Title">計測を始める</strong><p data-i18n="helpStep4">「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。</p></li>
     </ol>
-    <h3 data-i18n="helpPrivacyTitle">データの処理と保存</h3>
-    <p data-i18n="helpPrivacyBody">カメラ映像・動画ファイル・顔画像・音声はアプリから外部へ送信されません。AIモデルはHTMLに内包され、認識は端末内で実行します。計測名・件数・履歴はブラウザ内に保存しますが、動画そのものは保存しません。Web版を開く際はHTMLの取得に通信が必要です。</p>
-    <h3 data-i18n="helpNotesTitle">注意事項</h3>
+    <h3 data-i18n="helpResultsTitle">件数の修正と保存</h3>
     <ul>
-      <li data-i18n="helpLimitCounts">数えるのは通過回数であり、重複しない人数ではありません。同じ人物の往復は2回と数えます。</li>
-      <li data-i18n="helpLimitAccuracy">人物の重なり、逆光、暗さ、カメラの揺れ、高速な通過では誤検出や見落としが起こります。実環境での精度は保証できません。</li>
-      <li data-i18n="helpLimitBrowser">WebAssembly SIMDなどに対応したブラウザが必要です。カメラの許可や動画形式への対応はブラウザ・端末によって異なります。</li>
-      <li data-i18n="helpLimitInterrupt">画面を隠す、端末がスリープする、カメラが切断されるなどの場合、計測は中断します。見られなかった時間は0件として扱いません。</li>
-      <li data-i18n="helpLimitStorage">保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。</li>
+      <li data-i18n="helpStep5">数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。</li>
+      <li data-i18n="helpStep6">「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。</li>
     </ul>
-    <p class="help-dialog-note" data-i18n="helpImportant">計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。</p>
-    <p data-i18n="helpImprovements">足元の点が線を横切る位置に判定線を置き、横線・縦線・中央ボタンで調整できます。範囲指定は設定内の左右上下の割合で行います。設置チェックは目視の通過回数と照合してください。表示は精度の保証ではありません。</p>
-    <p data-i18n="helpSampling">動画は既定で0.1秒間隔の位置を順番に解析します。全フレームではなく、短い通過を見落とす可能性があります。再生しながら解析する方法も選べます。時間帯別の集計は動画内時刻ではなく、解析を行った実際の時刻です。</p>
-    <p data-i18n="helpFocus">計測中は集中表示になります。「設定・記録」で切り替えられます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。</p>
+    <p data-i18n="helpFocus">計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。</p>
+    <h3 data-i18n="helpNotesTitle">知っておきたいこと</h3>
+    <ul>
+      <li data-i18n="helpLimitCounts">数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。</li>
+      <li data-i18n="helpLimitAccuracy">人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。</li>
+      <li data-i18n="helpLimitInterrupt">計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。</li>
+    </ul>
+    <p data-i18n="helpImportant" class="help-dialog-note">安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。</p>
+    <details class="help-topic">
+      <summary data-i18n="helpPlacementTitle">線の位置や方向を調整するには</summary>
+      <p data-i18n="helpImprovements">線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpVideoTitle">動画の解析で気をつけること</summary>
+      <p data-i18n="helpSampling">動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpPrivacyTitle">映像と記録はどこに保存される？</summary>
+      <p data-i18n="helpPrivacyBody">映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。</p>
+      <p data-i18n="helpLimitStorage">計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpBrowserTitle">カメラや動画を使えないとき</summary>
+      <p data-i18n="helpLimitBrowser">カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。</p>
+    </details>
     <details class="embedded-license-notice" id="embeddedLicenseNotice">
       <summary data-i18n="thirdPartyLicenseTitle">ソフトウェアとモデルのライセンス</summary>
       <p data-i18n="thirdPartyLicenseNote">MediaPipe Tasks VisionとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。</p>
@@ -1247,7 +1272,7 @@ body.help-scroll-locked{
         ja: {
           language:'言語',subTitle:'通過カウンター · v1.0.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
-          title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
+          title:'通過した人を数える',intro:'カメラ・動画で、通過を方向別に記録。',
           videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。線の途中をドラッグすると形を保ったまま移動し、端の丸をドラッグすると角度と長さを調整できます。矢印キーでも移動できます。',lineHelp:'線の途中をドラッグして移動。両端の丸で角度・長さを調整。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
@@ -1257,22 +1282,31 @@ body.help-scroll-locked{
           prototypeNote:'実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',
-          helpBasicsTitle:'基本操作',
-          helpStep1:'スマホやPCを固定して「カメラを開始」を押すか、「端末の動画」から動画を選びます。カメラは開始時に権限を確認します。',
-          helpStep2:'映像上の判定線をドラッグすると線全体が移動し、両端の白丸では長さ・角度を変更できます。「A/B方向を反転」で通過方向を切り替えます。',
-          helpStep3:'カメラの場合は30秒の設置チェックで通過方向を確認します。チェック中の件数は本計測に入りません。判定線を動かしたら再チェックしてください。',
-          helpStep4:'「計測を開始」を押すと方向別の通過回数を記録します。計測中は一時停止・再開・終了できます。端末の動画は先頭から解析し、最後まで進むと終了します。',
-          helpStep5:'数え間違いは各方向の「−1」「＋1」で補正できます。「元に戻す」は直前の補正を取り消します。補正・UndoはCSVの履歴に残ります。',
-          helpStep6:'イベント・概要・時間帯別の3種類のCSVを保存できます。「保存した計測」では同じブラウザ内の記録を確認できます。',
-          helpPrivacyTitle:'データの処理と保存',
-          helpPrivacyBody:'カメラ映像・動画ファイル・顔画像・音声はアプリから外部へ送信されません。AIモデルはHTMLに内包され、認識は端末内で実行します。計測名・件数・履歴はブラウザ内に保存しますが、動画そのものは保存しません。Web版を開く際はHTMLの取得に通信が必要です。',
-          helpNotesTitle:'注意事項',
-          helpLimitCounts:'数えるのは通過回数であり、重複しない人数ではありません。同じ人物の往復は2回と数えます。',
-          helpLimitAccuracy:'人物の重なり、逆光、暗さ、カメラの揺れ、高速な通過では誤検出や見落としが起こります。実環境での精度は保証できません。',
-          helpLimitBrowser:'WebAssembly SIMDなどに対応したブラウザが必要です。カメラの許可や動画形式への対応はブラウザ・端末によって異なります。',
-          helpLimitInterrupt:'画面を隠す、端末がスリープする、カメラが切断されるなどの場合、計測は中断します。見られなかった時間は0件として扱いません。',
-          helpLimitStorage:'保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。',
-          helpImportant:'計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。',
+          helpBasicsTitle:'まずは4ステップ',
+          helpStep1Title:'映像を選ぶ',
+          helpStep2Title:'数える位置に線を置く',
+          helpStep3Title:'カメラの映り方を確認する',
+          helpStep4Title:'計測を始める',
+          helpResultsTitle:'件数の修正と保存',
+          helpPlacementTitle:'線の位置や方向を調整するには',
+          helpVideoTitle:'動画の解析で気をつけること',
+          helpBrowserTitle:'カメラや動画を使えないとき',
+
+          helpStep1:'端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。',
+          helpStep2:'人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。',
+          helpStep3:'30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。',
+          helpStep4:'「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。',
+          helpStep5:'数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。',
+          helpStep6:'「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。',
+          helpPrivacyTitle:'映像と記録はどこに保存される？',
+          helpPrivacyBody:'映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。',
+          helpNotesTitle:'知っておきたいこと',
+          helpLimitCounts:'数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。',
+          helpLimitAccuracy:'人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。',
+          helpLimitBrowser:'カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。',
+          helpLimitInterrupt:'計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。',
+          helpLimitStorage:'計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。',
+          helpImportant:'安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。',
           thirdPartyLicenseTitle:'ソフトウェアとモデルのライセンス',thirdPartyLicenseNote:'MediaPipeとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'MediaPipe v0.10.35のソースはEigenのMPL 2.0/BSD部分を参照します。参照ソース: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd 。npm配布WASMとタグ上のWASMにハッシュ差があり、厳密なビルド対応は引き続き調査対象です。',
           thirdPartyBsdTitle:'Eigen — BSD形式の権利表示',thirdPartyMinpackTitle:'Eigen配布元のMINPACK関連権利表示',thirdPartyEigenReadmeTitle:'Eigen — 元のライセンス案内',appLicenseTitle:'Passage Counter — MIT License',
@@ -1363,7 +1397,7 @@ body.help-scroll-locked{
         en: {
           language:'Language',subTitle:'People crossing counter · v1.0.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Fully local processing',
-          title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
+          title:'Count crossings',intro:'Use a camera or a video from your device.',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag anywhere along the line to move it without changing its angle or length. Drag an end handle to adjust it. Arrow keys move the whole line.',lineHelp:'Drag the line itself to move it. Drag an end circle to change the angle or length.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
@@ -1373,22 +1407,31 @@ body.help-scroll-locked{
           prototypeNote:'Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',
-          helpBasicsTitle:'Basic steps',
-          helpStep1:'Fix your phone or computer in place, then select Start camera, or choose Local video to select a file from this device. Camera permission is requested when you start it.',
-          helpStep2:'Drag the counting line itself to move it. Drag either white endpoint to adjust its length and angle. Use Reverse A/B directions to swap the crossing direction labels.',
-          helpStep3:'For live camera input, use the 30-second setup check to verify direction. Trial counts are excluded from the actual record. Repeat the check whenever you move the line.',
-          helpStep4:'Select Start counting to record crossing events by direction. You can pause, resume or finish. Local video analysis starts from the beginning and finishes at the end of the file.',
-          helpStep5:'Correct a missed or extra crossing using the −1/+1 buttons in the appropriate direction tile. Undo reverses the most recent manual correction. Both actions remain in the CSV history.',
-          helpStep6:'Export Events, Summary and Time buckets CSV. Saved sessions can be reviewed later in the same browser.',
-          helpPrivacyTitle:'Privacy and stored data',
-          helpPrivacyBody:'The app does not transmit camera footage, local video files, face images or audio to a server. The embedded AI model runs on your device. Session names, totals and event history are stored in the browser, but video bytes are not saved. Opening the hosted version still downloads its HTML.',
-          helpNotesTitle:'Things to know',
-          helpLimitCounts:'This measures crossing events, not unique visitors. A person crossing in both directions counts twice.',
-          helpLimitAccuracy:'Overlapping people, backlighting, darkness, camera shake and fast movement can cause false or missed counts. Real-world accuracy is not guaranteed.',
-          helpLimitBrowser:'A browser with WebAssembly SIMD and other required features is needed. Camera permissions and supported video formats depend on the browser and device.',
-          helpLimitInterrupt:'Counting is interrupted when the tab is hidden, the device sleeps or the camera disconnects. Unobserved time is not treated as zero crossings.',
-          helpLimitStorage:'Saved records are isolated by browser and origin. Clearing site data removes them, so export CSV for any result you need to retain.',
-          helpImportant:'Do not use these counts as the sole basis for safety, billing or legal reports without an independent check.',
+          helpBasicsTitle:'Start in four steps',
+          helpStep1Title:'Choose a video source',
+          helpStep2Title:'Place the counting line',
+          helpStep3Title:'Check your camera setup',
+          helpStep4Title:'Start counting',
+          helpResultsTitle:'Correct and save counts',
+          helpPlacementTitle:'Adjust the line and directions',
+          helpVideoTitle:'About video analysis',
+          helpBrowserTitle:'If a camera or video will not work',
+
+          helpStep1:'Keep the device still, select Start camera and allow camera access. For a recorded video, choose Local video.',
+          helpStep2:'Drag the line to where people’s feet will cross it. Drag the white endpoints to change its length or angle.',
+          helpStep3:'Run the 30-second setup check and compare the counts and directions with what you see. Trial counts stay out of your session. Check again after moving the line. Local video skips this step.',
+          helpStep4:'Select Start counting. You can pause, resume or finish. Video analysis starts at the beginning and finishes at the end of the file.',
+          helpStep5:'Use −1 or +1 in either direction tile to correct a count. Undo reverses the last manual correction. Both actions are recorded in the CSV history.',
+          helpStep6:'Save all CSVs (ZIP) downloads Events, Summary and Time buckets files together. You can also Copy results. Video is never included in the ZIP.',
+          helpPrivacyTitle:'Where are video and records stored?',
+          helpPrivacyBody:'Camera footage, local video files, face images and audio are not sent to a server. Recognition runs on your device using resources included in the HTML. Video itself is not saved. Opening the web version downloads the page.',
+          helpNotesTitle:'Before you rely on the counts',
+          helpLimitCounts:'These are crossing events, not unique visitors. Someone who crosses and comes back counts twice.',
+          helpLimitAccuracy:'People overlapping, darkness, backlighting, camera shake and fast movement can cause missed or extra counts. Real-world accuracy is not guaranteed.',
+          helpLimitBrowser:'Check that camera access is allowed. Video formats and the required browser features vary by device and browser. Some environments may remain unsupported even with an up-to-date browser.',
+          helpLimitInterrupt:'Keep this page visible while counting. Switching tabs, screen sleep or a camera disconnect interrupts measurement. Unobserved time is not recorded as zero crossings.',
+          helpLimitStorage:'Session names, counts and history can be reviewed under Saved sessions. Records stay in the browser and site you used. Clearing browser data removes them, so export any results you need as CSV too.',
+          helpImportant:'For safety, billing or legal reports, check the result independently before relying on it.',
           thirdPartyLicenseTitle:'Software and model licenses',thirdPartyLicenseNote:'The upstream MediaPipe model-license statements support Apache 2.0 for the runtime and EfficientDet-Lite0. Eigen has separate MPL 2.0 and BSD-style license terms.',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'The MediaPipe v0.10.35 source tree references Eigen MPL 2.0/BSD components. Source reference: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd . The exact npm WASM differs in SHA from the release-tag WASM, so precise compiled-artifact provenance remains under investigation.',
           thirdPartyBsdTitle:'Eigen — BSD notices',thirdPartyMinpackTitle:'Eigen upstream MINPACK-related notices',thirdPartyEigenReadmeTitle:'Eigen — upstream license notes',appLicenseTitle:'Passage Counter — MIT License',
@@ -1868,9 +1911,9 @@ body.help-scroll-locked{
         checkSpeed:'処理速度：{fps} fps',checkSlow:'処理が遅く、通過を見落とす可能性があります。',checkNoSamples:'認識した映像がありません。カメラや処理状態を確認してください。',
         bundleCsv:'CSVをまとめて保存（ZIP）',copyResult:'結果をコピー',copyFallback:'コピー用の計測結果',copiedResult:'結果をコピーしました',copySelect:'コピーできませんでした。表示された結果を選択してコピーしてください。',
         correctionCount:'補正操作',measurementActions:'計測操作',sampleProgress:'動画の解析：{percent}% · 0.1秒間隔',
-        helpImprovements:'足元の点が線を横切る位置に判定線を置き、横線・縦線・中央ボタンで調整できます。範囲指定は設定内の左右上下の割合で行います。設置チェックは目視の通過回数と照合してください。表示は精度の保証ではありません。',
-        helpSampling:'動画は既定で0.1秒間隔の位置を順番に解析します。全フレームではなく、短い通過を見落とす可能性があります。再生しながら解析する方法も選べます。時間帯別の集計は動画内時刻ではなく、解析を行った実際の時刻です。',
-        helpFocus:'計測中は集中表示になります。「設定・記録」で切り替えられます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。'
+        helpImprovements:'線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。',
+        helpSampling:'動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。',
+        helpFocus:'計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。'
       });
       Object.assign(translations.en, {
         automaticCount:'Automatic',manualCount:'Manual adjustments',finalCount:'After corrections',videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
@@ -1886,9 +1929,9 @@ body.help-scroll-locked{
         checkSpeed:'Processing speed: {fps} fps',checkSlow:'Processing is slow and may miss crossings.',checkNoSamples:'No images analyzed. Check the camera and processing status.',
         bundleCsv:'Save all CSVs (ZIP)',copyResult:'Copy results',copyFallback:'Results to copy',copiedResult:'Results copied',copySelect:'Could not copy. Select and copy the displayed results.',
         correctionCount:'Correction actions',measurementActions:'Measurement actions',sampleProgress:'Video analysis: {percent}% · 0.1 s samples',
-        helpImprovements:'Place the line where the foot point crosses. Use Horizontal, Vertical or Center line to adjust it. Set area boundaries as percentages in settings. Compare calibration counts with observed crossings; the report does not guarantee accuracy.',
-        helpSampling:'By default, video analysis samples sequentially every 0.1 seconds. It does not analyze every frame and may miss brief crossings. Playback analysis is also available. Time buckets use actual analysis wall-clock time, not positions within the video.',
-        helpFocus:'Counting starts in focus view. Choose Settings & records to switch views. On phones, the bottom bar pauses, resumes or finishes measurement. Export all three CSVs in a ZIP or copy results. The ZIP never includes video.'
+        helpImprovements:'Drag the middle of the line to move it as a whole, or use Horizontal, Vertical or Center line. Use Reverse A/B directions to swap the A and B sides. Set area boundaries as percentages in settings if needed, leaving room on both sides of the line.',
+        helpSampling:'By default, video is analyzed at 0.1-second intervals in order. Not every frame is checked, so brief crossings may be missed. Analysis may take longer than the video. You can also choose analysis during playback. Time buckets use the actual time of analysis, not positions in the video.',
+        helpFocus:'While counting, open Settings & records to view settings and records. On phones, use the bottom bar.'
       });
       function tr(key){return translations[language][key]||translations.en[key]||key;}
       // PERSIST:BEGIN
