@@ -707,7 +707,7 @@ body.help-scroll-locked{
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 /* v1.1 operational layout. Focus is optional; exports remain reachable. */
-.file-drop summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13px;font-weight:650;overflow-wrap:anywhere}.file-drop[open] summary{margin-bottom:10px}
+.file-drop summary{cursor:pointer;min-height:44px;display:list-item;padding:10px 0;list-style-position:inside;font-size:13px;font-weight:650;overflow-wrap:anywhere}.file-drop[open] summary{margin-bottom:10px}
 .operation-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.operation-tools button{font-size:12px;padding:8px 12px}
 .operation-note,.latest-crossing{font-size:12px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
 #crossingFeedback{position:absolute;z-index:4;transform:translate(-50%,-50%);background:var(--brand);color:#fff;padding:7px 12px;border:2px solid #fff;border-radius:20px;font-weight:750;pointer-events:none;max-width:90%;overflow-wrap:anywhere}
@@ -1792,7 +1792,7 @@ body.help-scroll-locked{
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
       Object.assign(translations.ja, {
-        videoSourceSettings:'動画ファイルと解析方法',analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
+        automaticCount:'自動',manualCount:'手動補正',finalCount:'補正後',videoSourceSettings:'動画ファイルと解析方法',analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
         samplingNote:'順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。',
         linePresets:'判定線の配置',horizontalLine:'横線',verticalLine:'縦線',centerLine:'中央に戻す',
         footNote:'検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。',
@@ -1810,7 +1810,7 @@ body.help-scroll-locked{
         helpFocus:'計測中は集中表示になります。「設定・記録も表示」で戻せます。スマホの下部から一時停止・再開・終了できます。終了後は3種類のCSVをZIPで保存したり、結果をコピーできます。ZIPに映像は含みません。'
       });
       Object.assign(translations.en, {
-        videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
+        automaticCount:'Automatic',manualCount:'Manual adjustments',finalCount:'After corrections',videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
         samplingNote:'Sequential analysis waits for each sample to finish. It does not analyze every frame and may take longer than the video duration.',
         linePresets:'Counting line placement',horizontalLine:'Horizontal',verticalLine:'Vertical',centerLine:'Center line',
         footNote:'The bottom center of each detection box approximates the feet. Place the line where this point will cross.',
@@ -2359,7 +2359,7 @@ body.help-scroll-locked{
         }[phase]||'instruction';
         const validLine=state.areaValid&&Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
         $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
-          message||(!validLine&&sourceAvailable?tr('lineTooShort'):
+          message||(!state.areaValid?tr('areaInvalid'):!validLine&&sourceAvailable?tr('lineTooShort'):
             fileMode&&phase==='ready'?tr('videoReady'):
             fileMode&&!sourceAvailable&&!state.startTime?tr('videoMissing'):tr(defaultMessage));
         const totals=ledger.summary(),nameA=countName('A_TO_B'),nameB=countName('B_TO_A');
@@ -2376,7 +2376,9 @@ body.help-scroll-locked{
         $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;
         $('#reportTotal').textContent=totals.a+totals.b;
         $('#reportFinalA').textContent=totals.a;$('#reportFinalB').textContent=totals.b;
-        $('#reportLabelA').textContent=nameA;$('#reportLabelB').textContent=nameB;
+        $('#reportLabelA').textContent=nameA+' · '+tr('finalCount');$('#reportLabelB').textContent=nameB+' · '+tr('finalCount');
+        for(const [key,name,suffix] of [['autoA',nameA,'automaticCount'],['autoB',nameB,'automaticCount'],['manualA',nameA,'manualCount'],['manualB',nameB,'manualCount']])
+          $('#report [data-i18n='+key+']').textContent=name+' · '+tr(suffix);
         $('#reportCorrections').textContent=ledger.history().filter(e=>e.kind==='correction').length;
         const reportDur=currentSession?timeline.durations(currentSession):{observedMs:0,missingMs:0};
         $('#reportObserved').textContent=formatElapsed(reportDur.observedMs);$('#reportMissing').textContent=formatElapsed(reportDur.missingMs);
