@@ -91,8 +91,8 @@ try{
       assert(state.dialog.left>=-1&&state.dialog.right<=width+1&&
         state.dialog.top>=-1&&state.dialog.bottom<=height+1,
         'Help dialog is clipped at '+width);
-      assert(state.close.width>=44&&state.close.height>=44&&state.closeIcon&&state.closeLabel,
-        'Help close button needs a working 44px localized X at '+width);
+      assert(state.close.width===34&&state.close.height===34&&state.closeIcon&&state.closeLabel,
+        'Help close button needs a working 34px localized X at '+width);
       assert(state.close.left>=state.dialog.left&&state.close.right<=state.dialog.right+1,
         'Help close X extends beyond the dialog');
       assert.equal(state.buttonCount,1,'Help needs one close control in its header');
