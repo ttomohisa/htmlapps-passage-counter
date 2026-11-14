@@ -19,13 +19,14 @@ async function main(){
   const label=`${file} ${language} ${width}x${height}`;
   try{
    await page.goto(pathToFileURL(path.resolve(__dirname,'..',file)).href);await page.locator('#helpButton').waitFor();
-   await page.waitForFunction(()=>document.querySelector('#versionBadge')?.textContent==='v1.0.0');
+   await page.waitForFunction(()=>document.querySelector('#versionBadge')?.textContent==='v1.1.0');
    if(await page.locator('html').getAttribute('lang')!==language)await page.locator('#languageButton').click();await page.locator('#languageButton').click();await page.locator('#languageButton').click();assert.equal(await page.locator('html').getAttribute('lang'),language,label+': repeated localization');
-   assert.equal(await page.locator('#'+cfg.meta).count(),1,label+': unique metadata');assert.ok((await page.locator('#'+cfg.meta).textContent()).startsWith('v1.0.0'),label+': populated metadata');
+   assert.equal(await page.locator('#'+cfg.meta).count(),1,label+': unique metadata');assert.ok((await page.locator('#'+cfg.meta).textContent()).startsWith('v1.1.0'),label+': populated metadata');
    assert.equal((await page.locator('[data-i18n="'+cfg.badgeKey+'"]').textContent()).trim(),language==='ja'?'完全ローカル処理':'Fully local processing');
-   assert.ok(await page.locator(cfg.badge).evaluate(el=>{const b=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el.querySelector('span'));return b.left>=0&&b.right<=innerWidth&&el.scrollWidth<=el.clientWidth+1&&[...range.getClientRects()].every(r=>r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1);}),label+': actual badge bounds');
+   assert.equal(await page.locator(cfg.badge).isVisible(),width>820,label+': phone badge hidden');
+   if(width>820)assert.ok(await page.locator(cfg.badge).evaluate(el=>{const b=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el.querySelector('span'));return b.left>=0&&b.right<=innerWidth&&el.scrollWidth<=el.clientWidth+1&&[...range.getClientRects()].every(r=>r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1);}),label+': actual badge bounds');
    assert.equal(await page.locator('main #'+cfg.meta).count(),0);assert.equal(await page.locator('body > footer').isVisible(),width>cfg.bp,label+': footer breakpoint');
-   for(const selector of ['.video-footer']){await page.locator(selector).scrollIntoViewIfNeeded();await bounds(page.locator(selector),width,height,label+': functional controls',height>300);}assert.equal(await page.locator('main #diagnosticDetails').count(),1);assert.equal(await page.locator('#beginCount').isEnabled(),false,label+': no automatic camera/counting');
+   for(const selector of ['.video-footer']){await page.locator(selector).scrollIntoViewIfNeeded();await bounds(page.locator(selector),width,height,label+': functional controls',height>300);}assert.equal(await page.locator('main #processingSpeed').count(),1);assert.equal(await page.locator('#beginCount').isEnabled(),false,label+': no automatic camera/counting');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+': page width');
    await page.evaluate(()=>scrollTo(0,0));await page.locator('#helpButton').focus();await page.keyboard.press('Enter');const body=page.locator(cfg.body);
    assert.ok(await body.evaluate((el,id)=>el.lastElementChild.id===id,cfg.meta),label+': metadata final in scroll body');

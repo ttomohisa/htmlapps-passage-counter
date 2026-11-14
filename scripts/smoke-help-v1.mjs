@@ -1,7 +1,7 @@
 // Passage Counter v1.0.0 help dialog and site-width regression.
 // Uses genuine generated HTML. Synthetic browser UI test, not device field QA.
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
 
@@ -19,6 +19,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
 let browser;
 try{
+  await mkdir('test-results/help-copy',{recursive:true});
   browser=await chromium.launch({channel:'chrome',headless:true});
   for(const [width,height] of [[320,568],[360,720],[390,844],[820,680],[1280,850]]){
     const context=await browser.newContext({viewport:{width,height},
@@ -33,7 +34,7 @@ try{
     const page=await context.newPage();
     page.on('pageerror',e=>errors.push(width+': '+e.message));
     await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
-    assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
+    assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
     const initial=await page.evaluate(()=>{
       const h=document.querySelector('.header-inner'),m=document.querySelector('.shell.main');
       const rect=e=>e.getBoundingClientRect();
@@ -56,9 +57,14 @@ try{
       const actual=await page.locator('html').getAttribute('lang');
       if(actual!==lang)await page.locator('#languageButton').click();
       assert.equal(await page.locator('html').getAttribute('lang'),lang);
+      const hero=await page.locator('.hero-copy').evaluate(el=>({title:el.querySelector('h1').textContent,intro:el.querySelector('p').textContent,overflow:el.scrollWidth>el.clientWidth+1}));
+      assert(!hero.overflow,'Short hero stays within the page at '+width);
+      assert(hero.title.length<=15&&hero.intro.length<=45,'Hero stays concise in '+lang);
       const initialY=await page.evaluate(()=>window.scrollY);
       await page.locator('#helpButton').click();
       await page.locator('#helpDialog').waitFor({state:'visible'});
+      await page.locator('#helpDialogBody').evaluate(el=>el.scrollTop=0);
+      if([320,1280].includes(width))await page.screenshot({path:`test-results/help-copy/help-${lang}-${width}.png`});
       const state=await page.evaluate(()=>{
         const d=document.querySelector('#helpDialog');
         const b=document.querySelector('#helpDialogBody');
@@ -90,8 +96,8 @@ try{
       assert(state.close.left>=state.dialog.left&&state.close.right<=state.dialog.right+1,
         'Help close X extends beyond the dialog');
       assert.equal(state.buttonCount,1,'Help needs one close control in its header');
-      assert.equal(state.headings.length,3,'Help needs basic steps/privacy/limitations sections');
-      assert.equal(state.stepCount,6,'Help must cover camera, line, test, counts, corrections and CSV');
+      assert.equal(state.headings.length,3,'Help groups starting, correcting/saving and important limits');
+      assert.equal(state.stepCount,4,'Start instructions cover source, line, camera check and counting');
       assert(state.limitCount>=5,'Help must describe actual product limitations');
       assert(state.bodyScrollHeight>state.bodyClientHeight,
         'Help body must be independently scrollable at '+width);
@@ -104,8 +110,25 @@ try{
       await page.mouse.wheel(0,400);
       assert.equal(await page.evaluate(()=>document.body.style.top),beforeWheel,
         'Scrolling within help shifted the background');
-      const required=lang==='ja'?/基本操作|注意事項/:/Basic steps|Things to know/;
+      const required=lang==='ja'?/まずは4ステップ|知っておきたいこと/:/Start in four steps|Before you rely on the counts/;
       assert(state.headings.some(h=>required.test(h)),'Localized help headings are wrong');
+      for(const key of ['helpStep5','helpStep6','helpImportant','helpLimitInterrupt']){
+        assert(await page.locator('[data-i18n="'+key+'"]').isVisible(),'Essential guidance stays expanded: '+key);
+      }
+      for(const topic of await page.locator('.help-topic').all()){
+        assert.equal(await topic.getAttribute('open'),null);
+        await topic.locator('summary').click();
+        assert(await topic.locator('p').first().isVisible(),'Optional guidance opens');
+        await topic.locator('summary').click();
+      }
+      const license=page.locator('#embeddedLicenseNotice');
+      await license.locator('summary').click();
+      for(const id of ['embeddedApacheLicense','embeddedEigenMplLicense','embeddedEigenBsdNotice','embeddedEigenMinpackNotice','embeddedEigenLicenseReadme','embeddedAppMitLicense']){
+        assert((await page.locator('#'+id).textContent()).length>100,'Full license/notice retained: '+id);
+        await page.locator('#'+id).scrollIntoViewIfNeeded();
+        assert(await page.locator('#'+id).isVisible(),'License text remains reachable: '+id);
+      }
+      await license.locator('summary').click();
 
       if(lang==='ja'){
         // ESC uses native cancel->close event and must restore scroll and focus.

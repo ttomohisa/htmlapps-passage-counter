@@ -55,7 +55,7 @@ try{
  });
  const page=await ctx.newPage();observe(page,'desktop');
  await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
- assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
+ assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
  assert.equal(await page.locator('#lineMoveTarget').count(),1);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  // Initial view has one clear first action, not a disabled maze of buttons.
@@ -219,7 +219,7 @@ try{
   const geometry=await mobile.evaluate(()=>{
    const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();
    return {
-     stage:rect('#cameraStage'),measure:rect('.measure-console'),
+     stage:rect('#cameraStage'),measure:rect('.measure-console'),summary:rect('#counterSummary'),
      cardA:rect('#countA'),cardB:rect('#countB'),
      tileA:document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON(),
      tileB:document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON(),
@@ -233,10 +233,10 @@ try{
    };
   });
   assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
-  assert(geometry.stage.top<geometry.measure.top&&
-    geometry.measure.top<geometry.tileA.top&&
+  assert(geometry.summary.top<=geometry.tileA.top&&
     geometry.tileA.bottom<=geometry.total.top+1&&
-    geometry.total.bottom<=geometry.next.top+1&&
+    geometry.total.bottom<=geometry.stage.top+1&&
+    geometry.stage.top<geometry.measure.top&&
     geometry.measure.bottom<geometry.extras.top&&
     geometry.extras.top<geometry.exports.top,
     'Counters and quick corrections must precede setup/settings/exports at '+width);
@@ -253,7 +253,7 @@ try{
   assert(geometry.undo.height>=44&&
     geometry.undo.top>=geometry.total.top-1&&
     geometry.undo.bottom<=geometry.total.bottom+1&&
-    geometry.undo.right<=geometry.measure.right+1&&
+    geometry.undo.right<=geometry.summary.right+1&&
     geometry.exports.right<=geometry.viewWidth+1,
     'Undo or export clips the card at '+width);
   assert(await mobile.locator('#testCard').isHidden(),

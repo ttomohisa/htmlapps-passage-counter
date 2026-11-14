@@ -48,3 +48,35 @@ jobs:
       - name: Verify embedded model/WASM with synthetic camera in Chrome
         shell: pwsh
         run: node scripts/smoke-browser.mjs
+
+      - name: Deterministic operations, sessions, tracking and performance
+        shell: pwsh
+        run: |
+          foreach ($test in @('test-operations','test-sequential','test-session-model','test-tracker-stress','test-line-interaction','test-performance','test-accuracy-evaluator')) {
+            node "scripts/$test.mjs"
+            if ($LASTEXITCODE -ne 0) { throw "$test failed" }
+          }
+      - name: Screenshot review UX regression
+        shell: pwsh
+        run: node scripts/smoke-ux-review.mjs
+      - name: Sequential video, area, export and phone regression
+        shell: pwsh
+        run: node scripts/smoke-improvements.mjs
+      - name: Existing video, header, Help, Wake Lock and integration regressions
+        shell: pwsh
+        run: |
+          foreach ($test in @('smoke-video','smoke-header','smoke-help-v1','smoke-wakelock','smoke-v07-integration')) {
+            node "scripts/$test.mjs"
+            if ($LASTEXITCODE -ne 0) { throw "$test failed" }
+          }
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passage-counter-improvements
+          path: |
+            test-results/improvements/
+            test-results/ux-review/
+            test-results/help-copy/
+          if-no-files-found: ignore
+          retention-days: 7

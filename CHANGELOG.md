@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0] - 2026-11-07
+
+- Add measurement focus view, safe-area phone controls, crossing feedback and foot-point guidance.
+- Add measured calibration observations, line presets and optional counting-area boundaries.
+- Add cancellable sequential 100 ms video analysis while preserving playback mode.
+- Add directional timeline bars, missing-period hatching, final result summary, ZIP CSV export and clipboard fallback.
+- Refresh saved-session totals after manual correction and Undo without requiring a reload.
+- Address screenshot review: remove duplicate direction keys, hide the phone local badge, show only fps, group phone counts with the preview and simplify state-dependent controls.
+- Shorten the hero and reorganize bilingual Help into four starting steps, correction/export guidance, clear cautions and optional topic sections. Preserve all license texts, notices and source references.
+- Allow another camera setup test after editing the counting line during an interrupted session.
+- Preserve embedded assets, correction audit records and all existing field-verification limitations.
+
 ## Unreleased
 
 - Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.

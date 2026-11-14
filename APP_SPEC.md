@@ -305,7 +305,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 |---|---|---|
 | EX-01 | カメラ拒否/カメラなし | 設定案内/再試行。権限の繰り返し要求なし。 |
 | EX-02 | モデル/WASM初期化失敗 | 計測開始禁止、理由と再試行。外部取得に逃げない。 |
-| EX-03 | タブ非表示/端末ロック | 欠測、停止。手動再開。 |
+| EX-03 | タブ非表示/端末ロック | 欠測、停止。判定線を変更した場合は設置テストをやり直してから手動再開。 |
 | EX-04 | 低fps/カメラフリーズ | 警告、必要時停止と欠測区間記録。 |
 | EX-05 | 2人重なる/追跡喪失 | 不確実な加算を抑制。 |
 | EX-06 | 端末回転/カメラ切替 | 計測を止め設定を確認し、トラッカー初期化後に再開。 |
@@ -377,3 +377,22 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 
 - Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.
 - Verify JA/EN desktop, breakpoint boundaries, narrow phones and short viewports, including Help final-item reachability, existing scrolling/dismissal, functional controls and repeated localization. No physical serial/camera capability is claimed from synthetic CI tests.
+
+
+## v1.1.0 operation improvements (2026-11-07)
+
+- Counting starts in optional focus view; pause, resume and finish remain accessible in a safe-area-aware phone dock. Settings/exports can be restored with the focus toggle.
+- Crossings produce a transient +1 marker at the crossing point; latest direction and elapsed age are displayed without persisting coordinates or IDs. Overlay labels use the configured direction names. The lower-center detection point approximates the feet.
+- Calibration reports actual samples, processing speed, directional test counts and a request to compare with observed crossings. No crossings does not distinguish no traffic from missed detection; no accuracy score is inferred.
+- Local video defaults to sequential 100 ms samples, including frame zero and the last decodable position. Processing waits for each seek and inference; this is not every-frame analysis or a guarantee against misses. Existing playback analysis remains selectable. Unknown duration falls back explicitly to playback mode. Pause, finish, source replacement and hidden tabs invalidate in-flight seeks.
+- Line placement offers horizontal/vertical/center presets. An optional rectangle is defined by left/right/top/bottom percentages (minimum 5% width/height); only foot points inside it enter tracking. The model still sees the full image. Leave observation space on both sides of the line. Invalid fields prevent starting. Area and method are recorded in configuration segments and restored when reviewing a session.
+- Timeline bars show directions separately; partial/missing buckets use hatching plus the existing text. For video, buckets continue to represent analysis wall-clock time, not media time.
+- Result summary includes final directional counts, active/missing duration and manual correction action count. Three existing BOM CSV exports can also be downloaded together in a native stored ZIP. A copy action exposes selectable text if Clipboard API access fails. No video is exported.
+- Existing unverified physical device/30-minute/100+ real crossing accuracy gates remain open. No dependency, model or CSP permission is changed.
+
+
+## v1.1.0 screenshot review corrections (2026-11-07)
+
+Phone layouts (<=820px) hide the local-processing badge; Help retains the processing/privacy explanation. The public processing display contains fps only, with existing plain-language state/slow warnings. Developer model/timing/deferred/gap counters are not exposed.
+
+Only A/B side markers remain on the image. Direction totals and correction buttons use one DOM instance: above the preview on phones, in the adjacent console on desktop. Phone preview height is bounded while counting; the fixed dock shows the applicable pause/resume action, finish, and settings/return. Ready sources also provide a setup-check/start action in the dock. Routine state boxes, unused alternatives and empty history messages are reduced; interruption reasons remain visible.

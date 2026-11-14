@@ -89,7 +89,7 @@ try{
       const page=await context.newPage();
       await observedCsp(page);attach(page,channel+' HTTPS');
       await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
-      assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
+      assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
       await language(page,'ja');
       assert.match(await page.locator('#savedList').textContent(),/保存/);
       // Modal opens at phone size, can scroll, and Escape dismisses without loss.
@@ -125,6 +125,7 @@ try{
       await page.locator('#plusA').click();
       const count=Number(await page.locator('#countA').textContent());
       assert(count>=1,'Manual correction failed on '+channel);
+      await page.locator('#dockSettings').click(); // expose reset and exports without stopping counting
       // Escape must cancel destructive reset, retaining the count.
       await page.locator('#resetButton').click();
       assert(await page.locator('#confirmDialog').isVisible());

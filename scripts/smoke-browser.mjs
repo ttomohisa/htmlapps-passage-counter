@@ -121,10 +121,10 @@ try {
   }, null, { timeout: 90_000 });
   assert(await page.locator('#cameraFeed').evaluate(video => video.videoWidth > 0), 'Camera should provide frames');
   await page.waitForFunction(() => /\bfps\b/.test(document.querySelector('#detectorInfo')?.textContent ?? ''), null, { timeout: 30_000 });
-  assert.match(await page.locator('#detectorInfo').textContent(), /EfficientDet/);
+  assert.match(await page.locator('#detectorInfo').textContent(), /^\d+(\.\d+)? fps$/);
   console.log('[perf] Synthetic Chrome camera and bundled model ready after '+(Date.now()-cameraStartMs)+'ms; not a mobile benchmark.');
   assert(await page.locator('#recognitionStatus').isVisible(),'Plain-language recognition status not shown');
-  assert(await page.locator('#diagnosticDetails').count()===1,'Processing metrics details are missing');
+  assert(await page.locator('#processingSpeed').count()===1,'Processing speed is missing');
   console.log('[smoke] MediaPipe initialized from offline HTML and fake camera is live.');
 
   // Verify real detectForVideo passes with the only bundled SIMD loader,
@@ -338,6 +338,7 @@ try {
   await failedPage.locator('#beginCount').click();
   await failedPage.locator('#plusB').click();
   assert.equal((await failedPage.locator('#countB').textContent()).trim(),'1');
+  await failedPage.locator('#focusToggle').click(); // expose records without stopping counting
   const rescue=failedPage.waitForEvent('download');
   await failedPage.locator('#downloadButton').click();
   const rescueCsv=await readFile(await (await rescue).path(),'utf8');
@@ -347,9 +348,9 @@ try {
   console.log('[persistence] IndexedDB-disabled client retains memory counts and exports CSV.');
 
   if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
-  assert.match(await page.locator('#pageTitle').textContent(), /Count people/);
+  assert.equal(await page.locator('#pageTitle').textContent(), 'Count crossings');
   assert.equal(await page.locator('#brandName').textContent(),'Passage Counter');
-  assert.equal(await page.locator('#versionBadge').textContent(),'v1.0.0');
+  assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
   assert.equal(await page.locator('#languageButton').textContent(),'JA');
   assert.match(await page.locator('#languageButton').getAttribute('aria-label'),/Japanese/);
   assert.match(await page.locator('.local-badge').textContent(),/local processing/i);

@@ -6,12 +6,12 @@ import {basename,join,dirname} from 'node:path';
 const read=async file=>await readFile(file,'utf8');
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const config=JSON.parse(await read('app.config.json'));
-const expectedVersion='1.0.0';
-assert.equal(config.version,expectedVersion,'App version must be v1.0.0');
+const expectedVersion='1.1.0';
+assert.equal(config.version,expectedVersion,'App version must be v1.1.0');
 const model=JSON.parse(await read('model.config.json'));
 const locked=JSON.parse(await read('dependencies.lock.json'));
 const dependencies=JSON.parse(await read('dependencies.json'));
-const gates=JSON.parse(await read('docs/release-gates.v1.0.0.json'));
+const gates=JSON.parse(await read('docs/release-gates.v1.1.0.json'));
 assert.equal(gates.schemaVersion,1);
 assert.equal(gates.version,expectedVersion);
 assert(Array.isArray(gates.gates)&&gates.gates.length>=7);
@@ -115,8 +115,8 @@ const thirdParty=await read('THIRD_PARTY_NOTICES.md');
 for(const needle of [model.sha256,runtimeAsset.tarballSha256,'UNVERIFIED','licenses/Apache-2.0.txt'])
  assert(thirdParty.includes(needle),'Third-party notice incomplete: '+needle);
 const specs=[
- {name:'screenshot.png',width:1280,minHeight:800,language:'ja'},
- {name:'screenshot-en.png',width:1280,minHeight:800,language:'en'},
+ {name:'screenshot.png',width:1360,minHeight:900,language:'ja'},
+ {name:'screenshot-en.png',width:1360,minHeight:900,language:'en'},
  {name:'screenshot-mobile.png',width:390,minHeight:844,language:'ja'},
  {name:'screenshot-mobile-en.png',width:390,minHeight:844,language:'en'}
 ];
@@ -138,8 +138,8 @@ for(const name of ['screenshot.png','screenshot-en.png','screenshot-mobile.png',
  assert(ja.includes('assets/'+name),'JA README missing screenshot link '+name);
 }
 const provenance=await read('assets/SCREENSHOTS.md');
-assert(provenance.includes('pre-count')&&provenance.includes('camera-off'),
-  'Screenshot provenance must explain zero-count and camera-off conditions');
+assert(provenance.includes('local synthetic video')&&provenance.includes('camera-off')&&provenance.includes('manual correction'),
+  'Screenshot provenance must explain the local sample and actual manual correction');
 const docs=await read('docs/RELEASE_READINESS_v1.0.0.md');
 assert(docs.includes('risk-managed GO')&&docs.includes('LICENSE-MODEL')&&
  docs.includes('LICENSE-STANDALONE')&&docs.includes('not legal clearance'),

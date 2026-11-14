@@ -435,13 +435,13 @@ footer{max-width:1240px;padding-top:3px}
 .workspace .setup-extras .precount-row input{font-size:13px}
 .workspace>.measure-console .measure-heading{margin:0 0 15px}
 .workspace>.measure-console .measure-heading h2{font-size:17px}
-.workspace>.measure-console .counter-grid{gap:9px}
-.workspace>.measure-console .counter{padding:11px 12px 10px;background:#f8faf8;border-radius:12px}
-.workspace>.measure-console .counter .label{font-size:12px}
-.workspace>.measure-console .counter strong{font-size:clamp(35px,4vw,51px)}
-.workspace>.measure-console .counter small{display:none}
-.workspace>.measure-console .total{border-bottom:1px solid var(--border);padding:12px 0 14px;margin-bottom:15px}
-.workspace>.measure-console .total strong{font-size:24px}
+.workspace .counter-summary .counter-grid{gap:9px}
+.workspace .counter-summary .counter{padding:11px 12px 10px;background:#f8faf8;border-radius:12px}
+.workspace .counter-summary .counter .label{font-size:12px}
+.workspace .counter-summary .counter strong{font-size:clamp(35px,4vw,51px)}
+.workspace .counter-summary .counter small{display:none}
+.workspace .counter-summary .total{border-bottom:1px solid var(--border);padding:12px 0 14px;margin-bottom:15px}
+.workspace .counter-summary .total strong{font-size:24px}
 .workspace>.measure-console .setup-flow{gap:6px;margin:0 0 11px}
 .workspace>.measure-console .setup-flow span{padding:6px 8px;font-size:10px;flex:1 1 auto;text-align:center;justify-content:center}
 .next-action{border-left:3px solid #accdb9;background:#f4f8f4;border-radius:0 10px 10px 0;padding:11px 12px;margin:0 0 12px;display:grid;gap:2px;min-width:0}
@@ -508,8 +508,8 @@ footer{max-width:1240px;padding-top:3px}
   }
   .workspace>.measure-console{padding:16px 15px}
   .workspace>.measure-console .measure-heading{margin-bottom:12px}
-  .workspace>.measure-console .counter-grid{gap:12px}
-  .workspace>.measure-console .counter strong{font-size:43px}
+  .workspace .counter-summary .counter-grid{gap:12px}
+  .workspace .counter-summary .counter strong{font-size:43px}
   .workspace>.measure-console .test-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.7fr);align-items:center}
   .workspace>.measure-console .test-result{grid-column:1/-1}
   .workspace>.measure-console .test-card button{width:100%;max-width:none}
@@ -531,10 +531,10 @@ footer{max-width:1240px;padding-top:3px}
   .workspace .video-panel .video-footer{padding-top:2px}
   .workspace>.measure-console{padding:15px 13px}
   .workspace>.measure-console .measure-heading{margin-bottom:10px}
-  .workspace>.measure-console .counter-grid{gap:8px}
-  .workspace>.measure-console .counter{padding:10px 11px}
-  .workspace>.measure-console .counter strong{font-size:39px}
-  .workspace>.measure-console .total{padding:9px 0 11px;margin-bottom:12px}
+  .workspace .counter-summary .counter-grid{gap:8px}
+  .workspace .counter-summary .counter{padding:10px 11px}
+  .workspace .counter-summary .counter strong{font-size:39px}
+  .workspace .counter-summary .total{padding:9px 0 11px;margin-bottom:12px}
   .workspace>.measure-console .setup-flow span{font-size:10px;padding:6px 5px}
   .workspace>.measure-console .test-card{display:block;padding:12px;margin-bottom:11px}
   .workspace>.measure-console .test-card button{margin-top:10px}
@@ -546,81 +546,81 @@ footer{max-width:1240px;padding-top:3px}
 
 /* Counter-card quick corrections: two visible 44px action targets in the
    user-marked top-right corner of each direction card, plus nearby Undo. */
-.workspace>.measure-console .counter-grid{gap:8px}
-.workspace>.measure-console .counter{
+.workspace .counter-summary .counter-grid{gap:8px}
+.workspace .counter-summary .counter{
   display:grid;grid-template-columns:minmax(0,1fr) 44px;
   grid-template-rows:auto minmax(0,1fr);
   grid-template-areas:"label quick" "value quick";
   gap:5px 6px;align-items:stretch;min-width:0;min-height:132px;
   padding:10px 11px;background:#f8faf8;border-color:#dce6de;
 }
-.workspace>.measure-console .counter .label{
+.workspace .counter-summary .counter .label{
   grid-area:label;min-width:0;max-width:100%;font-size:11px;
   line-height:1.35;align-self:start;overflow-wrap:anywhere;
 }
-.workspace>.measure-console .counter strong{
+.workspace .counter-summary .counter strong{
   grid-area:value;align-self:end;min-width:0;line-height:1.12;
   font-size:clamp(28px,8.2vw,48px);letter-spacing:-.035em;
   overflow-wrap:anywhere;
 }
-.workspace>.measure-console .counter strong[data-digits="3"]{font-size:clamp(23px,6vw,33px)}
-.workspace>.measure-console .counter strong[data-digits="4"]{font-size:clamp(18px,5vw,26px)}
-.workspace>.measure-console .counter strong[data-digits="5"]{font-size:clamp(14px,4.3vw,21px)}
-.workspace>.measure-console .counter strong[data-digits="6"]{font-size:clamp(12px,3.7vw,18px)}
-.workspace>.measure-console .counter strong[data-digits="7"],
-.workspace>.measure-console .counter strong[data-digits="8"],
-.workspace>.measure-console .counter strong[data-digits="9"]{font-size:12px}
-.workspace>.measure-console .counter small{display:none}
-.workspace>.measure-console .counter-adjustments{
+.workspace .counter-summary .counter strong[data-digits="3"]{font-size:clamp(23px,6vw,33px)}
+.workspace .counter-summary .counter strong[data-digits="4"]{font-size:clamp(18px,5vw,26px)}
+.workspace .counter-summary .counter strong[data-digits="5"]{font-size:clamp(14px,4.3vw,21px)}
+.workspace .counter-summary .counter strong[data-digits="6"]{font-size:clamp(12px,3.7vw,18px)}
+.workspace .counter-summary .counter strong[data-digits="7"],
+.workspace .counter-summary .counter strong[data-digits="8"],
+.workspace .counter-summary .counter strong[data-digits="9"]{font-size:12px}
+.workspace .counter-summary .counter small{display:none}
+.workspace .counter-summary .counter-adjustments{
   grid-area:quick;display:grid;grid-template-rows:44px 44px;
   align-content:center;gap:5px;width:44px;min-width:44px;
 }
-.workspace>.measure-console .counter-adjustments button{
+.workspace .counter-summary .counter-adjustments button{
   width:44px;height:44px;min-height:44px;min-width:44px;
   padding:0 2px;display:grid;place-items:center;
   border-radius:9px;font-size:12px;font-weight:750;
   border:1px solid #d6e2d8;background:#fff;color:#55675a;
 }
-.workspace>.measure-console .counter-adjustments button[id^="plus"]{
+.workspace .counter-summary .counter-adjustments button[id^="plus"]{
   background:#e7f3eb;border-color:#c6dfce;color:var(--brand);
 }
-.workspace>.measure-console .counter-adjustments button:enabled:hover{border-color:#83b49a}
-.workspace>.measure-console .counter-adjustments button:disabled{opacity:.48}
-.workspace>.measure-console .total{
+.workspace .counter-summary .counter-adjustments button:enabled:hover{border-color:#83b49a}
+.workspace .counter-summary .counter-adjustments button:disabled{opacity:.48}
+.workspace .counter-summary .total{
   display:flex;flex-wrap:wrap;justify-content:space-between;
   align-items:center;gap:6px 10px;padding:12px 0 13px;margin-bottom:14px;
 }
-.workspace>.measure-console .total>span{min-width:0;overflow-wrap:anywhere}
-.workspace>.measure-console .total-utilities{
+.workspace .counter-summary .total>span{min-width:0;overflow-wrap:anywhere}
+.workspace .counter-summary .total-utilities{
   display:flex;align-items:center;gap:8px;min-width:0;margin-left:auto;
 }
-.workspace>.measure-console .total-utilities strong{
+.workspace .counter-summary .total-utilities strong{
   font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums;
 }
-.workspace>.measure-console .undo-inline{
+.workspace .counter-summary .undo-inline{
   display:inline-flex;align-items:center;justify-content:center;gap:5px;
   width:auto;min-height:44px;min-width:44px;padding:7px 9px;
   border-radius:9px;background:#fff;border-color:#dbe6df;
   color:var(--brand-dark);font-size:11px;font-weight:700;white-space:nowrap;
 }
-.workspace>.measure-console .undo-inline svg{width:16px;height:16px;flex:0 0 16px}
-.workspace>.measure-console .undo-inline:disabled{opacity:.43}
+.workspace .counter-summary .undo-inline svg{width:16px;height:16px;flex:0 0 16px}
+.workspace .counter-summary .undo-inline:disabled{opacity:.43}
 .workspace>.support-panel .export-panel{border:0;background:#fbfcfa}
 @media(max-width:820px){
   .workspace>.support-panel{display:block;min-width:0}
   .workspace>.support-panel .export-panel{border:0}
 }
 @media(max-width:610px){
-  .workspace>.measure-console .counter{padding:10px 9px;gap:5px 4px}
-  .workspace>.measure-console .counter-grid{gap:8px}
-  .workspace>.measure-console .total{padding:10px 0 11px}
+  .workspace .counter-summary .counter{padding:10px 9px;gap:5px 4px}
+  .workspace .counter-summary .counter-grid{gap:8px}
+  .workspace .counter-summary .total{padding:10px 0 11px}
 }
 @media(max-width:350px){
-  .workspace>.measure-console .counter{padding:9px 7px;gap:3px 3px}
-  .workspace>.measure-console .counter strong{font-size:32px}
-  .workspace>.measure-console .counter strong[data-digits="3"]{font-size:22px}
-  .workspace>.measure-console .counter strong[data-digits="4"]{font-size:18px}
-  .workspace>.measure-console .undo-inline{padding:7px}
+  .workspace .counter-summary .counter{padding:9px 7px;gap:3px 3px}
+  .workspace .counter-summary .counter strong{font-size:32px}
+  .workspace .counter-summary .counter strong[data-digits="3"]{font-size:22px}
+  .workspace .counter-summary .counter strong[data-digits="4"]{font-size:18px}
+  .workspace .counter-summary .undo-inline{padding:7px}
 }
 
 
@@ -688,6 +688,17 @@ body.help-scroll-locked{
 }
 #helpDialog .help-dialog-body p{margin:7px 0 0}
 #helpDialog .help-dialog-body ol,#helpDialog .help-dialog-body ul{margin:7px 0 0;padding-left:21px}
+#helpDialog .help-steps li{padding:0 0 14px 4px}
+#helpDialog .help-steps li:last-child{padding-bottom:0}
+#helpDialog .help-steps li::marker{color:var(--brand);font-weight:700}
+#helpDialog .help-steps strong{display:block;color:var(--text);font-size:14px}
+#helpDialog .help-steps p{margin-top:3px}
+#helpDialog .help-dialog-body ul li+li{margin-top:9px}
+#helpDialog .help-topic{border-top:1px solid var(--border);margin-top:12px;padding-top:3px}
+#helpDialog .help-topic summary{cursor:pointer;min-height:44px;padding:11px 0;box-sizing:border-box;color:var(--brand);font-size:13px;font-weight:700;line-height:1.6;overflow-wrap:anywhere}
+#helpDialog .help-topic[open]{padding-bottom:8px}
+#helpDialog .help-topic p{margin-top:0}
+#helpDialog .help-topic p+p{margin-top:8px}
 #helpDialog .help-dialog-note{
   margin-top:14px!important;padding:11px 12px;
   border:1px solid #bdd5c6;border-radius:10px;
@@ -705,6 +716,89 @@ body.help-scroll-locked{
 .embedded-license-notice h4{font-size:12px;line-height:1.55;margin:16px 0 5px;color:var(--brand-dark);overflow-wrap:anywhere}
 .embedded-license-notice pre{font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:white;border:1px solid var(--border);padding:12px;border-radius:8px;max-height:240px;overflow:auto}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* v1.1 operational layout. Focus is optional; exports remain reachable. */
+.file-drop summary{cursor:pointer;min-height:44px;display:list-item;padding:10px 0;list-style-position:inside;font-size:13px;font-weight:650;overflow-wrap:anywhere}.file-drop[open] summary{margin-bottom:10px}
+.operation-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.operation-tools button{font-size:12px;padding:8px 12px}
+.operation-note,.latest-crossing{font-size:12px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
+#crossingFeedback{position:absolute;z-index:4;transform:translate(-50%,-50%);background:var(--brand);color:#fff;padding:7px 12px;border:2px solid #fff;border-radius:20px;font-weight:750;pointer-events:none;max-width:90%;overflow-wrap:anywhere}
+.roi-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.roi-fields label{font-size:12px}
+#roiError{color:var(--danger)}.check-observations{font-size:12px;line-height:1.7;white-space:pre-line;margin-top:10px}
+#focusToggle{margin-bottom:10px}.live-dock{display:none}.result-tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+#resultText{display:block;width:100%;min-height:180px;font:13px/1.6 system-ui;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px}
+#resultText[hidden]{display:none}.report dl{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.timeline-item .direction-bars{display:grid;gap:5px}.timeline-item .bar span.direction-b{background:#fff;border:2px solid var(--brand)}
+.timeline-item[data-coverage="partial"] .direction-bars,.timeline-item[data-coverage="missing"] .direction-bars{background:repeating-linear-gradient(135deg,transparent 0 5px,#d8e2de 5px 7px);padding:4px;border-radius:5px}
+#appMain[data-focused="true"] .setup-extras,#appMain[data-focused="true"] .support-panel,#appMain[data-focused="true"] #savedSessions{display:none}
+#appMain[data-focused="true"] .source-bar,#appMain[data-focused="true"] #videoSourceBox,#appMain[data-focused="true"] .camera-launch,#appMain[data-focused="true"] .line-toolbar,#appMain[data-focused="true"] .operation-tools,#appMain[data-focused="true"] .operation-note,#appMain[data-focused="true"] #nextAction,#appMain[data-focused="true"] #setupFlow,#appMain[data-focused="true"] .count-footnote{display:none}
+@media(max-width:820px){
+ body.has-live-dock{padding-bottom:calc(85px + env(safe-area-inset-bottom))}
+ .live-dock:not([hidden]){display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:fixed;z-index:80;bottom:0;left:0;right:0;padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border)}
+ .live-dock button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;min-height:54px;padding:6px}.live-dock svg{width:18px;height:18px}
+ body.has-live-dock .toast{bottom:calc(90px + env(safe-area-inset-bottom))}
+ #appMain[data-focused="true"] .workspace{gap:10px}#appMain[data-focused="true"] .camera-stage{aspect-ratio:4/3;min-height:150px;max-height:48dvh}
+ #appMain[data-focused="true"] .page-intro,#appMain[data-focused="true"] .session-controls,#appMain[data-focused="true"] #timelineSection{display:none}
+ #appMain[data-focused="true"] .measure-console{padding:12px}#appMain[data-focused="true"] .counter strong{font-size:36px}
+ .roi-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+
+/* Review: one measurement surface and only ordinary processing information. */
+#statusDetails[data-kind="error"]{background:#fff0ed;color:#8a3931;border-left-color:#bd6658}
+.processing-speed{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap;color:var(--muted)}
+.workspace-eyebrow{display:none}
+.counter-summary{min-width:0;scroll-margin-top:80px}
+.workspace{scroll-margin-top:80px}
+.counter-summary .measure-heading{margin-bottom:10px;align-items:center}
+.summary-state{font-size:11px;color:var(--brand);display:block;line-height:1.5}
+#focusToggle{font-size:12px;min-height:44px;padding:7px 10px;margin-bottom:10px}
+#appMain[data-has-source="true"] .page-intro{display:none}
+#appMain[data-phase="counting"] #statusDetails[data-explicit="false"],#appMain[data-phase="ready"] #statusDetails[data-explicit="false"]{display:none}
+#appMain[data-phase="counting"] #nextAction,#appMain[data-phase="paused"] #nextAction,#appMain[data-phase="interrupted"] #nextAction,#appMain[data-phase="done"] #nextAction{display:none}
+#appMain[data-phase="done"] #measureWorkflow{display:none}
+#appMain[data-phase="counting"] #setupFlow,#appMain[data-phase="paused"] #setupFlow,#appMain[data-phase="interrupted"] #setupFlow,#appMain[data-phase="done"] #setupFlow{display:none}
+#appMain[data-phase="interrupted"] #statusDetails,#appMain[data-phase="error"] #statusDetails{background:#fff5ed;border-left-color:#bd7655;color:#734b36;font-size:12px;padding:10px 12px}
+#appMain[data-phase="paused"] #statusDetails{background:#f4f6f4;color:var(--muted);font-size:12px;padding:8px 10px}
+#appMain[data-focused="true"] .media-controls .row,#appMain[data-focused="true"] .file-note{display:none}
+#appMain[data-focused="true"] .media-controls{padding-top:5px}
+#appMain[data-focused="true"] .video-footer{margin-top:5px}
+@media(min-width:821px){.workspace>.measure-console{position:sticky;top:82px}.camera-stage{max-height:62dvh;aspect-ratio:16/9}.video-panel .operation-tools,.video-panel .operation-note,.video-panel .latest-crossing{margin-left:20px;margin-right:20px}}
+@media(max-width:820px){
+ .local-badge{display:none!important}
+ .page-intro{gap:0;padding-bottom:14px}.page-intro h1{font-size:22px}
+ .workspace>.video-panel{padding-bottom:12px}.workspace-topline{padding:13px 14px 10px}
+ .video-panel>.counter-summary{margin:0 12px 10px}
+ .workspace .counter-summary .measure-heading{margin:0 0 8px;gap:8px}
+ .counter-summary .measure-heading h2{font-size:14px;margin:0}
+ .counter-summary .clock{font-size:12px;padding:4px 7px}
+ .workspace .counter-summary .counter-grid{gap:8px}
+ .workspace .counter-summary .counter{padding:8px 9px;background:#f5f8f5;border-radius:10px;min-height:104px}
+ .workspace .counter-summary .counter .label{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+ .workspace .counter-summary .counter strong{font-size:32px;line-height:1}
+ .workspace .counter-summary .counter small{display:none}
+ .workspace .counter-summary .counter-adjustments{grid-template-rows:44px 44px;gap:4px}
+ .workspace .counter-summary .total{min-height:44px;margin:6px 0 0;padding:0;border:0;font-size:11px}
+ .workspace .counter-summary .total strong{font-size:20px}
+ .workspace .counter-summary #undoCorrection{min-height:44px;padding:6px 8px}
+ .counter-summary #focusToggle{display:none}
+ .camera-stage{aspect-ratio:16/9;min-height:145px}
+ #appMain[data-focused="true"] .camera-stage{height:min(34dvh,calc(100dvh - 390px));min-height:120px;max-height:300px;aspect-ratio:auto}
+ #appMain[data-focused="true"] .measure-console,#appMain[data-phase="done"] .measure-console{display:none}
+ #appMain[data-focused="true"] .video-panel{padding-bottom:8px}
+ #appMain[data-focused="true"] .workspace{gap:0}
+ #appMain[data-focused="true"] .workspace-topline{padding-bottom:8px}
+ #appMain[data-focused="true"] .camera-stage{margin-top:0}
+ .video-footer{padding:6px 14px 0!important;min-height:28px}
+ .latest-crossing{margin:5px 14px}
+ .live-dock:not([hidden]){gap:8px;padding-top:7px;padding-bottom:calc(7px + env(safe-area-inset-bottom))}
+ .live-dock[data-preparing="true"]{grid-template-columns:1fr 1fr}
+ .live-dock button{min-height:52px;font-size:11px;border-radius:9px}
+ .live-dock button.primary{background:var(--brand);color:#fff}
+ .count-footnote{font-size:11px}
+ .operation-tools,.operation-note{margin-left:14px;margin-right:14px}
+ .setup-extras{scroll-margin-top:80px}
+}
+
 </style>
 </head><body>
 
@@ -715,7 +809,7 @@ body.help-scroll-locked{
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.0.0</span></p>
+        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.1.0</span></p>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -733,8 +827,8 @@ body.help-scroll-locked{
 <main class="shell main" id="appMain" data-phase="idle" data-source="camera">
   <section class="page-intro" aria-labelledby="pageTitle">
     <div class="hero-copy">
-      <h1 id="pageTitle" data-i18n="title">カメラや動画で、通過した人を数える</h1>
-      <p data-i18n="intro">カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。</p>
+      <h1 id="pageTitle" data-i18n="title">通過した人を数える</h1>
+      <p data-i18n="intro">カメラ・動画で、通過を方向別に記録。</p>
     </div>
     <div class="local-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -765,12 +859,16 @@ body.help-scroll-locked{
         </label>
         <p class="source-caption" data-i18n="sourceHint">カメラで計測するか、端末の動画を解析します。</p>
       </div>
-      <div class="file-drop" id="videoSourceBox" hidden>
+      <details class="file-drop" id="videoSourceBox" hidden open>
+        <summary id="videoSourceSummary" data-i18n="videoSourceSettings">動画ファイルと解析方法</summary>
         <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
         <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
         <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
+        <label for="analysisMode" data-i18n="analysisMode">解析方法</label>
+        <select id="analysisMode"><option value="sequential" data-i18n="sequentialMode">順番に解析（0.1秒間隔）</option><option value="realtime" data-i18n="realtimeMode">再生しながら解析</option></select>
+        <p class="helper" data-i18n="samplingNote">順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。</p>
         <div class="file-status" id="videoFileStatus" aria-live="polite" data-i18n="videoEmpty">動画が未選択です。</div>
-      </div>
+      </details>
 
       <div class="camera-launch" id="cameraLaunch">
         <div class="actions" id="cameraActions">
@@ -786,7 +884,7 @@ body.help-scroll-locked{
           <circle class="gesture-endpoint" data-endpoint="0" cx="120" cy="500" r="31"/>
           <circle class="gesture-endpoint" data-endpoint="1" cx="880" cy="500" r="31"/>
         </svg>
-        <div class="mini-counts" id="mobileCounts" hidden aria-hidden="true"><span><span id="miniLabelA">A→B</span><strong id="miniA">0</strong></span><span><span id="miniLabelB">B→A</span><strong id="miniB">0</strong></span></div>
+        <div id="crossingFeedback" hidden aria-hidden="true"></div>
         <div class="camera-placeholder" id="cameraPlaceholder">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="12" width="40" height="28" rx="5"/><circle cx="24" cy="26" r="8"/><path d="M15 12l3-5h12l3 5"/></svg>
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
@@ -798,10 +896,15 @@ body.help-scroll-locked{
         </div>
         <button class="minor reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
       </div>
+      <div class="operation-tools" role="group" data-i18n-aria-label="linePresets" aria-label="判定線の配置">
+        <button id="lineHorizontal" type="button" data-i18n="horizontalLine">横線</button><button id="lineVertical" type="button" data-i18n="verticalLine">縦線</button><button id="lineCenter" type="button" data-i18n="centerLine">中央に戻す</button>
+      </div>
+      <p class="operation-note" data-i18n="footNote">検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。</p>
+      <p class="latest-crossing" id="latestCrossing" aria-live="off"></p>
       <div class="context-message" id="statusDetails" role="status" aria-live="polite" data-i18n="instruction">カメラを開始すると、判定線を調整できます。</div>
       <div class="video-footer">
         <span id="recognitionStatus" role="status" aria-live="polite">準備前</span>
-        <details class="diagnostic-details" id="diagnosticDetails"><summary data-i18n="detailStatus">処理の詳細</summary><div id="detectorInfo">—</div></details>
+        <span id="processingSpeed" class="processing-speed" hidden><span id="detectorInfo">— fps</span></span>
       </div>
 
       <div class="media-controls">
@@ -822,11 +925,14 @@ body.help-scroll-locked{
 
     </section>
 
-      <section class="measure-console" aria-labelledby="counterHeading">
+      <section class="measure-console" aria-labelledby="controlsHeading">
+        <h2 class="sr-only" id="controlsHeading" data-i18n="measurementActions">計測操作</h2>
+        <section id="counterSummary" class="counter-summary" aria-labelledby="counterHeading">
         <div class="section-head measure-heading">
-          <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2></div>
+          <div><span class="workspace-eyebrow" data-i18n="measureEyebrow">計測パネル</span><h2 id="counterHeading" data-i18n="countHeading">通過カウント</h2><span id="summaryState" class="summary-state" hidden></span></div>
           <span class="clock" id="elapsedText">00:00:00</span>
         </div>
+        <button id="focusToggle" type="button" aria-pressed="false" data-i18n="focusOn">計測に集中</button>
         <div class="counter-grid" id="correctionPanel">
           <span class="sr-only" id="correctHeading" data-i18n="correctionHeading">件数を補正</span>
           <div class="counter" data-direction="a">
@@ -861,6 +967,8 @@ body.help-scroll-locked{
           </div>
         </div>
         <p class="sr-only" id="correctionHelpText" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
+        </section>
+        <div id="measureWorkflow">
         <div class="next-action" id="nextAction" role="status" aria-live="polite" data-next="camera">
           <span class="next-kicker" id="nextActionKicker" data-i18n="nextKicker">次の操作</span>
           <strong id="nextActionTitle" data-i18n="nextStartCamera">まずカメラを開始</strong>
@@ -880,6 +988,7 @@ body.help-scroll-locked{
         <div class="test-result" id="testResult" hidden role="status" aria-live="polite">
           <strong id="testRemaining" role="timer" aria-live="off"></strong>
           <span id="testMessage"></span>
+          <p id="testObservations" class="check-observations"></p>
         </div>
       </section>
 
@@ -891,6 +1000,7 @@ body.help-scroll-locked{
         <p class="helper count-footnote" data-i18n="countNote">同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。</p>
 
 
+        </div>
       </section>
     <section class="panel setup-extras" aria-label="計測の設定" data-i18n-aria-label="extrasAria">
       <details class="setup-options" id="setupOptions">
@@ -903,6 +1013,16 @@ body.help-scroll-locked{
           <label for="labelA"><span data-i18n="directionALabel">A→Bの名称</span><input id="labelA" type="text" maxlength="24" placeholder="A→B"></label>
           <label for="labelB"><span data-i18n="directionBLabel">B→Aの名称</span><input id="labelB" type="text" maxlength="24" placeholder="B→A"></label>
         </div>
+        <fieldset class="area-settings"><legend data-i18n="countingArea">計測する範囲</legend>
+          <label class="toggle"><input type="checkbox" id="roiEnabled"><span data-i18n="useArea">範囲を指定する</span></label>
+          <div class="roi-fields" id="roiFields" hidden>
+            <label><span data-i18n="areaLeft">左端（%）</span><input id="roiLeft" type="number" min="0" max="95" value="10" step="1"></label>
+            <label><span data-i18n="areaRight">右端（%）</span><input id="roiRight" type="number" min="5" max="100" value="90" step="1"></label>
+            <label><span data-i18n="areaTop">上端（%）</span><input id="roiTop" type="number" min="0" max="95" value="10" step="1"></label>
+            <label><span data-i18n="areaBottom">下端（%）</span><input id="roiBottom" type="number" min="5" max="100" value="95" step="1"></label>
+          </div><p id="roiError" class="helper" role="status" hidden data-i18n="areaInvalid">幅と高さが5%以上になる範囲を指定してください。</p>
+          <p class="helper" data-i18n="areaNote">枠内に足元がある人だけを追跡します。判定線の両側に余裕を残してください。映像全体の認識処理は行います。</p>
+        </fieldset>
         <p class="helper" data-i18n="cameraOrientationNote">画面の鏡像反転は行いません。判定線と映像の向きを一致させます。</p>
       </details>
 
@@ -923,6 +1043,8 @@ body.help-scroll-locked{
         <div id="coverageSummary" class="coverage-mini" aria-live="off" hidden></div>
         <label class="inline-field" for="outputFilename"><span data-i18n="outputFilename">出力ファイル名</span><input id="outputFilename" type="text" maxlength="100" spellcheck="false" autocomplete="off" value="passage-counter" aria-describedby="fileHint"></label>
         <p class="helper" id="fileHint" data-i18n="fileHint">CSVにはファイルの種類を付けて保存します。</p>
+        <div class="result-tools"><button id="bundleButton" disabled data-i18n="bundleCsv">CSVをまとめて保存（ZIP）</button><button id="copyResult" disabled data-i18n="copyResult">結果をコピー</button></div>
+        <textarea id="resultText" readonly hidden data-i18n-aria-label="copyFallback" aria-label="コピー用の計測結果"></textarea>
         <div class="export-actions">
           <button id="downloadButton" disabled data-i18n="download">イベントCSV</button>
           <button id="summaryButton" disabled data-i18n="exportSummary">概要CSV</button>
@@ -935,6 +1057,7 @@ body.help-scroll-locked{
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
     <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
     <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
+    <dl><div><dt id="reportLabelA">A → B</dt><dd id="reportFinalA">0</dd></div><div><dt id="reportLabelB">B → A</dt><dd id="reportFinalB">0</dd></div><div><dt data-i18n="covered">有効計測</dt><dd id="reportObserved">—</dd></div><div><dt data-i18n="missingCoverage">欠測</dt><dd id="reportMissing">—</dd></div><div><dt data-i18n="correctionCount">補正操作</dt><dd id="reportCorrections">0</dd></div></dl>
     <p class="helper" data-i18n="prototypeNote">判定線を移動しやすくしました。実環境の精度確認はまだ完了していません。</p>
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
@@ -957,6 +1080,13 @@ body.help-scroll-locked{
 </main>
 <!-- APP:END -->
 <footer><span id="footerName">通過カウンター</span> · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<nav id="liveDock" class="live-dock" hidden data-i18n-aria-label="measurementActions" aria-label="計測操作">
+  <button id="dockStart" type="button" class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 4 12 8-12 8Z"/></svg><span id="dockStartLabel">計測を開始</span></button>
+  <button id="dockPause" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span data-i18n="pause">一時停止</span></button>
+  <button id="dockResume" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 4 12 8-12 8Z"/></svg><span data-i18n="resume">再開</span></button>
+  <button id="dockFinish" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg><span data-i18n="finish">終了</span></button>
+  <button id="dockSettings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="10" cy="18" r="2" fill="white"/></svg><span id="dockSettingsLabel">設定・記録</span></button>
+</nav>
 <!-- APP:HELP:BEGIN -->
 <dialog id="helpDialog" aria-labelledby="helpTitle">
   <div class="help-dialog-head">
@@ -966,26 +1096,43 @@ body.help-scroll-locked{
     </button>
   </div>
   <div class="help-dialog-body" id="helpDialogBody">
-    <h3 data-i18n="helpBasicsTitle">基本操作</h3>
-    <ol>
-      <li data-i18n="helpStep1">スマホやPCを固定して「カメラを開始」を押すか、「端末の動画」から動画を選びます。カメラは開始時に権限を確認します。</li>
-      <li data-i18n="helpStep2">映像上の判定線をドラッグすると線全体が移動し、両端の白丸では長さ・角度を変更できます。「A/B方向を反転」で通過方向を切り替えます。</li>
-      <li data-i18n="helpStep3">カメラの場合は30秒の設置チェックで通過方向を確認します。チェック中の件数は本計測に入りません。判定線を動かしたら再チェックしてください。</li>
-      <li data-i18n="helpStep4">「計測を開始」を押すと方向別の通過回数を記録します。計測中は一時停止・再開・終了できます。端末の動画は先頭から解析し、最後まで進むと終了します。</li>
-      <li data-i18n="helpStep5">数え間違いは各方向の「−1」「＋1」で補正できます。「元に戻す」は直前の補正を取り消します。補正・UndoはCSVの履歴に残ります。</li>
-      <li data-i18n="helpStep6">イベント・概要・時間帯別の3種類のCSVを保存できます。「保存した計測」では同じブラウザ内の記録を確認できます。</li>
+    <h3 data-i18n="helpBasicsTitle">まずは4ステップ</h3>
+    <ol class="help-steps">
+      <li><strong data-i18n="helpStep1Title">映像を選ぶ</strong><p data-i18n="helpStep1">端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。</p></li>
+      <li><strong data-i18n="helpStep2Title">数える位置に線を置く</strong><p data-i18n="helpStep2">人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。</p></li>
+      <li><strong data-i18n="helpStep3Title">カメラの映り方を確認する</strong><p data-i18n="helpStep3">30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。</p></li>
+      <li><strong data-i18n="helpStep4Title">計測を始める</strong><p data-i18n="helpStep4">「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。</p></li>
     </ol>
-    <h3 data-i18n="helpPrivacyTitle">データの処理と保存</h3>
-    <p data-i18n="helpPrivacyBody">カメラ映像・動画ファイル・顔画像・音声はアプリから外部へ送信されません。AIモデルはHTMLに内包され、認識は端末内で実行します。計測名・件数・履歴はブラウザ内に保存しますが、動画そのものは保存しません。Web版を開く際はHTMLの取得に通信が必要です。</p>
-    <h3 data-i18n="helpNotesTitle">注意事項</h3>
+    <h3 data-i18n="helpResultsTitle">件数の修正と保存</h3>
     <ul>
-      <li data-i18n="helpLimitCounts">数えるのは通過回数であり、重複しない人数ではありません。同じ人物の往復は2回と数えます。</li>
-      <li data-i18n="helpLimitAccuracy">人物の重なり、逆光、暗さ、カメラの揺れ、高速な通過では誤検出や見落としが起こります。実環境での精度は保証できません。</li>
-      <li data-i18n="helpLimitBrowser">WebAssembly SIMDなどに対応したブラウザが必要です。カメラの許可や動画形式への対応はブラウザ・端末によって異なります。</li>
-      <li data-i18n="helpLimitInterrupt">画面を隠す、端末がスリープする、カメラが切断されるなどの場合、計測は中断します。見られなかった時間は0件として扱いません。</li>
-      <li data-i18n="helpLimitStorage">保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。</li>
+      <li data-i18n="helpStep5">数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。</li>
+      <li data-i18n="helpStep6">「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。</li>
     </ul>
-    <p class="help-dialog-note" data-i18n="helpImportant">計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。</p>
+    <p data-i18n="helpFocus">計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。</p>
+    <h3 data-i18n="helpNotesTitle">知っておきたいこと</h3>
+    <ul>
+      <li data-i18n="helpLimitCounts">数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。</li>
+      <li data-i18n="helpLimitAccuracy">人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。</li>
+      <li data-i18n="helpLimitInterrupt">計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。</li>
+    </ul>
+    <p data-i18n="helpImportant" class="help-dialog-note">安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。</p>
+    <details class="help-topic">
+      <summary data-i18n="helpPlacementTitle">線の位置や方向を調整するには</summary>
+      <p data-i18n="helpImprovements">線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpVideoTitle">動画の解析で気をつけること</summary>
+      <p data-i18n="helpSampling">動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpPrivacyTitle">映像と記録はどこに保存される？</summary>
+      <p data-i18n="helpPrivacyBody">映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。</p>
+      <p data-i18n="helpLimitStorage">計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpBrowserTitle">カメラや動画を使えないとき</summary>
+      <p data-i18n="helpLimitBrowser">カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。</p>
+    </details>
     <details class="embedded-license-notice" id="embeddedLicenseNotice">
       <summary data-i18n="thirdPartyLicenseTitle">ソフトウェアとモデルのライセンス</summary>
       <p data-i18n="thirdPartyLicenseNote">MediaPipe Tasks VisionとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。</p>
@@ -1003,7 +1150,7 @@ body.help-scroll-locked{
       <h4 data-i18n="appLicenseTitle">Passage Counter — MIT License</h4>
       <pre id="embeddedAppMitLicense">__APP_MIT_LICENSE_TEXT__</pre>
     </details>
-    <p class="helper" id="helpVersion">v1.0.0</p>
+    <p class="helper" id="helpVersion">v1.1.0</p>
   </div>
 </dialog>
 <!-- APP:HELP:END -->
@@ -1125,32 +1272,41 @@ body.help-scroll-locked{
         ja: {
           language:'言語',subTitle:'通過カウンター · v1.0.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
-          title:'カメラや動画で、通過した人を数える',intro:'カメラや端末内の動画で、判定線を横切った人の通過を方向別に記録します。映像は保存・送信しません。',
+          title:'通過した人を数える',intro:'カメラ・動画で、通過を方向別に記録。',
           videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。線の途中をドラッグすると形を保ったまま移動し、端の丸をドラッグすると角度と長さを調整できます。矢印キーでも移動できます。',lineHelp:'線の途中をドラッグして移動。両端の丸で角度・長さを調整。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
           session:'計測',beginCount:'計測を開始',resume:'計測を再開',pause:'一時停止',finish:'終了',
           countNote:'同じ人が往復した場合は2回の通過として数えます。混雑時などは誤カウントが発生します。',
           exportHeading:'計測記録',outputFilename:'出力ファイル名',fileHint:'CSVには種類別のファイル名を付けて保存します。',download:'イベントCSV',reset:'件数をリセット',reportTitle:'計測結果',autoA:'A → B',autoB:'B → A',elapsed:'計測時間',
-          prototypeNote:'v1.0.0では判定線の移動操作と画面構成を改善しました。実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
+          prototypeNote:'実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',
-          helpBasicsTitle:'基本操作',
-          helpStep1:'スマホやPCを固定して「カメラを開始」を押すか、「端末の動画」から動画を選びます。カメラは開始時に権限を確認します。',
-          helpStep2:'映像上の判定線をドラッグすると線全体が移動し、両端の白丸では長さ・角度を変更できます。「A/B方向を反転」で通過方向を切り替えます。',
-          helpStep3:'カメラの場合は30秒の設置チェックで通過方向を確認します。チェック中の件数は本計測に入りません。判定線を動かしたら再チェックしてください。',
-          helpStep4:'「計測を開始」を押すと方向別の通過回数を記録します。計測中は一時停止・再開・終了できます。端末の動画は先頭から解析し、最後まで進むと終了します。',
-          helpStep5:'数え間違いは各方向の「−1」「＋1」で補正できます。「元に戻す」は直前の補正を取り消します。補正・UndoはCSVの履歴に残ります。',
-          helpStep6:'イベント・概要・時間帯別の3種類のCSVを保存できます。「保存した計測」では同じブラウザ内の記録を確認できます。',
-          helpPrivacyTitle:'データの処理と保存',
-          helpPrivacyBody:'カメラ映像・動画ファイル・顔画像・音声はアプリから外部へ送信されません。AIモデルはHTMLに内包され、認識は端末内で実行します。計測名・件数・履歴はブラウザ内に保存しますが、動画そのものは保存しません。Web版を開く際はHTMLの取得に通信が必要です。',
-          helpNotesTitle:'注意事項',
-          helpLimitCounts:'数えるのは通過回数であり、重複しない人数ではありません。同じ人物の往復は2回と数えます。',
-          helpLimitAccuracy:'人物の重なり、逆光、暗さ、カメラの揺れ、高速な通過では誤検出や見落としが起こります。実環境での精度は保証できません。',
-          helpLimitBrowser:'WebAssembly SIMDなどに対応したブラウザが必要です。カメラの許可や動画形式への対応はブラウザ・端末によって異なります。',
-          helpLimitInterrupt:'画面を隠す、端末がスリープする、カメラが切断されるなどの場合、計測は中断します。見られなかった時間は0件として扱いません。',
-          helpLimitStorage:'保存した記録はブラウザごと・サイトごとに分かれます。ブラウザのデータを消すと記録も失われるため、必要な結果はCSVに保存してください。',
-          helpImportant:'計測値の正確性が重要な安全管理・請求・法的報告には、独立した確認なしで使用しないでください。',
+          helpBasicsTitle:'まずは4ステップ',
+          helpStep1Title:'映像を選ぶ',
+          helpStep2Title:'数える位置に線を置く',
+          helpStep3Title:'カメラの映り方を確認する',
+          helpStep4Title:'計測を始める',
+          helpResultsTitle:'件数の修正と保存',
+          helpPlacementTitle:'線の位置や方向を調整するには',
+          helpVideoTitle:'動画の解析で気をつけること',
+          helpBrowserTitle:'カメラや動画を使えないとき',
+
+          helpStep1:'端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。',
+          helpStep2:'人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。',
+          helpStep3:'30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。',
+          helpStep4:'「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。',
+          helpStep5:'数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。',
+          helpStep6:'「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。',
+          helpPrivacyTitle:'映像と記録はどこに保存される？',
+          helpPrivacyBody:'映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。',
+          helpNotesTitle:'知っておきたいこと',
+          helpLimitCounts:'数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。',
+          helpLimitAccuracy:'人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。',
+          helpLimitBrowser:'カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。',
+          helpLimitInterrupt:'計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。',
+          helpLimitStorage:'計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。',
+          helpImportant:'安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。',
           thirdPartyLicenseTitle:'ソフトウェアとモデルのライセンス',thirdPartyLicenseNote:'MediaPipeとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'MediaPipe v0.10.35のソースはEigenのMPL 2.0/BSD部分を参照します。参照ソース: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd 。npm配布WASMとタグ上のWASMにハッシュ差があり、厳密なビルド対応は引き続き調査対象です。',
           thirdPartyBsdTitle:'Eigen — BSD形式の権利表示',thirdPartyMinpackTitle:'Eigen配布元のMINPACK関連権利表示',thirdPartyEigenReadmeTitle:'Eigen — 元のライセンス案内',appLicenseTitle:'Passage Counter — MIT License',
@@ -1241,32 +1397,41 @@ body.help-scroll-locked{
         en: {
           language:'Language',subTitle:'People crossing counter · v1.0.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Fully local processing',
-          title:'Count people crossing a line',intro:'Use your camera or a local video to count crossings in two directions. Video is not stored or uploaded.',
+          title:'Count crossings',intro:'Use a camera or a video from your device.',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag anywhere along the line to move it without changing its angle or length. Drag an end handle to adjust it. Arrow keys move the whole line.',lineHelp:'Drag the line itself to move it. Drag an end circle to change the angle or length.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
           session:'Session',beginCount:'Start counting',resume:'Resume',pause:'Pause',finish:'Finish',
           countNote:'A person crossing back counts as another event. Crowds and occlusion may cause false counts.',
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
-          prototypeNote:'v1.0.0 improves counting-line interaction and the workflow layout. Accuracy and long-duration physical-phone tests remain unverified.',
+          prototypeNote:'Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
           helpTitle:'How to use and limitations',
-          helpBasicsTitle:'Basic steps',
-          helpStep1:'Fix your phone or computer in place, then select Start camera, or choose Local video to select a file from this device. Camera permission is requested when you start it.',
-          helpStep2:'Drag the counting line itself to move it. Drag either white endpoint to adjust its length and angle. Use Reverse A/B directions to swap the crossing direction labels.',
-          helpStep3:'For live camera input, use the 30-second setup check to verify direction. Trial counts are excluded from the actual record. Repeat the check whenever you move the line.',
-          helpStep4:'Select Start counting to record crossing events by direction. You can pause, resume or finish. Local video analysis starts from the beginning and finishes at the end of the file.',
-          helpStep5:'Correct a missed or extra crossing using the −1/+1 buttons in the appropriate direction tile. Undo reverses the most recent manual correction. Both actions remain in the CSV history.',
-          helpStep6:'Export Events, Summary and Time buckets CSV. Saved sessions can be reviewed later in the same browser.',
-          helpPrivacyTitle:'Privacy and stored data',
-          helpPrivacyBody:'The app does not transmit camera footage, local video files, face images or audio to a server. The embedded AI model runs on your device. Session names, totals and event history are stored in the browser, but video bytes are not saved. Opening the hosted version still downloads its HTML.',
-          helpNotesTitle:'Things to know',
-          helpLimitCounts:'This measures crossing events, not unique visitors. A person crossing in both directions counts twice.',
-          helpLimitAccuracy:'Overlapping people, backlighting, darkness, camera shake and fast movement can cause false or missed counts. Real-world accuracy is not guaranteed.',
-          helpLimitBrowser:'A browser with WebAssembly SIMD and other required features is needed. Camera permissions and supported video formats depend on the browser and device.',
-          helpLimitInterrupt:'Counting is interrupted when the tab is hidden, the device sleeps or the camera disconnects. Unobserved time is not treated as zero crossings.',
-          helpLimitStorage:'Saved records are isolated by browser and origin. Clearing site data removes them, so export CSV for any result you need to retain.',
-          helpImportant:'Do not use these counts as the sole basis for safety, billing or legal reports without an independent check.',
+          helpBasicsTitle:'Start in four steps',
+          helpStep1Title:'Choose a video source',
+          helpStep2Title:'Place the counting line',
+          helpStep3Title:'Check your camera setup',
+          helpStep4Title:'Start counting',
+          helpResultsTitle:'Correct and save counts',
+          helpPlacementTitle:'Adjust the line and directions',
+          helpVideoTitle:'About video analysis',
+          helpBrowserTitle:'If a camera or video will not work',
+
+          helpStep1:'Keep the device still, select Start camera and allow camera access. For a recorded video, choose Local video.',
+          helpStep2:'Drag the line to where people’s feet will cross it. Drag the white endpoints to change its length or angle.',
+          helpStep3:'Run the 30-second setup check and compare the counts and directions with what you see. Trial counts stay out of your session. Check again after moving the line. Local video skips this step.',
+          helpStep4:'Select Start counting. You can pause, resume or finish. Video analysis starts at the beginning and finishes at the end of the file.',
+          helpStep5:'Use −1 or +1 in either direction tile to correct a count. Undo reverses the last manual correction. Both actions are recorded in the CSV history.',
+          helpStep6:'Save all CSVs (ZIP) downloads Events, Summary and Time buckets files together. You can also Copy results. Video is never included in the ZIP.',
+          helpPrivacyTitle:'Where are video and records stored?',
+          helpPrivacyBody:'Camera footage, local video files, face images and audio are not sent to a server. Recognition runs on your device using resources included in the HTML. Video itself is not saved. Opening the web version downloads the page.',
+          helpNotesTitle:'Before you rely on the counts',
+          helpLimitCounts:'These are crossing events, not unique visitors. Someone who crosses and comes back counts twice.',
+          helpLimitAccuracy:'People overlapping, darkness, backlighting, camera shake and fast movement can cause missed or extra counts. Real-world accuracy is not guaranteed.',
+          helpLimitBrowser:'Check that camera access is allowed. Video formats and the required browser features vary by device and browser. Some environments may remain unsupported even with an up-to-date browser.',
+          helpLimitInterrupt:'Keep this page visible while counting. Switching tabs, screen sleep or a camera disconnect interrupts measurement. Unobserved time is not recorded as zero crossings.',
+          helpLimitStorage:'Session names, counts and history can be reviewed under Saved sessions. Records stay in the browser and site you used. Clearing browser data removes them, so export any results you need as CSV too.',
+          helpImportant:'For safety, billing or legal reports, check the result independently before relying on it.',
           thirdPartyLicenseTitle:'Software and model licenses',thirdPartyLicenseNote:'The upstream MediaPipe model-license statements support Apache 2.0 for the runtime and EfficientDet-Lite0. Eigen has separate MPL 2.0 and BSD-style license terms.',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'The MediaPipe v0.10.35 source tree references Eigen MPL 2.0/BSD components. Source reference: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd . The exact npm WASM differs in SHA from the release-tag WASM, so precise compiled-artifact provenance remains under investigation.',
           thirdPartyBsdTitle:'Eigen — BSD notices',thirdPartyMinpackTitle:'Eigen upstream MINPACK-related notices',thirdPartyEigenReadmeTitle:'Eigen — upstream license notes',appLicenseTitle:'Passage Counter — MIT License',
@@ -1361,6 +1526,51 @@ body.help-scroll-locked{
       const stage = $('#cameraStage');
       const gesture = $('#lineGestureLayer');
       const ctx = overlay.getContext('2d');
+      // OPERATIONS:BEGIN
+      function validArea(a){
+        return Boolean(a&&[a.x,a.y,a.w,a.h].every(Number.isFinite)&&
+          a.x>=0&&a.y>=0&&a.w>=0.05-1e-9&&a.h>=0.05-1e-9&&a.x+a.w<=1.000001&&a.y+a.h<=1.000001);
+      }
+      function inCountingArea(p,a){return !a||(p.x>=a.x&&p.x<=a.x+a.w&&p.y>=a.y&&p.y<=a.y+a.h);}
+      function linePreset(kind,previous=[{x:.12,y:.5},{x:.88,y:.5}]){
+        if(kind==='vertical')return [{x:.5,y:.12},{x:.5,y:.88}];
+        if(kind==='horizontal')return [{x:.12,y:.5},{x:.88,y:.5}];
+        const dx=previous[1].x-previous[0].x,dy=previous[1].y-previous[0].y;
+        return [{x:.5-dx/2,y:.5-dy/2},{x:.5+dx/2,y:.5+dy/2}];
+      }
+      function* sampleTimes(durationMs,stepMs=100){
+        if(!Number.isFinite(durationMs)||durationMs<=0)return;
+        if(!Number.isFinite(stepMs)||stepMs<=0)throw Error('Invalid sampling step');
+        const last=Math.max(0,Math.ceil(durationMs)-1);
+        for(let ms=0;ms<last;ms+=stepMs)yield ms;
+        yield last;
+      }
+      // ZIP method 0 (stored), UTF-8 names, CRC32; the files are small CSVs.
+      function zipFiles(files){
+        const enc=new TextEncoder(),locals=[],central=[];let offset=0;
+        const header=size=>{const bytes=new Uint8Array(size);return {bytes,v:new DataView(bytes.buffer)};};
+        for(const file of files){
+          const name=enc.encode(file.name),data=enc.encode(file.text);let crc=0xffffffff;
+          for(const b of data){crc^=b;for(let n=0;n<8;n++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}
+          crc=(crc^0xffffffff)>>>0;
+          const l=header(30);l.v.setUint32(0,0x04034b50,true);l.v.setUint16(4,20,true);
+          l.v.setUint16(6,0x800,true);l.v.setUint16(12,33,true);l.v.setUint32(14,crc,true);
+          l.v.setUint32(18,data.length,true);l.v.setUint32(22,data.length,true);l.v.setUint16(26,name.length,true);
+          locals.push(l.bytes,name,data);
+          const c=header(46);c.v.setUint32(0,0x02014b50,true);c.v.setUint16(4,20,true);c.v.setUint16(6,20,true);
+          c.v.setUint16(8,0x800,true);c.v.setUint16(14,33,true);c.v.setUint32(16,crc,true);
+          c.v.setUint32(20,data.length,true);c.v.setUint32(24,data.length,true);c.v.setUint16(28,name.length,true);
+          c.v.setUint32(42,offset,true);central.push(c.bytes,name);offset+=30+name.length+data.length;
+        }
+        const centralSize=central.reduce((n,b)=>n+b.length,0),end=header(22);
+        end.v.setUint32(0,0x06054b50,true);end.v.setUint16(8,files.length,true);end.v.setUint16(10,files.length,true);
+        end.v.setUint32(12,centralSize,true);end.v.setUint32(16,offset,true);
+        const output=new Uint8Array(offset+centralSize+22);let pos=0;
+        for(const part of [...locals,...central,end.bytes]){output.set(part,pos);pos+=part.length;}
+        return output;
+      }
+      // OPERATIONS:END
+
       // LEDGER:BEGIN
       // Append-only correction history. Trial crossings never enter this ledger.
       function createCountingLedger(){
@@ -1682,10 +1892,47 @@ body.help-scroll-locked{
         fileNeedsReanalysis:false,
         videoDurationMs:0,lastProcessedSourceMs:-1,fileInternalSeek:false,
         fileSeekingConfirmation:false,filePreviewing:false,sourceBusy:false,
-        previewTargetMs:0
+        previewTargetMs:0,area:null,areaValid:true,focused:false,lastCrossing:null,feedbackTimer:null,
+        analysisGeneration:0,sampleCursorMs:-1,sequentialRunning:false,testQuality:null
       };
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
+      Object.assign(translations.ja, {
+        automaticCount:'自動',manualCount:'手動補正',finalCount:'補正後',videoSourceSettings:'動画ファイルと解析方法',analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
+        samplingNote:'順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。',
+        linePresets:'判定線の配置',horizontalLine:'横線',verticalLine:'縦線',centerLine:'中央に戻す',
+        footNote:'検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。',
+        countingArea:'計測する範囲',useArea:'範囲を指定する',areaLeft:'左端（%）',areaRight:'右端（%）',areaTop:'上端（%）',areaBottom:'下端（%）',
+        areaInvalid:'左右・上下の順序と0〜100%を確認し、幅と高さを5%以上にしてください。',
+        areaNote:'枠内に足元がある人だけを追跡します。判定線の両側に余裕を残してください。映像全体の認識処理は行います。',
+        settingsShort:'設定',focusOn:'計測画面へ',focusOff:'設定・記録',latestNone:'まだ通過の記録はありません。',latestPassage:'直近の通過：{name} · {seconds}秒前',
+        checkNone:'通過0件：人が通らなかった場合と、検出できなかった場合は区別できません。実際に通って確認してください。',
+        checkCompare:'実際に通った回数・方向と照合してください。この結果は認識精度を保証しません。',
+        checkSpeed:'処理速度：{fps} fps',checkSlow:'処理が遅く、通過を見落とす可能性があります。',checkNoSamples:'認識した映像がありません。カメラや処理状態を確認してください。',
+        bundleCsv:'CSVをまとめて保存（ZIP）',copyResult:'結果をコピー',copyFallback:'コピー用の計測結果',copiedResult:'結果をコピーしました',copySelect:'コピーできませんでした。表示された結果を選択してコピーしてください。',
+        correctionCount:'補正操作',measurementActions:'計測操作',sampleProgress:'動画の解析：{percent}% · 0.1秒間隔',
+        helpImprovements:'線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。',
+        helpSampling:'動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。',
+        helpFocus:'計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。'
+      });
+      Object.assign(translations.en, {
+        automaticCount:'Automatic',manualCount:'Manual adjustments',finalCount:'After corrections',videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
+        samplingNote:'Sequential analysis waits for each sample to finish. It does not analyze every frame and may take longer than the video duration.',
+        linePresets:'Counting line placement',horizontalLine:'Horizontal',verticalLine:'Vertical',centerLine:'Center line',
+        footNote:'The bottom center of each detection box approximates the feet. Place the line where this point will cross.',
+        countingArea:'Counting area',useArea:'Limit counting to an area',areaLeft:'Left (%)',areaRight:'Right (%)',areaTop:'Top (%)',areaBottom:'Bottom (%)',
+        areaInvalid:'Check boundary order and the 0–100% range. Width and height must each be at least 5%.',
+        areaNote:'Only people with their foot point inside the rectangle are tracked. Leave space on both sides of the line. Recognition still processes the full image.',
+        settingsShort:'Settings',focusOn:'Counting view',focusOff:'Settings & records',latestNone:'No crossings recorded yet.',latestPassage:'Latest crossing: {name} · {seconds} s ago',
+        checkNone:'No crossings: this cannot distinguish no one passing from a missed detection. Walk across the line to check.',
+        checkCompare:'Compare the counts and directions with what you observed. This result does not guarantee accuracy.',
+        checkSpeed:'Processing speed: {fps} fps',checkSlow:'Processing is slow and may miss crossings.',checkNoSamples:'No images analyzed. Check the camera and processing status.',
+        bundleCsv:'Save all CSVs (ZIP)',copyResult:'Copy results',copyFallback:'Results to copy',copiedResult:'Results copied',copySelect:'Could not copy. Select and copy the displayed results.',
+        correctionCount:'Correction actions',measurementActions:'Measurement actions',sampleProgress:'Video analysis: {percent}% · 0.1 s samples',
+        helpImprovements:'Drag the middle of the line to move it as a whole, or use Horizontal, Vertical or Center line. Use Reverse A/B directions to swap the A and B sides. Set area boundaries as percentages in settings if needed, leaving room on both sides of the line.',
+        helpSampling:'By default, video is analyzed at 0.1-second intervals in order. Not every frame is checked, so brief crossings may be missed. Analysis may take longer than the video. You can also choose analysis during playback. Time buckets use the actual time of analysis, not positions in the video.',
+        helpFocus:'While counting, open Settings & records to view settings and records. On phones, use the bottom bar.'
+      });
       function tr(key){return translations[language][key]||translations.en[key]||key;}
       // PERSIST:BEGIN
       // The queue serializes a snapshot and each matching event in one IndexedDB
@@ -1782,8 +2029,9 @@ body.help-scroll-locked{
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting')pauseCount();
         if(!keepStream)closeCamera();
+        $('#resultText').hidden=true;$('#resultText').value='';
         ledger.reset();state.elapsedMs=0;state.lastActive=0;state.startTime=0;
-        state.sessionStart=null;currentSession=null;zeroTracks();invalidateTest();
+        state.sessionStart=null;currentSession=null;state.lastCrossing=null;state.focused=false;zeroTracks();invalidateTest();
         state.fileNeedsReanalysis=false;state.lastProcessedSourceMs=-1;
         state.phase=hasActiveSource()?'ready':'idle';
         $('#report').hidden=true;
@@ -1830,6 +2078,9 @@ body.help-scroll-locked{
           if(Array.isArray(session.line)&&session.line.length===2){
             line[0]={...session.line[0]};line[1]={...session.line[1]};
           }
+          const config=session.configSegments?.at(-1);
+          state.reverse=config?.reversed===true;state.area=validArea(config?.area)?{...config.area}:null;
+          $('#analysisMode').value=config?.analysisMode==='realtime'?'realtime':'sequential';syncAreaFields();
           state.startTime=Date.parse(session.startedAt)||0;
           state.sessionStart=session.startedAt;
           state.elapsedMs=timeline.durations(session).observedMs;
@@ -1886,6 +2137,7 @@ body.help-scroll-locked{
       }
       function saveSetup(){
         const value={line:line.map(p=>({...p})),reverse:state.reverse,
+          area:state.area,analysisMode:$('#analysisMode').value,
           cameraFacing:$('#cameraFacing').value,showDetections:$('#showDetections').checked,
           labelA:$('#labelA').value.slice(0,24),labelB:$('#labelB').value.slice(0,24)};
         try{localStorage.setItem(SETUP_KEY,JSON.stringify(value));}catch{}
@@ -1898,6 +2150,8 @@ body.help-scroll-locked{
             Number.isFinite(pt.x)&&Number.isFinite(pt.y)&&pt.x>=0.03&&pt.x<=0.97&&pt.y>=0.03&&pt.y<=0.97)){
             line[0]={x:p.line[0].x,y:p.line[0].y};line[1]={x:p.line[1].x,y:p.line[1].y};
           }
+          state.area=validArea(p.area)?{...p.area}:null;syncAreaFields();
+          $('#analysisMode').value=p.analysisMode==='realtime'?'realtime':'sequential';
           state.reverse=p.reverse===true;
           $('#cameraFacing').value=p.cameraFacing==='user'?'user':'environment';
           $('#showDetections').checked=p.showDetections!==false;
@@ -1915,6 +2169,12 @@ body.help-scroll-locked{
         $('#testRemaining').textContent=state.phase==='testing'?
           tr('remaining').replace('{seconds}',String(remaining)):
           tr(state.testCancelled?'testInterrupted':'testCompleted');
+        const quality=state.phase==='testing'?inferencePacer.snapshot(performance.now()):state.testQuality;
+        $('#testObservations').textContent=[
+          quality?.samples?tr('checkSpeed').replace('{fps}',quality.fps).replace('{samples}',quality.samples):tr('checkNoSamples'),
+          quality?.slow?tr('checkSlow'):'',
+          state.testA+state.testB===0?tr('checkNone'):tr('checkCompare')
+        ].filter(Boolean).join('\n');
         $('#testMessage').textContent=tr('trialCounts')
           .replace('{a}',countName('A_TO_B')+' '+state.testA)
           .replace('{b}',countName('B_TO_A')+' '+state.testB);
@@ -1934,7 +2194,8 @@ body.help-scroll-locked{
         document.title=language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
         $('#labelA').placeholder=tr('directionA');
         $('#labelB').placeholder=tr('directionB');
-        updateStorageNotice();renderSavedSessions();renderTimeline();renderState();
+        $('#helpVersion').textContent='v'+APP_CONFIG.version;
+        updateStorageNotice();renderSavedSessions();renderTimeline();renderState();draw();
       }
       function toast(message, actionLabel, onAction){
         const root=$('#appToast'),button=$('#appToastAction');
@@ -2005,7 +2266,7 @@ body.help-scroll-locked{
           const empty=document.createElement('p');empty.className='saved-empty';
           empty.textContent=tr('noIntervalRows');root.append(empty);return;
         }
-        const last=entries.slice(-16),max=Math.max(1,...last.map(entry=>Math.max(0,entry.totalA+entry.totalB)));
+        const last=entries.slice(-16),max=Math.max(1,...last.flatMap(entry=>[entry.totalA,entry.totalB]));
         for(const item of last){
           const container=document.createElement('div');container.className='timeline-item';
           container.dataset.coverage=item.coverageStatus;
@@ -2015,9 +2276,12 @@ body.help-scroll-locked{
           });
           const summary=document.createElement('div');summary.className='meta';
           summary.textContent=countName('A_TO_B')+': '+item.totalA+' · '+countName('B_TO_A')+': '+item.totalB;
-          const bar=document.createElement('div');bar.className='bar';
-          const value=document.createElement('span');value.style.width=
-            Math.max(0,Math.min(100,100*(item.totalA+item.totalB)/max))+'%';bar.append(value);
+          const bar=document.createElement('div');bar.className='direction-bars';bar.setAttribute('aria-hidden','true');
+          for(const [index,total] of [item.totalA,item.totalB].entries()){
+            const track=document.createElement('div');track.className='bar';
+            const value=document.createElement('span');value.className=index?'direction-b':'direction-a';
+            value.style.width=Math.max(0,Math.min(100,100*total/max))+'%';track.append(value);bar.append(track);
+          }
           const coverageText=document.createElement('div');coverageText.className='coverage';
           coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
             missing:'coverageMissing'})[item.coverageStatus])+
@@ -2048,6 +2312,7 @@ body.help-scroll-locked{
         else if(['paused','interrupted','done'].includes(state.phase))
           key='recognitionStopped';
         else if(state.detector&&hasActiveSource())key='recognitionReady';
+        $('#processingSpeed').hidden=!state.detector||!hasActiveSource();
         status.dataset.kind=key==='recognitionSlow'?'slow':
           key==='recognitionStopped'?'stopped':'ready';
         const label=tr(key);
@@ -2087,12 +2352,148 @@ body.help-scroll-locked{
         $('#nextActionDescription').textContent=tr(copy[1]);
         return next;
       }
+      function syncAreaFields(){
+        const a=state.area;$('#roiEnabled').checked=Boolean(a);$('#roiFields').hidden=!a;
+        if(a)for(const [id,value] of [['roiLeft',a.x],['roiRight',a.x+a.w],['roiTop',a.y],['roiBottom',a.y+a.h]])$('#'+id).value=String(Math.round(value*100));
+        state.areaValid=true;$('#roiError').hidden=true;
+      }
+      function updateArea(){
+        if(['counting','testing','loading','done'].includes(state.phase))return;
+        const enabled=$('#roiEnabled').checked;$('#roiFields').hidden=!enabled;
+        const read=id=>$('#'+id).value.trim()===''?NaN:Number($('#'+id).value)/100;
+        const x=read('roiLeft'),y=read('roiTop');
+        const a={x,y,w:read('roiRight')-x,h:read('roiBottom')-y};
+        state.areaValid=!enabled||validArea(a);$('#roiError').hidden=state.areaValid;
+        for(const id of ['roiLeft','roiRight','roiTop','roiBottom'])$('#'+id).setAttribute('aria-invalid',String(!state.areaValid));
+        if(state.areaValid){state.area=enabled?a:null;saveSetup();}
+        zeroTracks();invalidateTest();draw();renderState();
+      }
+      function placeMeasurementSummary(){
+        const summary=$('#counterSummary'),phone=matchMedia('(max-width:820px)').matches;
+        const parent=phone?$('#cameraStage').parentElement:$('.measure-console');
+        if(summary.parentElement===parent)return;
+        const focused=summary.contains(document.activeElement)?document.activeElement:null;
+        parent.insertBefore(summary,phone?$('#cameraStage'):$('#measureWorkflow'));
+        focused?.focus({preventScroll:true});
+      }
+      function showMeasurement(){
+        $(matchMedia('(max-width:820px)').matches?'#counterSummary':'.workspace').scrollIntoView({block:'start'});
+      }
+      function toggleWorkspace(){
+        const live=Boolean(state.startTime)&&['counting','paused','interrupted'].includes(state.phase);
+        if(live)state.focused=!state.focused;
+        renderState();draw();
+        if(matchMedia('(max-width:820px)').matches){
+          if(live&&state.focused)showMeasurement();
+          else{$('#setupOptions').open=true;$('.setup-extras').scrollIntoView({block:'start'});}
+        }
+      }
+      function renderOperations(){
+        const live=['counting','paused','interrupted'].includes(state.phase)&&Boolean(state.startTime);
+        $('#appMain').dataset.focused=String(state.focused&&live);
+        $('#focusToggle').hidden=!live;$('#focusToggle').setAttribute('aria-pressed',String(state.focused&&live));
+        $('#focusToggle').textContent=tr(state.focused?'focusOff':'focusOn');
+        const needsTest=!isFileMode()&&!state.testCompleted;
+        const preparing=hasActiveSource()&&Boolean(state.detector)&&
+          (['ready','testing'].includes(state.phase)||(['paused','interrupted'].includes(state.phase)&&needsTest))&&
+          (!state.startTime||needsTest||state.phase==='testing');
+        const dockVisible=live||preparing;
+        $('#liveDock').hidden=!dockVisible;$('#liveDock').dataset.preparing=String(preparing&&!live);
+        document.body.classList.toggle('has-live-dock',dockVisible);
+        $('#dockStart').hidden=!preparing;
+        $('#dockStartLabel').textContent=tr(state.phase==='testing'?'stopTest':needsTest?'startTest':'beginCount');
+        $('#dockStart').disabled=!state.areaValid||Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08||state.sourceBusy;
+        $('#dockPause').hidden=state.phase!=='counting';
+        $('#dockResume').hidden=!live||state.phase==='counting'||preparing;
+        $('#dockFinish').hidden=!live;
+        $('#dockSettingsLabel').textContent=tr(live?(state.focused?'focusOff':'focusOn'):'settingsShort');
+        $('#dockSettings').setAttribute('aria-expanded',String(live&&!state.focused));
+        $('#dockPause').disabled=state.phase!=='counting';
+        $('#dockResume').disabled=!['paused','interrupted'].includes(state.phase)||!hasActiveSource()||!state.detector||!state.areaValid||(!isFileMode()&&!state.testCompleted)||state.fileNeedsReanalysis;
+        $('#dockFinish').disabled=!live;
+        $('#latestCrossing').hidden=!state.lastCrossing;
+        const latest=state.lastCrossing;
+        $('#latestCrossing').textContent=latest?tr('latestPassage').replace('{name}',countName(latest.direction))
+          .replace('{seconds}',String(Math.max(0,Math.floor((performance.now()-latest.at)/1000)))):tr('latestNone');
+      }
+      function showCrossing(event){
+        state.lastCrossing={direction:event.direction,at:performance.now()};
+        const feedback=$('#crossingFeedback');
+        const p=event.crossedAt||{x:(line[0].x+line[1].x)/2,y:(line[0].y+line[1].y)/2};
+        const g=layoutInfo();
+        feedback.style.left=(g.x+p.x*g.width)+'px';feedback.style.top=(g.y+p.y*g.height)+'px';
+        feedback.textContent=(event.direction==='A_TO_B'?'A → B':'B → A')+' +1';feedback.hidden=false;
+        clearTimeout(state.feedbackTimer);state.feedbackTimer=setTimeout(()=>{feedback.hidden=true;},900);
+      }
+      function cancelSequential(){
+        state.analysisGeneration++;state.sequentialRunning=false;
+        state.pendingSeekCancel?.();state.pendingSeekCancel=null;
+      }
+      function seekSample(ms,generation){
+        return new Promise((resolve,reject)=>{
+          let settled=false;
+          const finish=error=>{
+            if(settled)return;settled=true;clearTimeout(timer);
+            video.removeEventListener('seeked',onSeek);video.removeEventListener('error',onError);
+            if(state.pendingSeekCancel===cancel)state.pendingSeekCancel=null;
+            if(error)reject(error);else resolve();
+          };
+          const cancel=()=>finish(new DOMException('Analysis cancelled','AbortError'));
+          const onSeek=()=>generation===state.analysisGeneration?finish():cancel();
+          const onError=()=>finish(Error('Video seek failed'));
+          const timer=setTimeout(()=>finish(Error('Video seek timeout')),12000);
+          state.pendingSeekCancel=cancel;
+          if(generation!==state.analysisGeneration)return cancel();
+          if(!video.seeking&&Math.abs(video.currentTime-ms/1000)<0.0005&&video.readyState>=2)return finish();
+          video.addEventListener('seeked',onSeek);video.addEventListener('error',onError);
+          state.fileInternalSeek=true;video.currentTime=ms/1000;
+        });
+      }
+      async function runSequential(){
+        cancelSequential();
+        const generation=state.analysisGeneration;state.sequentialRunning=true;
+        cancelAnimationFrame(state.frameHandle);video.pause();
+        try{
+          for(const ms of sampleTimes(state.videoDurationMs)){
+            if(ms<=state.sampleCursorMs)continue;
+            if(generation!==state.analysisGeneration||state.phase!=='counting')return;
+            await seekSample(ms,generation);
+            if(generation!==state.analysisGeneration||state.phase!=='counting'||document.visibilityState!=='visible')return;
+            analyzeFrame(performance.now(),ms,true);state.sampleCursorMs=ms;
+            draw();renderVideoTime();
+            $('#recognitionStatus').textContent=tr('sampleProgress').replace('{percent}',String(Math.min(100,Math.round(100*(ms+1)/state.videoDurationMs))));
+            // Let controls, paint, and visibility events run between samples.
+            await new Promise(resolve=>setTimeout(resolve,0));
+          }
+          if(generation===state.analysisGeneration&&state.phase==='counting')finishCount();
+        }catch(error){
+          if(generation===state.analysisGeneration&&error.name!=='AbortError'){
+            console.warn('[Passage Counter] Sequential analysis failed',error);interrupt(tr('videoPlaybackFailed'));
+          }
+        }finally{if(generation===state.analysisGeneration)state.sequentialRunning=false;}
+      }
+      function analyzeFrame(now,sourceMs,sequential=false){
+        const timestamp=Math.max(now,state.lastTimestamp+0.1);state.lastTimestamp=timestamp;
+        const started=performance.now(),result=state.detector.detectForVideo(video,timestamp);
+        inferencePacer.record(now,performance.now()-started);
+        const quality=inferencePacer.snapshot(now);
+        const detections=(result.detections||[]).filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person')).map(d=>d.boundingBox);
+        state.detections=detections;state.fps=quality.fps;
+        $('#detectorInfo').textContent=quality.fps+' fps';
+        if(!sequential&&quality.mustInterrupt&&state.phase==='counting')interrupt(tr('recognitionAutoStopped'));
+        else if(!isFileMode()||(state.phase==='counting'&&!state.fileNeedsReanalysis))trackPeople(detections,isFileMode()?sourceMs:now);
+        updateRecognitionStatus();
+      }
+
       function renderState(message){
         const phase=state.phase,sourceAvailable=hasActiveSource(),fileMode=isFileMode();
+        renderOperations();
         $('#appMain').dataset.phase=phase;
+        $('#appMain').dataset.hasSource=String(sourceAvailable);
         $('#appMain').dataset.source=fileMode?'file':'camera';
         updateRecognitionStatus();
         const key=({idle:'idle',loading:'loading',ready:'ready',testing:'testing',counting:'active',paused:'paused',done:'finished',error:'error',interrupted:'interrupted'})[phase]||'idle';
+        $('#summaryState').textContent=tr(key);$('#summaryState').hidden=!state.startTime;
         const pill=$('#statusPill');pill.textContent=simdAvailable?
           (fileMode&&phase==='ready'?tr('fileReadyState'):tr(key)):tr('simdUnsupportedShort');
         pill.dataset.kind=!simdAvailable||phase==='error'||phase==='interrupted'?'error':phase==='counting'?'active':'idle';
@@ -2100,15 +2501,16 @@ body.help-scroll-locked{
           idle:'instruction',loading:'loading',ready:'settingLine',testing:'testingMessage',counting:'counting',
           paused:'pausedText',done:'finished',error:(fileMode?state.videoErrorKey:state.errorKey)||'modelFailed',interrupted:'hiddenStop'
         }[phase]||'instruction';
-        const validLine=Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
+        const validLine=state.areaValid&&Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)>=0.08;
+        $('#statusDetails').dataset.explicit=String(Boolean(message)&&message!==tr('videoReady'));
+        $('#statusDetails').dataset.kind=message===tr('videoPlaybackFailed')?'error':'normal';
         $('#statusDetails').textContent=!simdAvailable?tr('simdUnsupported'):
-          message||(!validLine&&sourceAvailable?tr('lineTooShort'):
+          message||(!state.areaValid?tr('areaInvalid'):!validLine&&sourceAvailable?tr('lineTooShort'):
             fileMode&&phase==='ready'?tr('videoReady'):
             fileMode&&!sourceAvailable&&!state.startTime?tr('videoMissing'):tr(defaultMessage));
         const totals=ledger.summary(),nameA=countName('A_TO_B'),nameB=countName('B_TO_A');
         $('#displayLabelA').textContent=nameA;$('#displayLabelB').textContent=nameB;
         $('#correctLabelA').textContent=nameA;$('#correctLabelB').textContent=nameB;
-        $('#miniLabelA').textContent=nameA;$('#miniLabelB').textContent=nameB;
         for(const [id,value] of [['countA',totals.a],['countB',totals.b]]){
           const element=$('#'+id);element.textContent=value;
           element.dataset.digits=String(value).length;
@@ -2118,18 +2520,28 @@ body.help-scroll-locked{
         $('#reportManualA').textContent=totals.manualA>0?'+'+totals.manualA:totals.manualA;
         $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;
         $('#reportTotal').textContent=totals.a+totals.b;
-        $('#miniA').textContent=phase==='testing'?state.testA:totals.a;
-        $('#miniB').textContent=phase==='testing'?state.testB:totals.b;
-        $('#mobileCounts').hidden=!['counting','testing'].includes(phase);
+        $('#reportFinalA').textContent=totals.a;$('#reportFinalB').textContent=totals.b;
+        $('#reportLabelA').textContent=nameA+' · '+tr('finalCount');$('#reportLabelB').textContent=nameB+' · '+tr('finalCount');
+        for(const [key,name,suffix] of [['autoA',nameA,'automaticCount'],['autoB',nameB,'automaticCount'],['manualA',nameA,'manualCount'],['manualB',nameB,'manualCount']])
+          $('#report [data-i18n='+key+']').textContent=name+' · '+tr(suffix);
+        $('#reportCorrections').textContent=ledger.history().filter(e=>e.kind==='correction').length;
+        const reportDur=currentSession?timeline.durations(currentSession):{observedMs:0,missingMs:0};
+        $('#reportObserved').textContent=formatElapsed(reportDur.observedMs);$('#reportMissing').textContent=formatElapsed(reportDur.missingMs);
         const elapsed=effectiveElapsed();
         $('#elapsedText').textContent=formatElapsed(elapsed);
         $('#reportElapsed').textContent=formatElapsed(elapsed);
         const testing=phase==='testing';
+        for(const id of ['analysisMode','lineHorizontal','lineVertical','lineCenter','roiEnabled','roiLeft','roiRight','roiTop','roiBottom'])
+          $('#'+id).disabled=['counting','testing','loading','done'].includes(phase)||state.sourceBusy||(['lineHorizontal','lineVertical','lineCenter'].includes(id)&&!sourceAvailable);
+        $('#analysisMode').disabled=$('#analysisMode').disabled||Boolean(state.startTime);
+        $('#bundleButton').disabled=!state.startTime;$('#copyResult').disabled=!state.startTime;
         $('#sourceMode').value=state.sourceMode;
         $('#sourceMode').disabled=state.sourceBusy||state.restoring;
         $('#videoFile').disabled=state.sourceBusy||state.restoring;
         $('#cameraActions').hidden=fileMode;
         $('#videoSourceBox').hidden=!fileMode;
+        if(!state.videoReady)$('#videoSourceBox').open=true;
+        $('#videoSourceSummary').textContent=state.videoReady?state.videoFilename+' · '+tr($('#analysisMode').value==='sequential'?'sequentialMode':'realtimeMode'):tr('videoSourceSettings');
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
         $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
@@ -2154,7 +2566,7 @@ body.help-scroll-locked{
         gesture.toggleAttribute('hidden',!sourceAvailable||['counting','testing','loading','done'].includes(phase));
         $('#cameraFacing').disabled=fileMode||['counting','testing','loading','done'].includes(phase);
         for(const id of ['#labelA','#labelB'])$(id).disabled=testing||phase==='counting';
-        $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','testing'].includes(phase);
+        $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','interrupted','testing'].includes(phase);
         $('#testButton').textContent=tr(testing?'stopTest':state.testCompleted?'repeatTest':'startTest');
         $('#testResult').hidden=!(testing||state.testCompleted||state.testCancelled);
         if(!$('#testResult').hidden)formatTestStatus();
@@ -2393,9 +2805,9 @@ body.help-scroll-locked{
         if(!width||!height)return;
         const boxes=detections.map(d=>({
           x:d.originX/width,y:d.originY/height,w:d.width/width,h:d.height/height
-        }));
+        })).filter(b=>inCountingArea({x:b.x+b.w/2,y:b.y+b.h},state.area));
         const events=tracker.update(boxes,now,line,state.reverse);
-        if(state.phase==='counting'||state.phase==='testing') for(const event of events) recordCrossing(event.direction);
+        if(state.phase==='counting'||state.phase==='testing') for(const event of events){showCrossing(event);recordCrossing(event.direction);}
       }
       function refreshTimelineIfDue(){
         const now=Date.now();
@@ -2417,7 +2829,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const event=ledger.correct(direction,delta,effectiveElapsed(),fileMediaTimeMs());
         if(!event){toast(tr('negativeBlocked'));return;}
-        queueSnapshot(event);renderState();renderTimeline();
+        void queueSnapshot(event).then(refreshSavedSessions);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
           actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
       }
@@ -2425,7 +2837,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const entry=ledger.undo(effectiveElapsed(),eventId,fileMediaTimeMs());
         if(!entry){toast(tr('undoUnavailable'));return;}
-        queueSnapshot(entry);renderState();renderTimeline();toast(tr('undone'));
+        void queueSnapshot(entry).then(refreshSavedSessions);renderState();renderTimeline();toast(tr('undone'));
       }
       // LINE_INTERACTION:BEGIN
       // Pure geometry shared by mouse, finger, stylus and keyboard. A translation
@@ -2487,6 +2899,12 @@ body.help-scroll-locked{
         ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
         if(!hasActiveSource()){gesture.setAttribute('hidden','');return;}
         const g=layoutInfo();
+        if(state.area){
+          const a=state.area;ctx.fillStyle='#0005';ctx.beginPath();ctx.rect(g.x,g.y,g.width,g.height);
+          ctx.rect(g.x+a.x*g.width,g.y+a.y*g.height,a.w*g.width,a.h*g.height);ctx.fill('evenodd');
+          ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+          ctx.strokeRect(g.x+a.x*g.width,g.y+a.y*g.height,a.w*g.width,a.h*g.height);ctx.setLineDash([]);
+        }
         const x0=g.x+line[0].x*g.width,y0=g.y+line[0].y*g.height;
         const x1=g.x+line[1].x*g.width,y1=g.y+line[1].y*g.height;
         // The SVG receives pointer input only on the line or endpoint handles:
@@ -2518,9 +2936,13 @@ body.help-scroll-locked{
         const cx=(aPx.x+bPx.x)/2,cy=(aPx.y+bPx.y)/2;
         const badge=(text,x,y)=>{
           ctx.fillStyle='rgba(15,48,39,.92)';
-          ctx.beginPath();ctx.roundRect(x-13,y-12,26,24,6);ctx.fill();
-          ctx.fillStyle='#fff';ctx.font='bold 13px system-ui';
-          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+0.5);
+          ctx.font='bold 12px system-ui';
+          const labelWidth=Math.min(g.width-12,Math.max(26,ctx.measureText(text).width+16));
+          x=Math.max(g.x+labelWidth/2+2,Math.min(g.x+g.width-labelWidth/2-2,x));
+          y=Math.max(g.y+14,Math.min(g.y+g.height-14,y));
+          ctx.beginPath();ctx.roundRect(x-labelWidth/2,y-12,labelWidth,24,6);ctx.fill();
+          ctx.fillStyle='#fff';
+          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+0.5,labelWidth-12);
         };
         badge('A',cx-nx*36,cy-ny*36);
         badge('B',cx+nx*36,cy+ny*36);
@@ -2602,6 +3024,7 @@ body.help-scroll-locked{
       // Use Blob-backed browser-native decoding. Never FileReader/arrayBuffer a
       // complete movie, never save the File/Blob to IndexedDB, never upload it.
       function releaseLocalVideo(){
+        cancelSequential();state.sampleCursorMs=-1;state.lastCrossing=null;
         if(!state.videoUrl)return;
         video.pause();
         state.filePreviewing=false;
@@ -2715,12 +3138,14 @@ body.help-scroll-locked{
           if(!video.videoWidth||!video.videoHeight)throw Error('Video dimensions unavailable');
           const duration=await getFiniteVideoDuration();
           state.videoDurationMs=Math.max(0,Math.round(duration*1000));
+          $('#analysisMode').querySelector('[value=sequential]').disabled=!state.videoDurationMs;
+          if(!state.videoDurationMs){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
           state.videoReady=true;
           state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
           state.lastProcessedSourceMs=-1;
           await initEmbeddedDetector();
-          state.phase='ready';
+          state.phase='ready';$('#videoSourceBox').open=false;
           state.videoErrorKey=null;inferencePacer.reset();
           zeroTracks();renderState(tr('videoReady'));draw();
           loop();
@@ -2819,9 +3244,10 @@ body.help-scroll-locked{
         window.StandaloneAssets.releaseCachedBytes('mediapipe','simd-wasm');
         state.modelUrls.forEach(url=>URL.revokeObjectURL(url));
         state.modelUrls=[];
-        $('#detectorInfo').textContent='EfficientDet-Lite0 · SIMD';
+        $('#detectorInfo').textContent='— fps';
       }
       function closeCamera(){
+        cancelSequential();
         if(state.phase==='testing')finishTest(true);
         if(state.videoUrl)releaseLocalVideo();
         if(state.phase==='counting')interrupt(tr('lostCamera'));
@@ -2863,7 +3289,7 @@ body.help-scroll-locked{
         }
       }
       function loop(now=performance.now()){
-        if(!hasActiveSource())return;
+        if(!hasActiveSource()||state.sequentialRunning)return;
         const fileMode=isFileMode();
         if(fileMode&&video.paused){state.frameHandle=0;return;}
         const sourceMs=fileMode?fileMediaTimeMs():null;
@@ -2888,27 +3314,7 @@ body.help-scroll-locked{
               }
               state.lastProcessedSourceMs=sourceMs;
             }
-            const timestamp=Math.max(now,state.lastTimestamp+0.1);
-            state.lastTimestamp=timestamp;
-            const started=performance.now();
-            const result=state.detector.detectForVideo(video,timestamp);
-            const elapsed=performance.now()-started;
-            inferencePacer.record(now,elapsed);
-            const quality=inferencePacer.snapshot(now);
-            const detections=(result.detections||[])
-              .filter(d=>d.boundingBox&&d.categories?.some(c=>c.categoryName==='person'))
-              .map(d=>d.boundingBox);
-            state.detections=detections;
-            state.fps=quality.fps;
-            $('#detectorInfo').textContent='EfficientDet-Lite0 · '+
-              quality.fps+' fps · '+quality.meanMs+' ms · '+detections.length+
-              ' boxes · '+quality.skipped+' inference attempts deferred · '+quality.gaps+' gaps';
-            if(quality.mustInterrupt&&state.phase==='counting'){
-              interrupt(tr('recognitionAutoStopped'));
-            }else if(!fileMode||(state.phase==='counting'&&!state.fileNeedsReanalysis)){
-              trackPeople(detections,fileMode?sourceMs:now);
-            }
-            updateRecognitionStatus();
+            analyzeFrame(now,sourceMs);
             analyzed=true;
           }catch(err){
             console.error('[Passage Counter] Inference failed',err);
@@ -2942,20 +3348,24 @@ body.help-scroll-locked{
         if(wake)wake.release().catch(()=>{});
       }
       function startTest(){
-        if(!state.detector||!state.stream||!['ready','paused'].includes(state.phase))return;
+        if(!state.detector||!state.stream||!['ready','paused','interrupted'].includes(state.phase))return;
         if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
-        state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
+        if(!state.areaValid)return;
+        state.testQuality=null;state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;
         state.testA=0;state.testB=0;state.testStartedAt=performance.now();state.testEndedAt=0;
         inferencePacer.reset();
         state.phase='testing';zeroTracks();renderState();lockScreen();
       }
       function finishTest(cancelled=false){
         if(state.phase!=='testing')return;
+        state.testQuality=inferencePacer.snapshot(performance.now());
         state.testEndedAt=performance.now();state.testCompleted=!cancelled;state.testCancelled=cancelled;
         state.phase=state.testReturnPhase;zeroTracks();unlockScreen();
         renderState(tr(cancelled?'testCancelled':'testReady'));
       }
       function beginCount(){
+        if(!state.areaValid)return;
+        if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08){toast(tr('lineTooShort'));return;}
         if(!state.detector||!hasActiveSource()){toast(tr('notReady'));return;}
         if(!isFileMode()&&!state.testCompleted){toast(tr('testRequired'));return;}
         if(state.fileNeedsReanalysis){toast(tr('videoSeekingMessage'));return;}
@@ -2970,7 +3380,7 @@ body.help-scroll-locked{
             if(video.currentTime>0.001){
               state.fileInternalSeek=true;video.currentTime=0;
             }
-            state.lastProcessedSourceMs=-1;
+            state.lastProcessedSourceMs=-1;state.sampleCursorMs=-1;
           }
         }
         if(!currentSession){
@@ -2984,12 +3394,16 @@ body.help-scroll-locked{
         if(!state.startTime){state.startTime=now;state.sessionStart=new Date(now).toISOString();}
         currentSession.configSegments.push({startedAt:new Date(now).toISOString(),
           directionLabels:{A_TO_B:countName('A_TO_B'),B_TO_A:countName('B_TO_A')},
-          line:line.map(p=>({...p})),reversed:state.reverse,
+          line:line.map(p=>({...p})),reversed:state.reverse,area:state.area?{...state.area}:null,
+          analysisMode:$('#analysisMode').value,sampleStepMs:100,
           modelVersion:'EfficientDet-Lite0-int8-1'});
         inferencePacer.reset();
+        if(!state.startTime||state.phase==='ready')state.focused=true;
         state.lastActive=performance.now();state.phase='counting';
-        transitionSession('counting');zeroTracks();renderState();renderTimeline();
-        if(isFileMode()){
+        transitionSession('counting');zeroTracks();renderState();renderTimeline();showMeasurement();
+        if(isFileMode()&&$('#analysisMode').value==='sequential'&&state.videoDurationMs>0){
+          void runSequential();lockScreen();
+        }else if(isFileMode()){
           video.play().catch(err=>{
             console.warn('[Passage Counter] Local playback was blocked',err);
             if(state.phase==='counting')interrupt(tr('videoPlaybackFailed'));
@@ -2999,12 +3413,14 @@ body.help-scroll-locked{
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
+        cancelSequential();
         state.elapsedMs+=performance.now()-state.lastActive;
         state.phase='paused';transitionSession('paused','user-paused');
         if(isFileMode())video.pause();
         unlockScreen();zeroTracks();renderState();renderTimeline();
       }
       function interrupt(msg){
+        cancelSequential();
         if(state.phase==='testing')finishTest(true);
         if(state.phase==='counting'){state.elapsedMs+=performance.now()-state.lastActive;}
         state.phase='interrupted';transitionSession('interrupted','visibility-camera-or-inference');
@@ -3014,6 +3430,7 @@ body.help-scroll-locked{
       function finishCount(){
         if(state.phase==='counting')state.elapsedMs+=performance.now()-state.lastActive;
         if(!['counting','paused','interrupted'].includes(state.phase))return;
+        cancelSequential();state.focused=false;
         state.phase='done';transitionSession('done','finished');
         if(isFileMode()){video.pause();state.filePreviewing=false;}
         else closeCamera();
@@ -3032,8 +3449,9 @@ body.help-scroll-locked{
         if(typeof value!=='number'&&/^[\s]*[=+\-@]/.test(text))text="'"+text;
         return '"'+text.replace(/"/g,'""')+'"';
       }
+      function csvText(rows){return '\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';}
       function downloadRows(rows,filename){
-        const text='\ufeff'+rows.map(row=>row.map(csvSafe).join(',')).join('\r\n')+'\r\n';
+        const text=csvText(rows);
         const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
         const a=document.createElement('a');a.href=url;a.download=filename;a.click();
         setTimeout(()=>URL.revokeObjectURL(url),1800);
@@ -3042,7 +3460,7 @@ body.help-scroll-locked{
         const base=normalizedFilename().replace(/\.csv$/i,'');
         return kind==='events'?base+'.csv':base+'-'+kind+'.csv';
       }
-      function exportCsv(){
+      function exportCsv(asRows=false){
         if(!state.startTime){toast(tr('noEvents'));return;}
         const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of',
           'session_id','source_time_ms','event_kind_v1','reference_event_id']];
@@ -3050,9 +3468,10 @@ body.help-scroll-locked{
           countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
           currentSession?.sessionId||'',e.sourceTimeMs??'',
           ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('events'));
       }
-      function exportSummary(){
+      function exportSummary(asRows=false){
         if(!currentSession||!state.startTime)return;
         const counts=ledger.summary(),dur=timeline.durations(currentSession),end=currentSession.endedAt||new Date().toISOString();
         const wall=Math.max(0,Date.parse(end)-Date.parse(currentSession.startedAt));
@@ -3063,9 +3482,10 @@ body.help-scroll-locked{
           currentSession.startedAt,currentSession.endedAt||'',Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',
           APP_CONFIG.version,'EfficientDet-Lite0-int8-1',wall,dur.observedMs,dur.pausedMs,dur.missingMs,
           counts.autoA,counts.manualA,counts.a,counts.autoB,counts.manualB,counts.b,counts.a+counts.b]];
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('summary'));
       }
-      function exportIntervals(){
+      function exportIntervals(asRows=false){
         if(!currentSession||!state.startTime)return;
         const size=Number($('#aggregationMinutes').value)||5;
         const buckets=timeline.aggregation(currentSession,ledger.history(),size);
@@ -3078,7 +3498,29 @@ body.help-scroll-locked{
           entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
           entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
         ]);
+        if(asRows===true)return rows;
         downloadRows(rows,csvName('intervals'));
+      }
+      function exportBundle(){
+        if(!currentSession||!state.startTime)return;
+        const files=[['events',exportCsv(true)],['summary',exportSummary(true)],['intervals',exportIntervals(true)]]
+          .map(([kind,rows])=>({name:csvName(kind),text:csvText(rows)}));
+        const bytes=zipFiles(files),url=URL.createObjectURL(new Blob([bytes],{type:'application/zip'}));
+        const link=document.createElement('a');link.href=url;link.download=normalizedFilename().replace(/\.csv$/i,'')+'.zip';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1800);
+      }
+      async function copyResults(){
+        if(!currentSession||!state.startTime)return;
+        const totals=ledger.summary(),dur=timeline.durations(currentSession);
+        const text=[currentSession.name,countName('A_TO_B')+': '+totals.a,countName('B_TO_A')+': '+totals.b,
+          tr('total')+': '+(totals.a+totals.b),tr('covered')+': '+formatElapsed(dur.observedMs),
+          tr('pausedCoverage')+': '+formatElapsed(dur.pausedMs),tr('missingCoverage')+': '+formatElapsed(dur.missingMs),
+          tr('correctionCount')+': '+ledger.history().filter(e=>e.kind==='correction').length,
+          currentSession.startedAt+' – '+(currentSession.endedAt||tr('active')),
+          tr('countNote')].join('\n');
+        const box=$('#resultText');box.value=text;box.hidden=false;
+        try{await navigator.clipboard.writeText(text);toast(tr('copiedResult'));}
+        catch{box.focus();box.select();toast(tr('copySelect'));}
       }
       async function resetCounts(){
         const sessionId=currentSession?.sessionId||null;
@@ -3094,7 +3536,8 @@ body.help-scroll-locked{
         state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
         zeroTracks();invalidateTest();
         state.fileNeedsReanalysis=false;
-        state.lastProcessedSourceMs=-1;
+        state.lastProcessedSourceMs=-1;state.sampleCursorMs=-1;state.lastCrossing=null;state.focused=false;
+        $('#resultText').hidden=true;$('#resultText').value='';
         state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
       }
@@ -3134,6 +3577,19 @@ body.help-scroll-locked{
         if(event.clientX<bounds.left||event.clientX>bounds.right||
            event.clientY<bounds.top||event.clientY>bounds.bottom)helpDialog.close();
       });
+      $('#focusToggle').addEventListener('click',toggleWorkspace);
+      $('#dockSettings').addEventListener('click',toggleWorkspace);
+      $('#dockStart').addEventListener('click',()=>{
+        if(state.phase==='testing')finishTest();
+        else if(!isFileMode()&&!state.testCompleted)startTest();
+        else beginCount();
+      });
+      $('#dockPause').addEventListener('click',pauseCount);$('#dockResume').addEventListener('click',beginCount);$('#dockFinish').addEventListener('click',finishCount);
+      for(const [id,kind] of [['lineHorizontal','horizontal'],['lineVertical','vertical'],['lineCenter','center']])$('#'+id).addEventListener('click',()=>{
+        if(!canEditLine())return;const points=linePreset(kind,line);line[0]=points[0];line[1]=points[1];zeroTracks();invalidateTest();saveSetup();draw();renderState();
+      });
+      for(const id of ['roiEnabled','roiLeft','roiRight','roiTop','roiBottom'])$('#'+id).addEventListener('change',updateArea);
+      $('#analysisMode').addEventListener('change',()=>{if(!['counting','testing'].includes(state.phase))saveSetup();});
       $('#cameraStart').addEventListener('click',startCamera);
       $('#sourceMode').addEventListener('change',event=>switchVideoSource(event.target.value));
       $('#videoFile').addEventListener('change',event=>{
@@ -3179,17 +3635,18 @@ body.help-scroll-locked{
       });
       video.addEventListener('seeked',()=>{
         if(!isFileMode())return;
-        state.fileInternalSeek=false;state.lastProcessedSourceMs=-1;
-        zeroTracks();renderVideoTime();draw();
+        state.fileInternalSeek=false;
+        if(!state.sequentialRunning){state.lastProcessedSourceMs=-1;zeroTracks();}
+        renderVideoTime();draw();
       });
       video.addEventListener('ended',()=>{
         if(!isFileMode())return;
         state.filePreviewing=false;
-        if(state.phase==='counting')finishCount();
+        if(state.phase==='counting'&&!state.sequentialRunning)finishCount();
         renderState();
       });
       video.addEventListener('pause',()=>{
-        if(isFileMode()&&state.phase==='counting'&&!video.ended)interrupt(tr('videoPlaybackFailed'));
+        if(isFileMode()&&state.phase==='counting'&&!state.sequentialRunning&&!video.ended)interrupt(tr('videoPlaybackFailed'));
         if(isFileMode()&&state.filePreviewing){state.filePreviewing=false;renderState();}
       });
       $('#cameraStop').addEventListener('click',closeCamera);
@@ -3208,7 +3665,7 @@ body.help-scroll-locked{
         if(currentSession)queueSnapshot();
       });
       for(const id of ['#labelA','#labelB']){
-        $(id).addEventListener('input',()=>{saveSetup();renderState();});
+        $(id).addEventListener('input',()=>{saveSetup();renderState();draw();});
       }
       $('#minusA').addEventListener('click',()=>correction('A_TO_B',-1));
       $('#plusA').addEventListener('click',()=>correction('A_TO_B',1));
@@ -3218,6 +3675,7 @@ body.help-scroll-locked{
       $('#beginCount').addEventListener('click',beginCount);
       $('#pauseCount').addEventListener('click',pauseCount);
       $('#finishCount').addEventListener('click',finishCount);
+      $('#bundleButton').addEventListener('click',exportBundle);$('#copyResult').addEventListener('click',copyResults);
       $('#downloadButton').addEventListener('click',exportCsv);
       $('#summaryButton').addEventListener('click',exportSummary);
       $('#intervalsButton').addEventListener('click',exportIntervals);
@@ -3252,13 +3710,14 @@ body.help-scroll-locked{
       });
       let previousViewportOrientation=innerWidth>=innerHeight?'landscape':'portrait';
       window.addEventListener('resize',()=>{
-        draw();
+        placeMeasurementSummary();draw();
         const orientation=innerWidth>=innerHeight?'landscape':'portrait';
         if(orientation!==previousViewportOrientation&&state.phase==='counting')
           interrupt(tr('rotationStop'));
         previousViewportOrientation=orientation;
       });
       state.clockTimer=setInterval(()=>{
+        renderOperations();
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
           else formatTestStatus();
@@ -3279,7 +3738,7 @@ body.help-scroll-locked{
       },500);
       $('#outputFilename').value='passage-counter-'+new Date().toISOString().slice(0,10);
       $('#sessionName').value='Passage Counter '+new Date().toLocaleDateString('ja-JP');
-      restoreSetup();localize();void initializeSavedSessions();
+      placeMeasurementSummary();restoreSetup();localize();void initializeSavedSessions();
 
   })();
 </script>
