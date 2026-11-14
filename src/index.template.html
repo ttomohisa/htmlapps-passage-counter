@@ -186,7 +186,7 @@ html{min-height:100%;background:var(--background)}
 .brand-copy{min-width:0;overflow:hidden}
 .brand-name{display:flex;align-items:center;gap:7px;min-width:0;margin:0;font-size:17px;font-weight:750;line-height:1.25;letter-spacing:.01em}
 #brandName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.version-badge{flex:0 0 auto;padding:1px 6px;border:1px solid var(--border);border-radius:999px;background:#f0f0ed;color:var(--muted);font-size:10px;font-weight:650}
+.version-badge{flex:0 0 auto;padding:1px 6px;border:1px solid var(--border);border-radius:999px;background:#f0f0ed;color:var(--muted);font-size:11px;font-weight:650}
 .brand-meta{font-size:12px;margin:2px 0 0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:12px;flex:0 0 auto}
 .language-button{min-height:44px;width:42px;padding:5px 1px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:750;letter-spacing:.02em}
@@ -205,7 +205,7 @@ html{min-height:100%;background:var(--background)}
 .page-intro .hero-copy{min-width:0;flex:1 1 auto}
 .page-intro h1{font-size:clamp(21px,3vw,26px);font-weight:750;letter-spacing:-.025em;line-height:1.3;margin:0;overflow-wrap:anywhere}
 .page-intro p{max-width:760px;margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
-.local-badge{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;margin-top:3px;padding:7px 10px;border:1px solid #b2d1c2;border-radius:999px;color:var(--brand);background:var(--pale);font-size:12px;font-weight:700;white-space:nowrap}
+.local-badge{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;margin-top:3px;padding:7px 0;border:0;border-radius:0;color:var(--brand);background:transparent;font-size:12px;font-weight:500;white-space:nowrap}
 .local-badge svg{width:15px;height:15px;display:block}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--focus) 60%,transparent);outline-offset:2px}
 @media(max-width:820px){.page-intro{align-items:stretch;flex-direction:column;gap:10px}.local-badge{align-self:flex-start}}
@@ -231,7 +231,7 @@ body{background:var(--background);color:var(--text);font-size:14px}
 .page-intro{padding:0 0 18px;gap:16px}
 .page-intro h1{font-size:clamp(22px,2.8vw,29px);letter-spacing:-.035em}
 .page-intro p{max-width:630px;font-size:13px}
-.local-badge{font-size:11px;padding:7px 11px;background:#eaf4ed}
+
 .setup-flow{margin:0 0 17px;gap:6px;align-items:center}
 .setup-flow span{padding:7px 12px;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px}
 .setup-flow span[aria-current="step"]{background:var(--pale);border-color:#bdd6c7;color:var(--brand)}
@@ -666,13 +666,22 @@ body.help-scroll-locked{
   position:static;top:auto;z-index:auto;padding:0;margin:0;
   font-size:17px;line-height:1.4;background:transparent;min-width:0;
 }
-#helpDialog .help-dialog-close{
-  width:44px;height:44px;min-width:44px;min-height:44px;
-  flex:0 0 44px;margin-left:auto;padding:0;border:0;
-  background:transparent;color:var(--muted);
+#helpDialog .dialog-close{
+  display:grid;place-items:center;
+  width:34px;height:34px;min-width:34px;min-height:34px;
+  flex:0 0 34px;margin-left:auto;padding:0;border:0;
+  border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;
 }
-#helpDialog .help-dialog-close:hover{background:var(--pale);color:var(--brand)}
-#helpDialog .help-dialog-close svg{width:20px;height:20px}
+#helpDialog .dialog-close:hover{background:var(--pale);color:var(--brand)}
+#helpDialog .dialog-close svg{display:block;width:20px;height:20px}
+.file-fallback-button{
+  display:none;width:100%;margin-top:10px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;background:#fff;
+  color:inherit;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+@media (max-width:767px),(pointer:coarse) and (max-height:600px){
+  .file-fallback-button{display:block}
+}
 #helpDialog .help-dialog-body{
   min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
@@ -862,7 +871,7 @@ body.help-scroll-locked{
       <details class="file-drop" id="videoSourceBox" hidden open>
         <summary id="videoSourceSummary" data-i18n="videoSourceSettings">動画ファイルと解析方法</summary>
         <label for="videoFile" data-i18n="videoSelect">端末から動画を選ぶ</label>
-        <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint">
+        <input id="videoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" aria-describedby="videoFileHint"><button class="file-fallback-button" id="fileFallbackButton" type="button" data-i18n="fileFallback">ファイルから選択</button><input id="fileFallbackInput" type="file" hidden>
         <p class="helper" id="videoFileHint" data-i18n="videoFileHint">動画はアップロード・保存しません。ブラウザが再生できる形式のみ対応します。</p>
         <label for="analysisMode" data-i18n="analysisMode">解析方法</label>
         <select id="analysisMode"><option value="sequential" data-i18n="sequentialMode">順番に解析（0.1秒間隔）</option><option value="realtime" data-i18n="realtimeMode">再生しながら解析</option></select>
@@ -1079,7 +1088,7 @@ body.help-scroll-locked{
   </section>
 </main>
 <!-- APP:END -->
-<footer><span id="footerName">通過カウンター</span> · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
+<footer><span id="footerName">通過カウンター</span> · MIT License · <span data-i18n="footer">カメラ・動画・計測記録は端末内で処理し、送信しません。</span></footer>
 <nav id="liveDock" class="live-dock" hidden data-i18n-aria-label="measurementActions" aria-label="計測操作">
   <button id="dockStart" type="button" class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 4 12 8-12 8Z"/></svg><span id="dockStartLabel">計測を開始</span></button>
   <button id="dockPause" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span data-i18n="pause">一時停止</span></button>
@@ -1091,8 +1100,8 @@ body.help-scroll-locked{
 <dialog id="helpDialog" aria-labelledby="helpTitle">
   <div class="help-dialog-head">
     <h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2>
-    <button class="icon-button help-dialog-close" type="button" id="helpClose" data-i18n-aria-label="close" aria-label="閉じる">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+    <button class="dialog-close" type="button" id="helpClose" data-i18n-aria-label="close" aria-label="閉じる">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg>
     </button>
   </div>
   <div class="help-dialog-body" id="helpDialogBody">
@@ -1366,7 +1375,7 @@ body.help-scroll-locked{
           noIntervalRows:'まだ表示できる時間帯集計がありません。',
           rescueName:'計測記録を保存',wallElapsed:'開始からの経過',sessionSave:'保存済み',
           workspaceEyebrow:'映像と判定線',sourceHint:'カメラで計測するか、端末の動画を解析します。',measureEyebrow:'計測パネル',correctionEyebrow:'結果の確認',exportEyebrow:'データ保存',exportHint:'終了前でもCSVを保存できます。',sourceModeLabel:'入力映像',sourceCamera:'カメラ',sourceFile:'端末の動画',
-          videoSelect:'端末から動画を選ぶ',videoFileHint:'動画は送信・永続保存しません。MP4/WebMなどブラウザが再生できる形式のみ対応します。ここへドラッグ＆ドロップも可能です。',
+          videoSelect:'端末から動画を選ぶ',fileFallback:'ファイルから選択',videoFileHint:'動画は送信・永続保存しません。MP4/WebMなどブラウザが再生できる形式のみ対応します。ここへドラッグ＆ドロップも可能です。',
           videoEmpty:'動画が未選択です。',videoPosition:'動画の位置',previewVideo:'プレビュー再生',
           pausePreview:'プレビューを停止',reanalyzeVideo:'最初から再解析',removeVideo:'動画を閉じる',
           videoReminder:'計測は動画の先頭から開始します。シーク・再解析は、結果を破棄する前に確認します。',
@@ -1491,7 +1500,7 @@ body.help-scroll-locked{
           noIntervalRows:'No time buckets to display yet.',
           rescueName:'Save a CSV copy',wallElapsed:'Wall time',sessionSave:'Saved',
           workspaceEyebrow:'Video and counting line',sourceHint:'Count from a live camera or analyze a video from this device.',measureEyebrow:'Counting',correctionEyebrow:'Review',exportEyebrow:'Save your data',exportHint:'You can export CSV before finishing your session.',sourceModeLabel:'Video source',sourceCamera:'Camera',sourceFile:'Local video',
-          videoSelect:'Choose a video on this device',videoFileHint:'Video is never uploaded or saved. Only formats playable by this browser (e.g., MP4/WebM) work. You can also drag and drop here.',
+          videoSelect:'Choose a video on this device',fileFallback:'Choose from files',videoFileHint:'Video is never uploaded or saved. Only formats playable by this browser (e.g., MP4/WebM) work. You can also drag and drop here.',
           videoEmpty:'No video selected.',videoPosition:'Video position',previewVideo:'Preview playback',
           pausePreview:'Pause preview',reanalyzeVideo:'Reanalyze from start',removeVideo:'Close video',
           videoReminder:'Counting starts at the beginning of the video. Seeking or reanalysis requires confirmation before discarding counts.',
@@ -3594,6 +3603,11 @@ body.help-scroll-locked{
       $('#sourceMode').addEventListener('change',event=>switchVideoSource(event.target.value));
       $('#videoFile').addEventListener('change',event=>{
         if(event.target.files?.[0])void readVideoFile(event.target.files[0]);
+      });
+      $('#fileFallbackButton').addEventListener('click',()=>$('#fileFallbackInput').click());
+      $('#fileFallbackInput').addEventListener('change',event=>{
+        if(event.target.files?.[0])void readVideoFile(event.target.files[0]);
+        event.target.value='';
       });
       $('#videoSourceBox').addEventListener('dragover',event=>{
         if(!isFileMode())return;
