@@ -666,13 +666,22 @@ body.help-scroll-locked{
   position:static;top:auto;z-index:auto;padding:0;margin:0;
   font-size:17px;line-height:1.4;background:transparent;min-width:0;
 }
-#helpDialog .dialog-close{display:grid;place-items:center;width:34px;height:34px;flex:0 0 auto;margin-left:auto;padding:0;border:0;border-radius:9px;background:transparent;cursor:pointer}.file-fallback-button{display:none;width:100%;margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:inherit;font:inherit;font-size:13px;font-weight:600;cursor:pointer}@media (max-width:767px),(pointer:coarse) and (max-height:600px){.file-fallback-button{display:block}}.help-dialog-close{
-  width:44px;height:44px;min-width:44px;min-height:44px;
-  flex:0 0 44px;margin-left:auto;padding:0;border:0;
-  background:transparent;color:var(--muted);
+#helpDialog .dialog-close{
+  display:grid;place-items:center;
+  width:34px;height:34px;min-width:34px;min-height:34px;
+  flex:0 0 34px;margin-left:auto;padding:0;border:0;
+  border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;
 }
-#helpDialog .help-dialog-close:hover{background:var(--pale);color:var(--brand)}
-#helpDialog .help-dialog-close svg{width:20px;height:20px}
+#helpDialog .dialog-close:hover{background:var(--pale);color:var(--brand)}
+#helpDialog .dialog-close svg{display:block;width:20px;height:20px}
+.file-fallback-button{
+  display:none;width:100%;margin-top:10px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;background:#fff;
+  color:inherit;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+@media (max-width:767px),(pointer:coarse) and (max-height:600px){
+  .file-fallback-button{display:block}
+}
 #helpDialog .help-dialog-body{
   min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
