@@ -81,6 +81,17 @@ try{
   'Tab returning to foreground must not auto-resume');
  console.log('[endurance] Hidden tab was stopped; foreground does not auto-resume.');
 
+ // Editing the line invalidates calibration even when measurement was
+ // interrupted by the browser rather than paused by the user.
+ await page.locator('#overlay').focus();
+ await page.keyboard.press('ArrowRight');
+ assert(await page.locator('#beginCount').isDisabled(),'Edited line requires another setup test');
+ assert(await page.locator('#testButton').isEnabled(),'Setup test must be available after interruption');
+ await page.locator('#testButton').click();
+ await page.waitForFunction(()=>document.querySelector('#appMain').dataset.phase==='testing');
+ await page.locator('#testButton').click();
+ assert.match(await page.locator('#statusPill').textContent(),/中断|Interrupted/);
+
  // Orientation changes while counting can invalidate the physical line.
  await page.locator('#beginCount').click();
  await page.waitForFunction(()=>/計測中|Counting/.test(

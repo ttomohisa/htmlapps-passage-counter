@@ -2566,7 +2566,7 @@ body.help-scroll-locked{
         gesture.toggleAttribute('hidden',!sourceAvailable||['counting','testing','loading','done'].includes(phase));
         $('#cameraFacing').disabled=fileMode||['counting','testing','loading','done'].includes(phase);
         for(const id of ['#labelA','#labelB'])$(id).disabled=testing||phase==='counting';
-        $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','testing'].includes(phase);
+        $('#testButton').disabled=fileMode||!state.detector||!state.stream||!validLine||!['ready','paused','interrupted','testing'].includes(phase);
         $('#testButton').textContent=tr(testing?'stopTest':state.testCompleted?'repeatTest':'startTest');
         $('#testResult').hidden=!(testing||state.testCompleted||state.testCancelled);
         if(!$('#testResult').hidden)formatTestStatus();
@@ -3348,7 +3348,7 @@ body.help-scroll-locked{
         if(wake)wake.release().catch(()=>{});
       }
       function startTest(){
-        if(!state.detector||!state.stream||!['ready','paused'].includes(state.phase))return;
+        if(!state.detector||!state.stream||!['ready','paused','interrupted'].includes(state.phase))return;
         if(Math.hypot(line[1].x-line[0].x,line[1].y-line[0].y)<0.08)return;
         if(!state.areaValid)return;
         state.testQuality=null;state.testReturnPhase=state.phase;state.testCompleted=false;state.testCancelled=false;

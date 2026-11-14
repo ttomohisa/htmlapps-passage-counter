@@ -1,5 +1,16 @@
 # v1.1.0 verification
 
+## Release workflow
+
+PR #17 runs the release build and audit without publishing. Once merged into
+`main`, `.github/workflows/release-v1.1.0.yml` builds both standalone editions
+and runs the pinned-asset and license audit before tagging the merged commit
+as `v1.1.0`. The GitHub Release includes both HTML files and the v1.1.0
+changelog entry. If publication fails, rerun the original Actions run so it
+uses the same commit and can resume an existing draft.
+
+## Prior verification
+
 Runtime source verified: `352a2f384aaed263b5d54f383d3708a086fb1ef6`.
 
 - [Main integration](https://github.com/ttomohisa/htmlapps-passage-counter/actions/runs/42310143228): passed.

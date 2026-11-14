@@ -1,0 +1,116 @@
+name: Release Passage Counter v1.1.0
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - app.config.json
+      - .github/workflows/release-v1.1.0.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check release version
+        id: version
+        shell: pwsh
+        run: |
+          $app = Get-Content -Raw -Encoding UTF8 app.config.json | ConvertFrom-Json
+          if ($app.slug -eq 'passage-counter' -and $app.version -eq '1.1.0') {
+            'tag=v1.1.0' >> $env:GITHUB_OUTPUT
+          }
+      - uses: actions/setup-node@v6
+        if: steps.version.outputs.tag != ''
+        with:
+          node-version: 24
+      - name: Build and audit both standalone editions
+        if: steps.version.outputs.tag != ''
+        shell: pwsh
+        run: |
+          ./scripts/check-powershell-syntax.ps1
+          ./scripts/check-repository.ps1
+          node scripts/audit-release.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'Release audit failed.' }
+          $notes = Get-Content -Raw -Encoding UTF8 CHANGELOG.md
+          $section = [regex]::Match($notes, '(?ms)^## \[1\.1\.0\][^\r\n]*\r?\n(.*?)(?=^## |\z)')
+          if (!$section.Success -or !$section.Groups[1].Value.Trim()) {
+            throw 'Missing v1.1.0 release notes.'
+          }
+          New-Item -ItemType Directory -Path release
+          Copy-Item dist/index.html release/passage-counter-v1.1.0.html
+          Copy-Item dist/index.self-extract.html release/passage-counter-v1.1.0.self-extract.html
+          $section.Groups[1].Value.Trim() | Set-Content -Encoding utf8 release/notes.md
+      - uses: actions/upload-artifact@v7
+        if: steps.version.outputs.tag != ''
+        with:
+          name: passage-counter-release-files
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.build.outputs.tag == 'v1.1.0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: passage-counter-release-v1.1.0
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          name: passage-counter-release-files
+          path: release
+      - name: Tag merged commit and publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          tag="$RELEASE_TAG"
+          assets=(release/passage-counter-v1.1.0.html release/passage-counter-v1.1.0.self-extract.html)
+          for asset in "${assets[@]}" release/notes.md; do
+            test -s "$asset"
+          done
+
+          if draft=$(gh release view "$tag" --json isDraft --jq .isDraft); then
+            if [[ "$draft" == false ]]; then
+              echo "Release $tag is already published."
+              exit 0
+            fi
+          fi
+
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            if [[ "$(git rev-parse "refs/tags/$tag^{commit}")" != "$GITHUB_SHA" ]]; then
+              echo "::error::Tag $tag points to a different commit."
+              exit 1
+            fi
+          else
+            git tag "$tag" "$GITHUB_SHA"
+            git push origin "refs/tags/$tag"
+          fi
+
+          if [[ "$draft" == true ]]; then
+            gh release upload "$tag" "${assets[@]}" --clobber
+            gh release edit "$tag" --draft=false
+          else
+            gh release create "$tag" "${assets[@]}" --verify-tag \
+              --title "Passage Counter $tag" --notes-file release/notes.md
+          fi

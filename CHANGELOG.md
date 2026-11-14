@@ -9,6 +9,7 @@
 - Refresh saved-session totals after manual correction and Undo without requiring a reload.
 - Address screenshot review: remove duplicate direction keys, hide the phone local badge, show only fps, group phone counts with the preview and simplify state-dependent controls.
 - Shorten the hero and reorganize bilingual Help into four starting steps, correction/export guidance, clear cautions and optional topic sections. Preserve all license texts, notices and source references.
+- Allow another camera setup test after editing the counting line during an interrupted session.
 - Preserve embedded assets, correction audit records and all existing field-verification limitations.
 
 ## Unreleased
