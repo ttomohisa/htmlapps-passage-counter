@@ -20,7 +20,7 @@ Passage Counter is a Browser Kitty tool for counting **person-crossing events in
 - Horizontal, vertical and center line presets. Percentage-based counting-area boundaries filter tracked foot points while the model still processes the full image.
 - Separate directional bars, hatched missing periods, a ZIP containing all three CSVs and copyable results.
 
-Video time buckets use actual analysis time, not media positions. Physical-device endurance and field accuracy evaluation remain incomplete.
+Physical-device endurance and field accuracy evaluation remain incomplete.
 
 ## Live demo
 
@@ -84,16 +84,17 @@ Both are self-contained HTML files. The build also creates **passage-counter.htm
 
 - Keep the page visible while counting. A hidden tab, camera interruption or device rotation can interrupt counting. Time that was not observed is recorded as **missing**, not as zero events.
 - Existing session records can be reopened from Saved sessions. Videos and persistent person IDs are not saved, so cameras and original video sources never resume automatically after reload.
-- Video preview allows seeking. When there is a saved analysis, seeking or reanalyzing asks for confirmation before discarding its counts and corrections. Video file bytes are not persisted to IndexedDB.
+- After finishing a video, scrub or play it without changing its counts. Choose a recorded event to play from three seconds before it. When reopening a saved session, select the original video to review it. Starting a fresh analysis asks for confirmation before clearing the results.
+- The app retains pending records in memory and retries temporary storage failures while the page is open. If the warning persists, export the CSVs before leaving.
 - Browser and origin storage are separate: a downloaded file, a hosted Preview and GitHub Pages do not automatically share saved records. Export any data you need to preserve.
 
 ### CSV formats
 
 | Export | Contents |
 | --- | --- |
-| Events CSV | Automatic crossings, manual corrections and Undo, with timestamps, direction and deltas; local video includes source-media timestamps |
+| Events CSV | Automatic crossings, corrections and Undo with the direction label at the time of each event, delta and timestamps. Video events also include their media position when available |
 | Summary CSV | Automatic, manual and final totals by direction, duration, observed/paused/missing coverage |
-| Time buckets CSV | Direction counts for 5/15/60-minute time buckets plus valid observation time and coverage |
+| Time buckets CSV | Video defaults to 5/15/60-minute intervals from the start of the clip that contain records, with a separate row for unknown positions. Select Analysis time to export wall-clock counts and coverage as in camera mode. The ZIP uses the same selection |
 
 CSV uses UTF-8 with BOM. The export filename is configurable. Video files are not included in the CSV files.
 
@@ -144,7 +145,7 @@ The full requirements, testing and design notes are in [APP_SPEC.md](APP_SPEC.md
 - **WebAssembly SIMD and compressed-data decompression support are required.** The app explains missing capabilities before trying to open the camera.
 - The embedded model is exercised on Windows Chrome and Edge with simulated cameras. Real Windows physical cameras, Android Chrome, iPhone Safari and sustained phone operation require separate validation.
 - Local videos use native browser decoders. Selecting a file does not guarantee that the browser can decode its format.
-- Crowds, occlusion, backlighting, darkness, quick crossings, poor placement, camera movement and slow inference can introduce missed or incorrect counts.
+- During the setup check, keep feet visible on both sides of the line. Have one person walk across and back and check for one count in each direction. If people frequently cross paths or the entrance is backlit at certain times, compare the counts with an observer under those conditions too. [Field evaluation protocol](docs/ADR-007-ACCURACY-EVALUATION.md)
 - A person crossing both directions produces two crossing events. This is **not unique visitor identification**.
 - Do not use the counts as the sole evidence for safety-critical monitoring, billing or legal reporting.
 - **Future Work:** Actual 100+ independently annotated real crossings, the 95% per-direction precision/recall goal, physical Android/iPhone/Windows tests and 30-minute endurance remain unverified. [Deferred validation plan](docs/FUTURE_WORK.md).

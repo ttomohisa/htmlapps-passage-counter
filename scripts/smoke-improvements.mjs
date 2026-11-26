@@ -75,6 +75,19 @@ try{
  const file=await download;assert.equal(file.suggestedFilename(),'trial-日本語.zip');
  const zip=await readFile(await file.path());assert.equal(zip.readUInt32LE(0),0x04034b50);
  assert(zip.includes(Buffer.from('manual_adjustment')));assert(zip.includes(Buffer.from('trial-日本語-summary.csv')));
+ assert.equal(await page.locator('#timeBasis').inputValue(),'media');
+ assert.match(await page.locator('#timelineRows strong').first().textContent(),/^00:00:00 – /);
+ assert(zip.includes(Buffer.from('"source_start_ms","source_end_ms"')));
+ await page.locator('#timeBasis').selectOption('wall');
+ await page.locator('#aggregationMinutes').selectOption('15');
+ assert.match(await page.locator('#timelineHeading').textContent(),/analysis time/i);
+ const wallDownload=page.waitForEvent('download');await page.locator('#intervalsButton').click();
+ const clockCsv=await readFile(await (await wallDownload).path(),'utf8');
+ const expectedHeader=['session_id','bucket_start','bucket_end','bucket_minutes','observed_seconds','paused_seconds',
+   'missing_seconds','auto_a','manual_a','total_a','auto_b','manual_b','total_b','coverage_status','timezone'];
+ assert.equal(clockCsv.replace(/^\uFEFF/,'').split('\r\n')[0],expectedHeader.map(name=>'"'+name+'"').join(','));
+ assert.match(clockCsv.split('\r\n')[1],/^"[^"]+","[^"]+","[^"]+","15",/);
+ await page.locator('#timeBasis').selectOption('media');
  await page.locator('#copyResult').click();
  assert(await page.locator('#resultText').inputValue().then(s=>s.includes('入場 <test>')&&s.includes('1')));
  for(const width of [320,390,820,1360]){
@@ -85,8 +98,19 @@ try{
  assert.equal(await page.locator('#roiEnabled').isChecked(),true);
  assert.equal(await page.locator('#roiLeft').inputValue(),'20');
  assert.equal(await page.locator('#cameraFeed').getAttribute('src'),null);
+ assert.match(await page.locator('#timelineRows strong').first().textContent(),/^00:00:00 – /);
+ await page.locator('#plusB').click();
+ assert.match(await page.locator('#timelineRows').textContent(),/Unknown video position|動画内時刻不明/);
+ const mediaDownload=page.waitForEvent('download');await page.locator('#intervalsButton').click();
+ assert.match(await readFile(await (await mediaDownload).path(),'utf8'),/"video","unknown_position","",""/);
  if(await page.locator('html').getAttribute('lang')!=='en')await page.locator('#languageButton').click();
  assert.match(await page.locator('#bundleButton').textContent(),/ZIP/);
+ await page.locator('#timeBasis').selectOption('wall');
+ await page.locator('#newSession').click();await page.locator('#confirmReset').click();
+ await page.locator('#timelineSection').waitFor({state:'hidden'});
+ assert(await page.locator('#timeBasisField').evaluate(el=>el.hidden),'Inactive timeline should hide the axis selector');
+ await page.locator('#savedList button').first().click();
+ assert.equal(await page.locator('#timeBasis').inputValue(),'media','Reopened video starts from its own clock');
  for(const variant of ['index.html','index.self-extract.html']){
   const local=await context.newPage();local.on('pageerror',e=>errors.push(variant+': '+e.message));
   local.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});

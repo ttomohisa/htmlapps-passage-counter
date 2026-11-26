@@ -14,6 +14,10 @@
 
 ## Unreleased
 
+- Review finished videos without changing counts. Scrub the recording or play from three seconds before an event. Reattach the original video when reopening a finished session.
+- Group video events by their position in the recording. The time-axis selection also applies to the time buckets CSV and ZIP. Wall-clock reports retain observation and interruption durations.
+- Retry unsaved events together with their session totals after temporary storage errors. Event CSVs retain the direction label recorded with each event.
+
 - Hide only the informational page footer at the existing 610px compact-phone breakpoint. Move its existing literal v1.0.0 to the final Help paragraph after all embedded license notices. Keep live detector diagnostics beside the video and preserve header version and detailed privacy text. Standardize the exact local-processing badge to “Fully local processing”.
 
 ## 2026-10-16 — v1.0.0 licensing disposition (no runtime change)

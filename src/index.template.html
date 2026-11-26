@@ -139,7 +139,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 .saved-session .row{flex-shrink:0}
 .saved-session button{min-height:44px}
 .timeline-card{margin-top:15px}
-.timeline-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.timeline-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.timeline-head h2{margin-right:auto}
 .timeline-head label{display:flex;align-items:center;gap:8px}
 .timeline-head select{width:auto;min-width:112px}
 .timeline-list{display:grid;gap:8px;margin-top:10px}
@@ -922,13 +923,17 @@ body.help-scroll-locked{
             <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
             <input id="videoSeek" type="range" min="0" max="1000" step="1" value="0" disabled>
             <div class="file-time" id="videoTime">00:00 / 00:00</div>
+            <div id="reviewEvents" hidden>
+              <label for="reviewEvent" data-i18n="reviewEventLabel">イベントから見返す</label>
+              <select id="reviewEvent"></select>
+            </div>
             <div class="row">
               <button id="previewVideo" type="button" disabled data-i18n="previewVideo">プレビュー再生</button>
               <button id="reanalyzeVideo" type="button" disabled data-i18n="reanalyzeVideo">最初から再解析</button>
               <button id="removeVideo" type="button" disabled data-i18n="removeVideo">動画を閉じる</button>
             </div>
           </div>
-          <p class="file-note" data-i18n="videoReminder">計測開始時は先頭から再生します。シーク・再解析は結果を消去する前に確認します。</p>
+          <p class="file-note" id="videoReminder" data-i18n="videoReminder">計測は動画の先頭から開始します。</p>
         </div>
       </div>
 
@@ -1071,9 +1076,15 @@ body.help-scroll-locked{
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
     <div class="timeline-head"><h2 id="timelineHeading" data-i18n="timelineHeading">時間帯別の通過</h2>
+      <label id="timeBasisField" for="timeBasis" hidden><span data-i18n="timeBasis">時間軸</span>
+        <select id="timeBasis">
+          <option value="media" data-i18n="mediaBasis">動画の先頭から</option>
+          <option value="wall" data-i18n="wallBasis">解析時刻</option>
+        </select>
+      </label>
       <label for="aggregationMinutes"><span data-i18n="intervalSize">区切り</span>
         <select id="aggregationMinutes" data-i18n-aria-label="aggregationAria" aria-label="集計の時間間隔">
-          <option value="5">5 min</option><option value="15">15 min</option><option value="60">60 min</option>
+          <option value="5" data-i18n="bucket5">5分</option><option value="15" data-i18n="bucket15">15分</option><option value="60" data-i18n="bucket60">60分</option>
         </select>
       </label>
     </div>
@@ -1131,7 +1142,7 @@ body.help-scroll-locked{
     </details>
     <details class="help-topic">
       <summary data-i18n="helpVideoTitle">動画の解析で気をつけること</summary>
-      <p data-i18n="helpSampling">動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。</p>
+      <p data-i18n="helpSampling">動画は通常0.1秒間隔で解析します。短い通過を見落とすことがあり、処理に動画の長さより時間がかかる場合があります。終了後はイベントを選ぶと3秒前から見返せます。時間帯集計は「動画の先頭から」と「解析時刻」を切り替えられます。</p>
     </details>
     <details class="help-topic">
       <summary data-i18n="helpPrivacyTitle">映像と記録はどこに保存される？</summary>
@@ -1378,7 +1389,11 @@ body.help-scroll-locked{
           videoSelect:'端末から動画を選ぶ',fileFallback:'ファイルから選択',videoFileHint:'動画は送信・永続保存しません。MP4/WebMなどブラウザが再生できる形式のみ対応します。ここへドラッグ＆ドロップも可能です。',
           videoEmpty:'動画が未選択です。',videoPosition:'動画の位置',previewVideo:'プレビュー再生',
           pausePreview:'プレビューを停止',reanalyzeVideo:'最初から再解析',removeVideo:'動画を閉じる',
-          videoReminder:'計測は動画の先頭から開始します。シーク・再解析は、結果を破棄する前に確認します。',
+          videoReminder:'計測は動画の先頭から開始します。計測途中で位置を移動する場合は、結果を破棄する前に確認します。',
+          reviewVideo:'見返し再生',reviewEventLabel:'イベントから見返す',reviewEventPrompt:'イベントを選択（3秒前から再生）',
+          reviewHint:'再生や位置の移動中も計測結果は保持されます。',reviewOriginal:'見返すために元の動画を選ぶ',
+          reviewDurationMismatch:'計測時の動画と長さが異なります。元の動画を選んでください。',
+          reviewOriginalHint:'同じ長さの別の動画は識別できません。計測に使った動画を選んでください。',
           videoCameraHeading:'動画プレビュー',videoReady:'動画の準備完了。線を置いて計測を開始できます。',
           videoFileLoaded:'選択中: {name}',videoLoadFailed:'この動画を再生できません。ブラウザで再生できるMP4/WebM等を選んでください。',
           videoBadFormat:'動画ファイルを選んでください。',videoMissing:'動画を選択してください。',
@@ -1395,7 +1410,11 @@ body.help-scroll-locked{
           videoSeekRejected:'位置の移動は取り消されました。',videoPlaybackFailed:'動画を再生できません。ファイル形式を確認してください。',
           videoEnd:'動画の最後まで解析しました。',videoModeStart:'この動画を先頭から解析します。',
           videoFileStart:'動画の先頭へ戻して計測を開始します。',videoModeHint:'動画はこの端末内で解析します。再生位置を変えると再解析が必要です。',
-          fileCoverageHint:'時間帯別集計は解析中の実時間です。動画内の位置はイベントCSVの source_time_ms を確認してください。欠測を0件とは扱いません。',
+          timeBasis:'時間軸',mediaBasis:'動画の先頭から',wallBasis:'解析時刻',bucket5:'5分',bucket15:'15分',bucket60:'60分',
+          mediaHeading:'動画内の通過',unknownMediaTime:'動画内時刻不明',
+          mediaBucketHint:'通過・補正を記録した直近16区間です。解析済みの範囲は示しません。時間帯CSVには選択した時間軸で全記録を出力します。',
+          mediaBucketEmpty:'動画の通過・補正はまだ記録されていません。',
+          fileCoverageHint:'解析を実行した時刻で集計します。中断・一時停止の時間も表示します。',
           fileTimelineHeading:'解析時刻別の通過',
           previewOnly:'プレビュー中です。件数は増えません。',fileReadyState:'動画準備完了',
           fileSeekBusy:'ファイルを読み込み中です。',fileSourceSwitch:'入力を切り替えます。',
@@ -1503,7 +1522,11 @@ body.help-scroll-locked{
           videoSelect:'Choose a video on this device',fileFallback:'Choose from files',videoFileHint:'Video is never uploaded or saved. Only formats playable by this browser (e.g., MP4/WebM) work. You can also drag and drop here.',
           videoEmpty:'No video selected.',videoPosition:'Video position',previewVideo:'Preview playback',
           pausePreview:'Pause preview',reanalyzeVideo:'Reanalyze from start',removeVideo:'Close video',
-          videoReminder:'Counting starts at the beginning of the video. Seeking or reanalysis requires confirmation before discarding counts.',
+          videoReminder:'Counting starts at the beginning of the video. Seeking during an unfinished count asks before clearing its results.',
+          reviewVideo:'Play recording',reviewEventLabel:'Review an event',reviewEventPrompt:'Choose an event to play from 3 seconds earlier',
+          reviewHint:'Playback and seeking preserve your results.',reviewOriginal:'Select the original video to review it',
+          reviewDurationMismatch:'This video has a different duration. Select the original recording.',
+          reviewOriginalHint:'Recordings with the same duration cannot be distinguished. Choose the clip used for this count.',
           videoCameraHeading:'Video preview',videoReady:'Video ready. Place the line and start counting.',
           videoFileLoaded:'Selected: {name}',videoLoadFailed:'Cannot play this video. Choose MP4/WebM or another format your browser can decode.',
           videoBadFormat:'Choose a video file.',videoMissing:'Choose a video first.',
@@ -1520,7 +1543,11 @@ body.help-scroll-locked{
           videoSeekRejected:'Seeking was cancelled.',videoPlaybackFailed:'Cannot play this video. Check the file format.',
           videoEnd:'Reached the end of the video.',videoModeStart:'Count this video from the beginning.',
           videoFileStart:'Returning to the beginning before counting.',videoModeHint:'The video stays on this device. Seeking during an analysis requires starting again.',
-          fileCoverageHint:'Time buckets use the real time of analysis, not the movie timeline. For positions within the video, use source_time_ms in events CSV. Missing time is never treated as zero.',
+          timeBasis:'Time axis',mediaBasis:'From video start',wallBasis:'Analysis time',bucket5:'5 min',bucket15:'15 min',bucket60:'60 min',
+          mediaHeading:'Crossings in the video',unknownMediaTime:'Unknown video position',
+          mediaBucketHint:'Latest 16 intervals with crossings or corrections. Video coverage is unknown. The CSV includes all recorded intervals on the selected time axis.',
+          mediaBucketEmpty:'No crossings or corrections have been recorded for this video yet.',
+          fileCoverageHint:'Buckets follow the clock during analysis, including paused and missing time.',
           fileTimelineHeading:'Crossings by analysis time',
           previewOnly:'Preview playback. Crossings are not counted.',fileReadyState:'Video ready',
           fileSeekBusy:'Loading a video file.',fileSourceSwitch:'Switching source.',
@@ -1582,7 +1609,7 @@ body.help-scroll-locked{
 
       // LEDGER:BEGIN
       // Append-only correction history. Trial crossings never enter this ledger.
-      function createCountingLedger(){
+      function createCountingLedger(labelFor=direction=>direction==='A_TO_B'?'A → B':'B → A'){
         let records=[],sequence=0,lastCorrection=null;
         const total={A_TO_B:0,B_TO_A:0},automatic={A_TO_B:0,B_TO_A:0};
         const valid=d=>d==='A_TO_B'||d==='B_TO_A';
@@ -1590,7 +1617,7 @@ body.help-scroll-locked{
           if(!valid(direction)||!Number.isInteger(delta)||!['auto','correction','undo'].includes(kind))return null;
           if(total[direction]+delta<0)return null;
           const event={id:'pc-'+Date.now()+'-'+(++sequence),occurredAt:new Date().toISOString(),
-            direction,kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf,
+            direction,directionLabel:labelFor(direction),kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf,
             sourceTimeMs:Number.isFinite(sourceTimeMs)?Math.max(0,Math.round(sourceTimeMs)):null};
           records.push(event);total[direction]+=delta;
           if(kind==='auto')automatic[direction]+=delta;
@@ -1636,6 +1663,7 @@ body.help-scroll-locked{
             if(total[item.direction]+item.delta<0)throw new Error('Negative saved count');
             if(item.kind==='auto'&&item.delta!==1)throw new Error('Invalid automatic delta');
             const record={id:item.id,occurredAt:item.occurredAt,direction:item.direction,
+              directionLabel:item.directionLabel||(item.direction==='A_TO_B'?'A → B':'B → A'),
               kind:item.kind,delta:item.delta,elapsedMs:Math.max(0,Math.round(item.elapsedMs)),
               undoOf:typeof item.undoOf==='string'?item.undoOf:'',
               sourceTimeMs:Number.isFinite(item.sourceTimeMs)?Math.max(0,Math.round(item.sourceTimeMs)):null};
@@ -1657,7 +1685,7 @@ body.help-scroll-locked{
         return Object.freeze({auto,correct,undo,summary,history,size,reset,restore});
       }
       // LEDGER:END
-      const ledger=createCountingLedger();
+      const ledger=createCountingLedger(countName);
       // Supports SIMD-only execution; unlike the full build, no non-SIMD fallback is embedded.
       // This standard SIMD test module uses i8x16.splat and is validated before camera access.
       const SIMD_PROBE=new Uint8Array([
@@ -1790,18 +1818,42 @@ body.help-scroll-locked{
               else{target=entry;break;}
             }
             if(!target)continue;
-            const key=event.direction==='A_TO_B'?'A':'B';
-            if(event.kind==='auto')target['auto'+key]+=event.delta;
-            else target['manual'+key]+=event.delta;
+            addToBucket(target,event);
           }
           for(const row of rows){
-            row.totalA=row.autoA+row.manualA;row.totalB=row.autoB+row.manualB;
             row.coverageStatus=row.observedMs>0
               ?(row.pausedMs+row.missingMs>0?'partial':'observed'):'missing';
           }
           return rows;
         }
-        return Object.freeze({create,transition,checkpoint,recover,intervalsUntil,durations,aggregation});
+        function addToBucket(row,event){
+          const direction=event.direction==='A_TO_B'?'A':'B';
+          const kind=event.kind==='auto'?'auto':'manual';
+          row[kind+direction]+=event.delta;
+          row['total'+direction]+=event.delta;
+        }
+        function mediaAggregation(events,minutes,durationMs){
+          if(![5,15,60].includes(minutes))throw Error('Invalid interval size');
+          const step=minutes*60000;
+          const duration=Number.isFinite(durationMs)&&durationMs>0?durationMs:null;
+          const buckets=new Map(),correctionTimes=new Map();
+          for(const event of events){
+            let position=event.sourceTimeMs;
+            if(event.kind==='correction')correctionTimes.set(event.id,position);
+            if(event.kind==='undo'&&correctionTimes.has(event.undoOf))position=correctionTimes.get(event.undoOf);
+            const timed=Number.isFinite(position)&&position>=0&&(duration===null||position<=duration);
+            // A correction made at the exact end belongs to the final video interval.
+            const tick=timed&&position===duration?Math.max(0,duration-1):position;
+            const startMs=timed?Math.floor(tick/step)*step:null;
+            if(!buckets.has(startMs)){
+              const endMs=timed?Math.min(startMs+step,duration??Infinity):null;
+              buckets.set(startMs,{startMs,endMs,autoA:0,autoB:0,manualA:0,manualB:0,totalA:0,totalB:0});
+            }
+            addToBucket(buckets.get(startMs),event);
+          }
+          return Array.from(buckets.values()).sort((a,b)=>(a.startMs??Infinity)-(b.startMs??Infinity));
+        }
+        return Object.freeze({create,transition,checkpoint,recover,intervalsUntil,durations,aggregation,mediaAggregation});
       }
       // SESSION:END
       const timeline=createSessionTimeline();
@@ -1811,7 +1863,7 @@ body.help-scroll-locked{
         function open(){
           if(!opened)opened=new Promise((resolve,reject)=>{
             if(typeof indexedDB==='undefined')return reject(Error('IndexedDB is unavailable'));
-            let request;
+            let request,abandoned=false;
             try{request=indexedDB.open('passage-counter-sessions-v1',1);}
             catch(error){reject(error);return;}
             request.onupgradeneeded=()=>{
@@ -1825,12 +1877,16 @@ body.help-scroll-locked{
             };
             request.onsuccess=()=>{
               const db=request.result;
-              db.onversionchange=()=>db.close();
+              if(abandoned){db.close();return;}
+              db.onversionchange=()=>{db.close();opened=null;};
               resolve(db);
             };
             request.onerror=()=>reject(request.error||Error('IndexedDB open failed'));
-            request.onblocked=()=>reject(Error('IndexedDB upgrade blocked by another tab'));
-          });
+            request.onblocked=()=>{
+              abandoned=true;
+              reject(Error('IndexedDB upgrade blocked by another tab'));
+            };
+          }).catch(error=>{opened=null;throw error;});
           return opened;
         }
         async function list(){
@@ -1857,12 +1913,16 @@ body.help-scroll-locked{
             tx.onerror=()=>reject(tx.error||Error('Read failed'));
           });
         }
-        async function write(session,event=null){
+        async function write(session,events){
           const db=await open();
           return new Promise((resolve,reject)=>{
-            const tx=db.transaction(event?['sessions','events']:['sessions'],'readwrite');
-            tx.objectStore('sessions').put(session);
-            if(event)tx.objectStore('events').put(event);
+            const tx=db.transaction(events.length?['sessions','events']:['sessions'],'readwrite');
+            try{
+              tx.objectStore('sessions').put(session);
+              for(const event of events)tx.objectStore('events').put(event);
+            }catch(error){
+              tx.abort();reject(error);return;
+            }
             tx.oncomplete=resolve;
             tx.onabort=()=>reject(tx.error||Error('Write aborted'));
             tx.onerror=()=>reject(tx.error||Error('Write failed'));
@@ -1921,7 +1981,7 @@ body.help-scroll-locked{
         bundleCsv:'CSVをまとめて保存（ZIP）',copyResult:'結果をコピー',copyFallback:'コピー用の計測結果',copiedResult:'結果をコピーしました',copySelect:'コピーできませんでした。表示された結果を選択してコピーしてください。',
         correctionCount:'補正操作',measurementActions:'計測操作',sampleProgress:'動画の解析：{percent}% · 0.1秒間隔',
         helpImprovements:'線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。',
-        helpSampling:'動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。',
+        helpSampling:'動画は通常0.1秒間隔で解析します。短い通過を見落とすことがあり、処理に動画の長さより時間がかかる場合があります。終了後はイベントを選ぶと3秒前から見返せます。時間帯集計は「動画の先頭から」と「解析時刻」を切り替えられます。',
         helpFocus:'計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。'
       });
       Object.assign(translations.en, {
@@ -1939,7 +1999,7 @@ body.help-scroll-locked{
         bundleCsv:'Save all CSVs (ZIP)',copyResult:'Copy results',copyFallback:'Results to copy',copiedResult:'Results copied',copySelect:'Could not copy. Select and copy the displayed results.',
         correctionCount:'Correction actions',measurementActions:'Measurement actions',sampleProgress:'Video analysis: {percent}% · 0.1 s samples',
         helpImprovements:'Drag the middle of the line to move it as a whole, or use Horizontal, Vertical or Center line. Use Reverse A/B directions to swap the A and B sides. Set area boundaries as percentages in settings if needed, leaving room on both sides of the line.',
-        helpSampling:'By default, video is analyzed at 0.1-second intervals in order. Not every frame is checked, so brief crossings may be missed. Analysis may take longer than the video. You can also choose analysis during playback. Time buckets use the actual time of analysis, not positions in the video.',
+        helpSampling:'Video is sampled every 0.1 seconds by default. Brief crossings can be missed, and processing can take longer than playback. After counting finishes, choose an event to play from three seconds earlier. Switch the time axis to see counts by position in the video or by the clock during analysis.',
         helpFocus:'While counting, open Settings & records to view settings and records. On phones, use the bottom bar.'
       });
       function tr(key){return translations[language][key]||translations.en[key]||key;}
@@ -1948,6 +2008,11 @@ body.help-scroll-locked{
       // transaction. Errors never masquerade as successful saves; memory data
       // remains available for CSV export.
       let currentSession=null,writeTail=Promise.resolve(),savedSessions=[];
+      let savedListGeneration=0;
+      // A failed transaction commits neither the snapshot nor its events.
+      // Retain its ordered records until a later transaction commits both.
+      const pendingWrites=new WeakMap();
+      const deletedSessions=new WeakSet();
       function createSessionId(){
         if(crypto.randomUUID)return crypto.randomUUID();
         const bytes=crypto.getRandomValues(new Uint8Array(16));
@@ -1974,11 +2039,11 @@ body.help-scroll-locked{
         return {schemaVersion:1,eventId:event.id,sessionId:currentSession.sessionId,
           ordinal:ledger.size(),occurredAt:event.occurredAt,
           elapsedMs:event.elapsedMs,sourceTimeMs:event.sourceTimeMs??null,direction:event.direction,
-          directionLabel:countName(event.direction),
+          directionLabel:event.directionLabel,
           kind:({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[event.kind],
           delta:event.delta,referenceEventId:event.undoOf||null};
       }
-      function queueSnapshot(event=null){
+      function queueSnapshot(event=null,refreshList=false){
         if(!currentSession)return writeTail;
         const session=currentSession;
         timeline.checkpoint(session);
@@ -1992,20 +2057,48 @@ body.help-scroll-locked{
           session.runtimeInfo.sourceDurationMs=state.videoDurationMs||session.runtimeInfo.sourceDurationMs||null;
         const saved=JSON.parse(JSON.stringify(session));
         const record=event?serializeEvent(event):null;
-        writeTail=writeTail.then(()=>sessionStore.write(saved,record))
-          .then(()=>{state.storageReady=true;state.storageFailure=null;updateStorageNotice();},
-            error=>warnStorage(error));
+        writeTail=writeTail.then(async()=>{
+          if(deletedSessions.has(session))return;
+          const records=pendingWrites.get(session)||[];
+          if(record)records.push(record);
+          try{
+            await sessionStore.write(saved,records);
+            const recovered=pendingWrites.delete(session);
+            state.storageReady=true;state.storageFailure=null;updateStorageNotice();
+            if(recovered||refreshList)void refreshSavedSessions();
+          }catch(error){
+            pendingWrites.set(session,records);
+            warnStorage(error);
+          }
+        });
         return writeTail;
+      }
+      function deleteSessionRecord(sessionId){
+        const active=currentSession?.sessionId===sessionId?currentSession:null;
+        const deletion=writeTail.then(async()=>{
+          await sessionStore.deleteSession(sessionId);
+          if(active){
+            deletedSessions.add(active);
+            pendingWrites.delete(active);
+            if(currentSession===active){state.storageFailure=null;updateStorageNotice();}
+          }
+        });
+        writeTail=deletion.catch(()=>{});
+        return deletion;
       }
       function transitionSession(phase,reason=''){
         if(!currentSession)return;
         timeline.transition(currentSession,phase,Date.now(),reason);
-        queueSnapshot();
+        queueSnapshot(null,true);
       }
       async function refreshSavedSessions(){
         if(!state.storageReady)return;
-        try{savedSessions=await sessionStore.list();renderSavedSessions();}
-        catch(error){warnStorage(error);}
+        const generation=++savedListGeneration;
+        try{
+          const entries=await sessionStore.list();
+          if(generation!==savedListGeneration)return;
+          savedSessions=entries;renderSavedSessions();
+        }catch(error){if(generation===savedListGeneration)warnStorage(error);}
       }
       function renderSavedSessions(){
         const root=$('#savedList');
@@ -2026,10 +2119,10 @@ body.help-scroll-locked{
           info.append(name,secondary);
           const actions=document.createElement('div');actions.className='row';
           const open=document.createElement('button');open.type='button';open.textContent=tr('openSaved');
-          open.disabled=state.restoring;
+          open.disabled=state.restoring||state.sourceBusy;
           open.addEventListener('click',()=>loadSavedSession(session.sessionId));
           const del=document.createElement('button');del.type='button';del.className='danger';del.textContent=tr('deleteSaved');
-          del.disabled=state.restoring;
+          del.disabled=state.restoring||state.sourceBusy;
           del.addEventListener('click',()=>deleteSavedSession(session.sessionId));
           actions.append(open,del);row.append(info,actions);root.append(row);
         }
@@ -2049,19 +2142,31 @@ body.help-scroll-locked{
       }
       async function prepareToSwitch(){
         if(!state.startTime)return true;
+        const previous=currentSession;
+        await writeTail;
+        if(currentSession!==previous)return false;
+        const warned=Boolean(state.storageFailure);
         const ok=await AppConfirm.ask({title:tr('switchTitle'),
-          message:state.storageFailure?tr('switchUnsafe'):tr('switchMessage'),
+          message:warned?tr('switchUnsafe'):tr('switchMessage'),
           confirmLabel:tr('switchConfirm'),cancelLabel:tr('cancel')});
-        if(!ok)return false;
+        if(!ok||currentSession!==previous)return false;
         if(state.phase==='counting')pauseCount();
         await writeTail;
-        return true;
+        if(currentSession!==previous)return false;
+        if(pendingWrites.has(previous))await queueSnapshot();
+        if(pendingWrites.has(previous)&&!warned){
+          const discard=await AppConfirm.ask({title:tr('switchTitle'),message:tr('switchUnsafe'),
+            confirmLabel:tr('switchConfirm'),cancelLabel:tr('cancel')});
+          if(!discard)return false;
+        }
+        return currentSession===previous;
       }
       async function loadSavedSession(sessionId){
-        if(state.restoring)return;
-        if(!(await prepareToSwitch()))return;
-        state.restoring=true;renderSavedSessions();
+        if(state.restoring||state.sourceBusy)return;
+        state.restoring=true;renderState();renderSavedSessions();
+        let message;
         try{
+          if(!(await prepareToSwitch()))return;
           await writeTail;
           const saved=await sessionStore.load(sessionId);
           if(!saved.session)throw Error('Saved session not found');
@@ -2069,6 +2174,7 @@ body.help-scroll-locked{
           if(session.schemaVersion!==1||!['camera','file'].includes(session.sourceType))throw Error('Incompatible session');
           const mapped=saved.events.map(item=>({
             id:item.eventId,occurredAt:item.occurredAt,direction:item.direction,
+            directionLabel:item.directionLabel||session.directionLabels?.[item.direction],
             kind:({auto:'auto',manual_adjustment:'correction',undo_adjustment:'undo'})[item.kind],
             delta:item.delta,elapsedMs:item.elapsedMs,undoOf:item.referenceEventId||'',
             sourceTimeMs:Number.isFinite(item.sourceTimeMs)?item.sourceTimeMs:null
@@ -2099,15 +2205,15 @@ body.help-scroll-locked{
           state.testCompleted=false;
           if(session.state==='interrupted')await queueSnapshot();
           saveSetup();draw();renderTimeline();
-          renderState(session.sourceType==='file'?tr('videoReopenRequired'):undefined);
+          if(session.sourceType==='file')message=tr('videoReopenRequired');
           toast(tr(session.sourceType==='file'?'videoReopenRequired':
             session.state==='done'?'openedSaved':'restoredStopped'));
           await refreshSavedSessions();
         }catch(error){warnStorage(error);toast(tr('restoreFailed'));}
-        finally{state.restoring=false;renderSavedSessions();}
+        finally{state.restoring=false;renderState(message);renderSavedSessions();}
       }
       async function deleteSavedSession(sessionId){
-        if(state.restoring)return;
+        if(state.restoring||state.sourceBusy)return;
         const ok=await AppConfirm.ask({title:tr('deleteTitle'),message:tr('deleteMessage'),
           confirmLabel:tr('deleteSaved'),cancelLabel:tr('cancel')});
         if(!ok)return;
@@ -2115,18 +2221,17 @@ body.help-scroll-locked{
         try{
           if(currentSession?.sessionId===sessionId){
             if(state.phase==='counting')pauseCount();
-            await writeTail;
-            await sessionStore.deleteSession(sessionId);resetActiveView();
+            await deleteSessionRecord(sessionId);resetActiveView();
           }else{
-            await writeTail;await sessionStore.deleteSession(sessionId);
+            await deleteSessionRecord(sessionId);
           }
           await refreshSavedSessions();
           toast(tr('deleted'));
         }catch(error){warnStorage(error);toast(tr('deleteFailed'));}
-        finally{state.restoring=false;renderSavedSessions();}
+        finally{state.restoring=false;renderState();renderSavedSessions();}
       }
       async function startNewSession(){
-        if(state.restoring)return;
+        if(state.restoring||state.sourceBusy)return;
         if(!(await prepareToSwitch()))return;
         resetActiveView();await refreshSavedSessions();
       }
@@ -2257,53 +2362,111 @@ body.help-scroll-locked{
         const sec=Math.max(0,Math.floor(ms/1000));
         return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
       }
+      function usesMediaBuckets(){
+        return currentSession?.sourceType==='file'&&$('#timeBasis').value==='media';
+      }
+      function selectedBuckets(minutes){
+        const events=ledger.history();
+        return usesMediaBuckets()
+          ?timeline.mediaAggregation(events,minutes,currentSession.runtimeInfo?.sourceDurationMs)
+          :timeline.aggregation(currentSession,events,minutes);
+      }
+      function mediaBoundaryText(ms){
+        const seconds=formatElapsed(ms),fraction=ms%1000;
+        return fraction?seconds+'.'+String(fraction).padStart(3,'0'):seconds;
+      }
       function renderTimeline(){
         const section=$('#timelineSection'),coverage=$('#coverageSummary');
         const active=Boolean(currentSession&&state.startTime);
+        const file=active&&currentSession.sourceType==='file';
         section.hidden=!active;coverage.hidden=!active;
-        if(!active){$('#timelineRows').replaceChildren();return;}
+        $('#timeBasisField').hidden=!file;
+        if(!active){
+          $('#timeBasis').value='media';
+          $('#timelineRows').replaceChildren();
+          return;
+        }
+        const media=usesMediaBuckets();
+        $('#timelineHeading').textContent=tr(media?'mediaHeading':file?'fileTimelineHeading':'timelineHeading');
+        $('#coverageHint').textContent=tr(media?'mediaBucketHint':file?'fileCoverageHint':'coverageHint');
         const info=timeline.durations(currentSession,Date.now());
         const observed=formatElapsed(info.observedMs),paused=formatElapsed(info.pausedMs),missing=formatElapsed(info.missingMs);
         const since=currentSession.startedAt?Math.max(0,(currentSession.endedAt?
           Date.parse(currentSession.endedAt):Date.now())-Date.parse(currentSession.startedAt)):0;
-        coverage.textContent=tr('covered')+': '+observed+' · '+tr('pausedCoverage')+': '+paused+
+        coverage.textContent=(file?tr('wallBasis')+' · ':'')+tr('covered')+': '+observed+' · '+tr('pausedCoverage')+': '+paused+
           ' · '+tr('missingCoverage')+': '+missing+' · '+tr('wallElapsed')+': '+formatElapsed(since);
         const step=Number($('#aggregationMinutes').value)||5;
-        const entries=timeline.aggregation(currentSession,ledger.history(),step);
+        const entries=selectedBuckets(step);
         const root=$('#timelineRows');root.replaceChildren();
         if(!entries.length){
           const empty=document.createElement('p');empty.className='saved-empty';
-          empty.textContent=tr('noIntervalRows');root.append(empty);return;
+          empty.textContent=tr(media?'mediaBucketEmpty':'noIntervalRows');root.append(empty);return;
         }
         const last=entries.slice(-16),max=Math.max(1,...last.flatMap(entry=>[entry.totalA,entry.totalB]));
         for(const item of last){
           const container=document.createElement('div');container.className='timeline-item';
-          container.dataset.coverage=item.coverageStatus;
           const heading=document.createElement('strong');
-          heading.textContent=new Date(item.start).toLocaleString(language==='ja'?'ja-JP':'en-US',{
-            month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
-          });
+          if(media){
+            heading.textContent=item.startMs===null?tr('unknownMediaTime'):
+              mediaBoundaryText(item.startMs)+' – '+mediaBoundaryText(item.endMs);
+          }else{
+            container.dataset.coverage=item.coverageStatus;
+            heading.textContent=new Date(item.start).toLocaleString(language==='ja'?'ja-JP':'en-US',{
+              month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
+            });
+          }
           const summary=document.createElement('div');summary.className='meta';
           summary.textContent=countName('A_TO_B')+': '+item.totalA+' · '+countName('B_TO_A')+': '+item.totalB;
           const bar=document.createElement('div');bar.className='direction-bars';bar.setAttribute('aria-hidden','true');
           for(const [index,total] of [item.totalA,item.totalB].entries()){
             const track=document.createElement('div');track.className='bar';
             const value=document.createElement('span');value.className=index?'direction-b':'direction-a';
+            value.hidden=total<=0;
             value.style.width=Math.max(0,Math.min(100,100*total/max))+'%';track.append(value);bar.append(track);
           }
-          const coverageText=document.createElement('div');coverageText.className='coverage';
-          coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
-            missing:'coverageMissing'})[item.coverageStatus])+
-            ' · '+tr('covered')+' '+formatElapsed(item.observedMs)+
-            ' · '+tr('pausedCoverage')+' '+formatElapsed(item.pausedMs)+
-            ' · '+tr('missingCoverage')+' '+formatElapsed(item.missingMs);
-          container.append(heading,summary,bar,coverageText);root.append(container);
+          container.append(heading,summary,bar);
+          if(!media){
+            const coverageText=document.createElement('div');coverageText.className='coverage';
+            coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
+              missing:'coverageMissing'})[item.coverageStatus])+
+              ' · '+tr('covered')+' '+formatElapsed(item.observedMs)+
+              ' · '+tr('pausedCoverage')+' '+formatElapsed(item.pausedMs)+
+              ' · '+tr('missingCoverage')+' '+formatElapsed(item.missingMs);
+            container.append(coverageText);
+          }
+          root.append(container);
         }
       }
 
       function isFileMode(){return state.sourceMode==='file';}
       function hasActiveSource(){return isFileMode()?state.videoReady:Boolean(state.stream);}
       function fileMediaTimeMs(){return isFileMode()&&state.videoReady?Math.max(0,Math.round(video.currentTime*1000)):null;}
+      function renderReviewEvents(){
+        const group=$('#reviewEvents'),select=$('#reviewEvent');
+        if(!isFileMode()||state.phase!=='done'||!state.videoReady||!state.videoDurationMs){
+          group.hidden=true;
+          if(select.options.length)select.replaceChildren();
+          delete select.dataset.revision;
+          return;
+        }
+        const revision=JSON.stringify([currentSession.sessionId,ledger.size(),language,countName('A_TO_B'),countName('B_TO_A')]);
+        if(select.dataset.revision===revision)return;
+        select.dataset.revision=revision;
+        const events=ledger.history().filter(event=>Number.isFinite(event.sourceTimeMs));
+        group.hidden=!events.length;
+        if(!events.length)return;
+        events.sort((a,b)=>a.sourceTimeMs-b.sourceTimeMs);
+        const options=document.createDocumentFragment();
+        options.append(new Option(tr('reviewEventPrompt'),''));
+        for(const event of events){
+          const kind={auto:'automaticCount',correction:'manualCount',undo:'undo'}[event.kind];
+          const time=formatElapsed(event.sourceTimeMs)+'.'+String(event.sourceTimeMs%1000).padStart(3,'0');
+          const direction=event.directionLabel||countName(event.direction);
+          const label=time+' · '+direction+' · '+tr(kind)+' '+(event.delta>0?'+1':'−1');
+          options.append(new Option(label,String(event.sourceTimeMs)));
+        }
+        select.replaceChildren(options);
+      }
       function renderVideoTime(){
         if(!isFileMode())return;
         const elapsed=Math.max(0,Number(video.currentTime)||0);
@@ -2547,21 +2710,27 @@ body.help-scroll-locked{
         $('#sourceMode').value=state.sourceMode;
         $('#sourceMode').disabled=state.sourceBusy||state.restoring;
         $('#videoFile').disabled=state.sourceBusy||state.restoring;
+        $('#newSession').disabled=state.sourceBusy||state.restoring;
+        for(const button of document.querySelectorAll('#savedList button'))button.disabled=state.sourceBusy||state.restoring;
         $('#cameraActions').hidden=fileMode;
         $('#videoSourceBox').hidden=!fileMode;
         if(!state.videoReady)$('#videoSourceBox').open=true;
+        const reviewing=fileMode&&phase==='done';
+        const attachOriginal=reviewing&&!state.videoReady;
         $('#videoSourceSummary').textContent=state.videoReady?state.videoFilename+' · '+tr($('#analysisMode').value==='sequential'?'sequentialMode':'realtimeMode'):tr('videoSourceSettings');
+        $('label[for="videoFile"]').textContent=tr(attachOriginal?'reviewOriginal':'videoSelect');
+        $('#videoFileHint').textContent=tr(attachOriginal?'reviewOriginalHint':'videoFileHint');
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
-        $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
-        $('#coverageHint').textContent=tr(fileMode?'fileCoverageHint':'coverageHint');
         $('#cameraPlaceholder').querySelector('span').textContent=tr(fileMode?'videoEmpty':'previewEmpty');
         $('#videoFileStatus').textContent=(state.videoErrorKey?tr(state.videoErrorKey):'')||
           (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
-        $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':'previewVideo');
+        $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':reviewing?'reviewVideo':'previewVideo');
+        $('#videoReminder').textContent=tr(reviewing?'reviewHint':'videoReminder');
+        renderReviewEvents();
         $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||
           state.fileSeekingConfirmation||!(state.videoDurationMs>0);
-        $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||Boolean(state.startTime);
+        $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||(Boolean(state.startTime)&&!reviewing);
         $('#reanalyzeVideo').disabled=!state.videoReady||!state.startTime||state.sourceBusy;
         $('#removeVideo').disabled=!state.videoReady||state.sourceBusy;
         $('#testCard').hidden=fileMode||!sourceAvailable||!state.detector||
@@ -2592,7 +2761,7 @@ body.help-scroll-locked{
         $('#downloadButton').disabled=!state.startTime;
         $('#summaryButton').disabled=!state.startTime;
         $('#intervalsButton').disabled=!state.startTime;
-        $('#resetButton').disabled=!state.startTime&&!totals.hasEvents;
+        $('#resetButton').disabled=state.sourceBusy||state.restoring||(!state.startTime&&!totals.hasEvents);
         $('#report').hidden=phase!=='done';
         $('#cameraPlaceholder').hidden=sourceAvailable;
         const next=renderNextAction(phase,fileMode,sourceAvailable,validLine);
@@ -2838,7 +3007,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const event=ledger.correct(direction,delta,effectiveElapsed(),fileMediaTimeMs());
         if(!event){toast(tr('negativeBlocked'));return;}
-        void queueSnapshot(event).then(refreshSavedSessions);renderState();renderTimeline();
+        queueSnapshot(event,true);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
           actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
       }
@@ -2846,7 +3015,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const entry=ledger.undo(effectiveElapsed(),eventId,fileMediaTimeMs());
         if(!entry){toast(tr('undoUnavailable'));return;}
-        void queueSnapshot(entry).then(refreshSavedSessions);renderState();renderTimeline();toast(tr('undone'));
+        queueSnapshot(entry,true);renderState();renderTimeline();toast(tr('undone'));
       }
       // LINE_INTERACTION:BEGIN
       // Pure geometry shared by mouse, finger, stylus and keyboard. A translation
@@ -3049,7 +3218,7 @@ body.help-scroll-locked{
         zeroTracks();
       }
       async function switchVideoSource(next){
-        if(next!== 'camera'&&next!=='file'||next===state.sourceMode||state.sourceBusy)return;
+        if(next!== 'camera'&&next!=='file'||next===state.sourceMode||state.sourceBusy||state.restoring)return;
         state.sourceBusy=true;
         renderState();
         try{
@@ -3108,8 +3277,9 @@ body.help-scroll-locked{
         return 0; // still allow playback and counting, but disable seeking UI
       }
       async function readVideoFile(file){
-        if(!isFileMode()||state.sourceBusy||!file)return;
-        if(!simdAvailable){state.videoErrorKey='simdUnsupported';renderState();return;}
+        if(!isFileMode()||state.sourceBusy||state.restoring||!file)return;
+        const reviewSession=state.phase==='done'&&!state.videoReady?currentSession:null;
+        if(!reviewSession&&!simdAvailable){state.videoErrorKey='simdUnsupported';renderState();return;}
         if(!(String(file.type).startsWith('video/')||/\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name))){
           state.videoErrorKey='videoBadFormat';renderState();return;
         }
@@ -3117,13 +3287,16 @@ body.help-scroll-locked{
         renderState();
         let newUrl=null;
         try{
-          if(!(await prepareToSwitch()))return;
-          resetActiveView();
+          if(!reviewSession){
+            if(!(await prepareToSwitch()))return;
+            resetActiveView();
+            state.phase='loading';
+          }
           state.sourceMode='file';
           video.removeAttribute('autoplay');
           video.muted=true;
           video.preload='auto';
-          state.phase='loading';renderState();
+          renderState();
           newUrl=URL.createObjectURL(file);
           state.videoUrl=newUrl;
           state.videoFilename=String(file.name).slice(0,220);
@@ -3146,23 +3319,35 @@ body.help-scroll-locked{
           });
           if(!video.videoWidth||!video.videoHeight)throw Error('Video dimensions unavailable');
           const duration=await getFiniteVideoDuration();
+          if(state.videoUrl!==newUrl)return;
+          if(reviewSession&&reviewSession!==currentSession){releaseLocalVideo();return;}
           state.videoDurationMs=Math.max(0,Math.round(duration*1000));
+          const expectedDuration=reviewSession?.runtimeInfo?.sourceDurationMs;
+          if(expectedDuration&&state.videoDurationMs&&Math.abs(expectedDuration-state.videoDurationMs)>250){
+            releaseLocalVideo();state.videoErrorKey='reviewDurationMismatch';return;
+          }
           $('#analysisMode').querySelector('[value=sequential]').disabled=!state.videoDurationMs;
-          if(!state.videoDurationMs){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
+          if(!state.videoDurationMs&&!reviewSession){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
           state.videoReady=true;
           state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
           state.lastProcessedSourceMs=-1;
-          await initEmbeddedDetector();
-          state.phase='ready';$('#videoSourceBox').open=false;
+          if(!reviewSession){
+            await initEmbeddedDetector();
+            state.phase='ready';
+          }
+          $('#videoSourceBox').open=false;
           state.videoErrorKey=null;inferencePacer.reset();
-          zeroTracks();renderState(tr('videoReady'));draw();
-          loop();
+          zeroTracks();renderState(tr(reviewSession?'reviewHint':'videoReady'));draw();
+          if(!reviewSession)loop();
         }catch(error){
+          if(newUrl&&state.videoUrl!==newUrl)return;
           console.warn('[Passage Counter] Local video is unsupported',error);
           if(newUrl&&state.videoUrl===newUrl)releaseLocalVideo();
-          if(state.detector){state.detector.close();state.detector=null;}
-          state.phase='error';
+          if(!reviewSession){
+            if(state.detector){state.detector.close();state.detector=null;}
+            state.phase='error';
+          }
           state.videoErrorKey=error?.message==='Invalid or unknown video duration'?'videoInvalidDuration':'videoLoadFailed';
           renderState();
         }finally{
@@ -3171,12 +3356,13 @@ body.help-scroll-locked{
         }
       }
       async function toggleFilePreview(){
-        if(!isFileMode()||!state.videoReady||state.startTime||state.sourceBusy)return;
+        if(!isFileMode()||!state.videoReady||(state.startTime&&state.phase!=='done')||state.sourceBusy)return;
         if(state.filePreviewing){
           video.pause();state.filePreviewing=false;renderState();return;
         }
         try{
-          if(video.ended||video.currentTime>=video.duration-0.08){
+          const duration=state.videoDurationMs/1000;
+          if(video.ended||(duration>0&&video.currentTime>=duration-0.08)){
             state.fileInternalSeek=true;video.currentTime=0;
           }
           await video.play();
@@ -3187,6 +3373,10 @@ body.help-scroll-locked{
       }
       async function confirmFileReanalysis({requestedSecond=0,restart=false}={}){
         if(!isFileMode()||!state.videoReady||state.fileSeekingConfirmation||state.sourceBusy)return false;
+        if(state.phase==='done'&&!restart){
+          video.currentTime=Math.max(0,Math.min(state.videoDurationMs/1000,requestedSecond));
+          renderVideoTime();return true;
+        }
         state.fileSeekingConfirmation=true;
         if(state.filePreviewing){video.pause();state.filePreviewing=false;}
         if(state.phase==='counting')pauseCount();
@@ -3200,7 +3390,7 @@ body.help-scroll-locked{
               cancelLabel:tr('cancel')
             });
             if(!accepted){renderState(tr('videoSeekRejected'));return false;}
-            await resetCounts();
+            if(!await resetCounts())return false;
           }
           const target=Math.max(0,Math.min(state.videoDurationMs>0?state.videoDurationMs/1000:0,requestedSecond));
           state.fileInternalSeek=true;
@@ -3218,7 +3408,8 @@ body.help-scroll-locked{
       }
       async function closeVideoAction(){
         if(!isFileMode()||!state.videoUrl||state.sourceBusy)return;
-        if(state.startTime){
+        const finished=state.phase==='done';
+        if(state.startTime&&!finished){
           const accepted=await AppConfirm.ask({title:tr('videoRemoveTitle'),
             message:tr('videoRemoveMessage'),
             confirmLabel:tr('videoRemoveConfirm'),cancelLabel:tr('cancel')});
@@ -3227,7 +3418,7 @@ body.help-scroll-locked{
           await writeTail;
         }
         closeCamera();
-        state.phase=state.startTime?'interrupted':'idle';
+        state.phase=finished?'done':state.startTime?'interrupted':'idle';
         renderState(state.startTime?tr('videoReopenRequired'):tr('videoMissing'));
       }
       // VIDEO:END
@@ -3300,7 +3491,7 @@ body.help-scroll-locked{
       function loop(now=performance.now()){
         if(!hasActiveSource()||state.sequentialRunning)return;
         const fileMode=isFileMode();
-        if(fileMode&&video.paused){state.frameHandle=0;return;}
+        if(fileMode&&(video.paused||state.phase==='done')){state.frameHandle=0;return;}
         const sourceMs=fileMode?fileMediaTimeMs():null;
         const freshFrame=!fileMode||(
           state.videoReady&&!video.seeking&&
@@ -3418,7 +3609,6 @@ body.help-scroll-locked{
             if(state.phase==='counting')interrupt(tr('videoPlaybackFailed'));
           });
         }else lockScreen();
-        void writeTail.then(refreshSavedSessions);
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
@@ -3441,10 +3631,9 @@ body.help-scroll-locked{
         if(!['counting','paused','interrupted'].includes(state.phase))return;
         cancelSequential();state.focused=false;
         state.phase='done';transitionSession('done','finished');
-        if(isFileMode()){video.pause();state.filePreviewing=false;}
+        if(isFileMode()){video.pause();state.filePreviewing=false;zeroTracks();draw();}
         else closeCamera();
         unlockScreen();renderState();renderTimeline();
-        void writeTail.then(refreshSavedSessions);
       }
       function normalizedFilename(){
         const input=$('#outputFilename');
@@ -3474,7 +3663,7 @@ body.help-scroll-locked{
         const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of',
           'session_id','source_time_ms','event_kind_v1','reference_event_id']];
         for(const e of ledger.history())rows.push([e.id,e.occurredAt,e.direction,
-          countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
+          e.directionLabel,e.kind,e.delta,e.elapsedMs,e.undoOf,
           currentSession?.sessionId||'',e.sourceTimeMs??'',
           ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
         if(asRows===true)return rows;
@@ -3497,16 +3686,27 @@ body.help-scroll-locked{
       function exportIntervals(asRows=false){
         if(!currentSession||!state.startTime)return;
         const size=Number($('#aggregationMinutes').value)||5;
-        const buckets=timeline.aggregation(currentSession,ledger.history(),size);
-        const rows=[['session_id','bucket_start','bucket_end','bucket_minutes',
+        const buckets=selectedBuckets(size);
+        let rows;
+        if(usesMediaBuckets()){
+          rows=[['session_id','time_basis','bucket_kind','source_start_ms','source_end_ms','bucket_minutes',
+            'auto_a','manual_a','total_a','auto_b','manual_b','total_b']];
+          for(const entry of buckets)rows.push([
+            currentSession.sessionId,'video',entry.startMs===null?'unknown_position':'interval',
+            entry.startMs??'',entry.endMs??'',size,entry.autoA,entry.manualA,entry.totalA,
+            entry.autoB,entry.manualB,entry.totalB
+          ]);
+        }else{
+          rows=[['session_id','bucket_start','bucket_end','bucket_minutes',
           'observed_seconds','paused_seconds','missing_seconds','auto_a','manual_a','total_a',
           'auto_b','manual_b','total_b','coverage_status','timezone']];
-        for(const entry of buckets)rows.push([
-          currentSession.sessionId,entry.start,entry.end,size,
-          Math.round(entry.observedMs/1000),Math.round(entry.pausedMs/1000),Math.round(entry.missingMs/1000),
-          entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
-          entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
-        ]);
+          for(const entry of buckets)rows.push([
+            currentSession.sessionId,entry.start,entry.end,size,
+            Math.round(entry.observedMs/1000),Math.round(entry.pausedMs/1000),Math.round(entry.missingMs/1000),
+            entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
+            entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
+          ]);
+        }
         if(asRows===true)return rows;
         downloadRows(rows,csvName('intervals'));
       }
@@ -3535,11 +3735,20 @@ body.help-scroll-locked{
         const sessionId=currentSession?.sessionId||null;
         if(state.phase==='counting')pauseCount();
         if(state.phase==='testing')finishTest(true);
-        await writeTail;
+        if(isFileMode()&&state.videoReady){
+          video.pause();state.filePreviewing=false;
+          // Reattached results do not load the detector until a new count is requested.
+          if(!state.detector){
+            state.sourceBusy=true;renderState();
+            try{await initEmbeddedDetector();}
+            catch{toast(tr('modelFailed'));return false;}
+            finally{state.sourceBusy=false;renderState();}
+          }
+        }
         // Deleting a session is explicit and confirmed at the call-site.
         if(sessionId){
-          try{await sessionStore.deleteSession(sessionId);}
-          catch(error){warnStorage(error);}
+          try{await deleteSessionRecord(sessionId);}
+          catch(error){warnStorage(error);toast(tr('deleteFailed'));return false;}
         }
         ledger.reset();currentSession=null;
         state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
@@ -3549,6 +3758,7 @@ body.help-scroll-locked{
         $('#resultText').hidden=true;$('#resultText').value='';
         state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
+        return true;
       }
       $('#languageButton').addEventListener('click',()=>{language=language==='ja'?'en':'ja';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
       const helpDialog=$('#helpDialog');
@@ -3631,9 +3841,16 @@ body.help-scroll-locked{
           requestedSecond:state.videoDurationMs*(Number(event.target.value)/1000)/1000
         });
       });
+      $('#reviewEvent').addEventListener('change',async event=>{
+        const value=event.target.value;
+        if(state.phase!=='done'||!state.videoReady||value==='')return;
+        event.target.selectedIndex=0;
+        const moved=await confirmFileReanalysis({requestedSecond:Math.max(0,Number(value)/1000-3)});
+        if(moved&&state.phase==='done'&&video.paused)await toggleFilePreview();
+      });
       video.addEventListener('timeupdate',renderVideoTime);
       video.addEventListener('play',()=>{
-        if(isFileMode()&&state.videoReady){
+        if(isFileMode()&&state.videoReady&&state.phase!=='done'){
           cancelAnimationFrame(state.frameHandle);
           state.frameHandle=requestAnimationFrame(loop);
         }
@@ -3694,9 +3911,10 @@ body.help-scroll-locked{
       $('#summaryButton').addEventListener('click',exportSummary);
       $('#intervalsButton').addEventListener('click',exportIntervals);
       $('#aggregationMinutes').addEventListener('change',renderTimeline);
+      $('#timeBasis').addEventListener('change',renderTimeline);
       $('#newSession').addEventListener('click',startNewSession);
       $('#sessionName').addEventListener('change',()=>{
-        if(currentSession)void queueSnapshot().then(refreshSavedSessions);
+        if(currentSession)queueSnapshot(null,true);
       });
       for(const id of ['#labelA','#labelB']){
         $(id).addEventListener('change',()=>{
@@ -3732,6 +3950,11 @@ body.help-scroll-locked{
       });
       state.clockTimer=setInterval(()=>{
         renderOperations();
+        if(state.phase!=='counting'&&pendingWrites.has(currentSession)&&!state.restoring&&
+           Date.now()-state.lastCheckpointTick>=5000){
+          state.lastCheckpointTick=Date.now();
+          queueSnapshot();
+        }
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
           else formatTestStatus();
