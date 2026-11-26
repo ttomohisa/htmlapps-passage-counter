@@ -73,12 +73,12 @@ Both are self-contained HTML files. The build also creates **passage-counter.htm
 
 ## How to use
 
-1. **Choose a source.** Fix your camera in position and select Start camera, or select Local video and choose a file from your device.
+1. **Choose a source.** Fix the device in position and select Start camera for live counting. Choose a video opens a local recording. Open a previous count from Saved sessions.
 2. **Position the counting line.** Drag the line itself to translate it; adjust length and angle with the end circles. Reverse A/B if necessary.
 3. **Verify the setup (camera mode only).** Run the 30-second check to confirm that detection and direction make sense. Trial events are excluded from the actual count. Moving the line requires another check.
 4. **Start counting.** Select Start counting to collect A→B and B→A crossing events. Local-video analysis starts from the beginning and stops at the end of the clip.
-5. **Correct mistakes.** Use the tile's −1/+1 controls for missed or extra events, and Undo beside the total for the last manual correction.
-6. **Pause, finish and export.** Save Events CSV, Summary CSV and Time buckets CSV when needed.
+5. **Correct mistakes.** Watch the preview and the two directional counts. Use −1/+1 for the relevant direction, or Undo to reverse the last correction.
+6. **Review your result.** Finish opens the directional totals and CSV export. On phones, use the controls at the bottom to start, pause, resume or finish.
 
 ### Measurement and recovery
 

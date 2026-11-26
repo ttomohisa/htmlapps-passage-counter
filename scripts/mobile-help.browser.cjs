@@ -1,4 +1,5 @@
 'use strict';
+const chooseVideo=require('./choose-video.cjs');
 // Bounded native CI regression. No physical serial or camera permissions.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {pathToFileURL}=require('node:url'),{chromium}=require('playwright');
@@ -7,8 +8,25 @@ const results=path.resolve(__dirname,'../test-results/mobile-help');
 async function bounds(locator,width,height,label,vertical=true){const r=await locator.boundingBox();assert.ok(r&&r.x>=0&&r.x+r.width<=width+1&&(!vertical||(r.y>=0&&r.y+r.height<=height+1)),label+': bounds '+JSON.stringify(r));}
 async function smoke(page,file){
  const b64=await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=320;c.height=240;const x=c.getContext('2d'),stream=c.captureStream(15),chunks=[],r=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8'});r.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};const done=new Promise(resolve=>r.onstop=resolve);let f=0;const draw=()=>{x.fillStyle='#e8f0ea';x.fillRect(0,0,320,240);x.fillStyle='#16624f';x.fillRect((f++*3)%280,80,40,50);};draw();r.start(200);const timer=setInterval(draw,66);await new Promise(resolve=>setTimeout(resolve,3200));clearInterval(timer);r.stop();await done;stream.getTracks().forEach(t=>t.stop());return await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.readAsDataURL(new Blob(chunks,{type:'video/webm'}));});});
- await page.locator('#sourceMode').selectOption('file');await page.locator('#videoFile').setInputFiles({name:'synthetic-local.webm',mimeType:'video/webm',buffer:Buffer.from(b64,'base64')});await page.waitForFunction(()=>/動画準備完了|Video ready/.test(document.querySelector('#statusPill').textContent)&&!document.querySelector('#beginCount').disabled,null,{timeout:60000});assert.equal(await page.locator('#cameraFeed').evaluate(v=>v.videoWidth===320&&v.videoHeight===240),true);
- await page.locator('.session-controls').scrollIntoViewIfNeeded();await bounds(page.locator('.session-controls'),360,640,'loaded video functional actions');await page.locator('#beginCount').click();await page.waitForFunction(()=>!document.querySelector('#plusA').disabled);await page.locator('#plusA').click();await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:30000});await page.locator('#outputFilename').fill('mobile-help-passages');const pending=page.waitForEvent('download');await page.locator('#downloadButton').click();const d=await pending;assert.equal(d.suggestedFilename(),'mobile-help-passages.csv');const target=path.join(results,file.includes('self-extract')?'synthetic-loader.csv':'synthetic-readable.csv');await d.saveAs(target);const csv=fs.readFileSync(target,'utf8');assert.ok(csv.startsWith('\ufeff'));assert.ok(csv.includes('"manual_adjustment"'));assert.ok(csv.includes('"source_time_ms"'));console.log('PASS synthetic video analysis/manual correction/edited CSV '+file);
+ await chooseVideo(page,{name:'synthetic-local.webm',mimeType:'video/webm',buffer:Buffer.from(b64,'base64')});await page.waitForFunction(()=>/動画準備完了|Video ready/.test(document.querySelector('#statusPill').textContent)&&!document.querySelector('#beginCount').disabled,null,{timeout:60000});assert.equal(await page.locator('#cameraFeed').evaluate(v=>v.videoWidth===320&&v.videoHeight===240),true);
+ const start=page.locator('#dockStart');
+ await bounds(start,360,640,'mobile setup action');
+ await start.click();
+ await page.locator('#plusA').click();
+ await page.locator('#appMain[data-screen="result"]').waitFor();
+ await page.locator('#resultExportDetails > summary').click();
+ await page.locator('#outputFilename').fill('mobile-help-passages');
+ const pending=page.waitForEvent('download');
+ await page.locator('#downloadButton').click();
+ const download=await pending;
+ assert.equal(download.suggestedFilename(),'mobile-help-passages.csv');
+ const target=path.join(results,file.includes('self-extract')?'synthetic-loader.csv':'synthetic-readable.csv');
+ await download.saveAs(target);
+ const csv=fs.readFileSync(target,'utf8');
+ assert.ok(csv.startsWith('\ufeff'));
+ assert.ok(csv.includes('"manual_adjustment"'));
+ assert.ok(csv.includes('"source_time_ms"'));
+ console.log('PASS synthetic video analysis/manual correction/edited CSV '+file);
 }
 
 async function main(){
@@ -26,7 +44,13 @@ async function main(){
    assert.equal(await page.locator(cfg.badge).isVisible(),width>820,label+': phone badge hidden');
    if(width>820)assert.ok(await page.locator(cfg.badge).evaluate(el=>{const b=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el.querySelector('span'));return b.left>=0&&b.right<=innerWidth&&el.scrollWidth<=el.clientWidth+1&&[...range.getClientRects()].every(r=>r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1);}),label+': actual badge bounds');
    assert.equal(await page.locator('main #'+cfg.meta).count(),0);assert.equal(await page.locator('body > footer').isVisible(),width>cfg.bp,label+': footer breakpoint');
-   for(const selector of ['.video-footer']){await page.locator(selector).scrollIntoViewIfNeeded();await bounds(page.locator(selector),width,height,label+': functional controls',height>300);}assert.equal(await page.locator('main #processingSpeed').count(),1);assert.equal(await page.locator('#beginCount').isEnabled(),false,label+': no automatic camera/counting');
+   for(const selector of ['#cameraStart','#chooseVideo']){
+    await page.locator(selector).scrollIntoViewIfNeeded();
+    await bounds(page.locator(selector),width,height,label+' visible source action');
+   }
+   assert.ok(await page.locator('#cameraStage').isHidden(),label+' no empty feed');
+   assert.ok(await page.locator('#liveDock').isHidden(),label+' no measurement actions before choosing a source');
+   assert.equal(await page.locator('#beginCount').isEnabled(),false,label+' no automatic counting');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+': page width');
    await page.evaluate(()=>scrollTo(0,0));await page.locator('#helpButton').focus();await page.keyboard.press('Enter');const body=page.locator(cfg.body);
    assert.ok(await body.evaluate((el,id)=>el.lastElementChild.id===id,cfg.meta),label+': metadata final in scroll body');

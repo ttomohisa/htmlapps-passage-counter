@@ -14,6 +14,7 @@
 
 ## Unreleased
 
+- Reorganize the workspace into Source, Setup, Count and Results. Camera and local video open directly from the first screen. Line placement, live corrections and result exports each appear at the point they are needed.
 - Review finished videos without changing counts. Scrub the recording or play from three seconds before an event. Reattach the original video when reopening a finished session.
 - Group video events by their position in the recording. The time-axis selection also applies to the time buckets CSV and ZIP. Wall-clock reports retain observation and interruption durations.
 - Retry unsaved events together with their session totals after temporary storage errors. Event CSVs retain the direction label recorded with each event.

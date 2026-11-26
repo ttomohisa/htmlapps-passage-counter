@@ -1,6 +1,7 @@
 // Capture genuine UI with a browser-encoded synthetic local video and an audited
 // manual correction. No camera, injected counts or detector scores are used.
 import assert from 'node:assert/strict';
+import chooseVideo from './choose-video.cjs';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {chromium} from '../.smoke/node_modules/playwright/index.mjs';
@@ -34,21 +35,18 @@ try{
    await new Promise(r=>setTimeout(r,1300));clearInterval(timer);recorder.stop();await done;stream.getTracks().forEach(t=>t.stop());
    return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
   });
-  await page.locator('#sourceMode').selectOption('file');
-  await page.locator('#videoFile').setInputFiles({name:'sample-video.webm',mimeType:'video/webm',buffer:Buffer.from(bytes)});
+  await chooseVideo(page,{name:'sample-video.webm',mimeType:'video/webm',buffer:Buffer.from(bytes)});
   await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
   await page.locator('#lineVertical').click();
-  await page.locator('#setupOptions').evaluate(e=>e.open=true);
+  await page.locator('#setupOptions > summary').click();
   await page.locator('#labelA').fill(lang==='ja'?'入場':'Entry');await page.locator('#labelB').fill(lang==='ja'?'退場':'Exit');
   await page.locator('#roiEnabled').check();
   await page.locator('#sessionName').fill(lang==='ja'?'サンプル動画・手動補正 +1':'Sample video · manual correction +1');
-  await page.locator('#setupOptions').evaluate(e=>e.open=false);
-  await page.locator('#beginCount').click();
+  await page.locator('#setupOptions > summary').click();
+  await page.locator(width<=820?'#dockStart':'#beginCount').click();
   await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
   await page.locator('#plusA').click();await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
   await page.waitForFunction(()=>document.querySelector('#savedList .saved-session small')?.textContent.includes('A→B 1'));
-  await page.locator('#outputFilename').fill('passage-counter-sample');
-  await page.locator('#outputFilename').press('Tab');
   await page.evaluate(()=>document.activeElement?.blur());
   await page.evaluate(()=>scrollTo(0,0));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

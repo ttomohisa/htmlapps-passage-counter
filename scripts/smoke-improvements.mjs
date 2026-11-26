@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import chooseVideo from './choose-video.cjs';
 import {readFile,mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -16,7 +17,6 @@ try{
  page.on('request',r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith(origin))external.push(r.url());});
  await page.goto(origin);
  assert.equal(await page.locator('#analysisMode').count(),1,'Sequential mode selector must exist');
- await page.locator('#sourceMode').selectOption('file');
  // Encode an actual local file in the browser; this tests decoding + real WASM,
  // not detection accuracy (the test pattern is not a real person).
  const buffer=await page.evaluate(async()=>{
@@ -31,7 +31,7 @@ try{
   await new Promise(resolve=>setTimeout(resolve,1600));clearInterval(t);r.stop();await done;stream.getTracks().forEach(t=>t.stop());
   return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
  });
- await page.locator('#videoFile').setInputFiles({name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
+ await chooseVideo(page,{name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
  await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
  await page.locator('#cameraFeed').evaluate(v=>{v.play=()=>Promise.reject(new DOMException('Controlled preview rejection','NotAllowedError'));});
  await page.locator('#previewVideo').click();
@@ -45,7 +45,7 @@ try{
  await page.locator('#labelA').fill('入場 <test>');await page.locator('#labelA').dispatchEvent('input');
  await page.locator('#roiEnabled').check();await page.locator('#roiLeft').fill('20');await page.locator('#roiLeft').dispatchEvent('change');
  await page.locator('#roiRight').fill('80');await page.locator('#roiRight').dispatchEvent('change');
- await page.locator('#beginCount').click();
+ await page.locator('#dockStart').click();
  assert(await page.locator('#lineVertical').isDisabled());assert(await page.locator('#roiEnabled').isDisabled());
  assert.equal(await page.locator('#appMain').getAttribute('data-focused'),'true');
  await page.waitForFunction(()=>Number(document.querySelector('#videoSeek').value)>0);
@@ -55,13 +55,18 @@ try{
  await page.waitForTimeout(250);assert.equal(await page.locator('#cameraFeed').evaluate(v=>v.currentTime),time);
  await page.locator('#dockResume').click();
  await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
+ assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'result');
+ assert(await page.locator('#bundleButton').isVisible());
+ assert(await page.locator('#newSession').isVisible());
+ assert(await page.locator('#timelineRows').isHidden());
  await page.locator('#plusA').click();
  assert.equal(await page.locator('#reportFinalA').textContent(),'1');
  await page.waitForFunction(()=>document.querySelector('#savedList .saved-session small')?.textContent.includes('A→B 1'),null,{timeout:10000});
  await mkdir('test-results/improvements',{recursive:true});
  await page.waitForFunction(()=>document.querySelector('#appToast').hidden);
- await page.locator('#setupOptions').evaluate(e=>e.open=false);
+ await page.locator('#resultExportDetails > summary').click();
  await page.locator('#sessionName').fill('Sample video · manual correction +1');
+ await page.locator('#resultExportDetails > summary').click();
  for(const lang of ['ja','en']){
   if(await page.locator('html').getAttribute('lang')!==lang)await page.locator('#languageButton').click();
   for(const width of [390,1360]){
@@ -70,12 +75,14 @@ try{
   }
  }
  await page.setViewportSize({width:390,height:844});
+ await page.locator('#resultExportDetails > summary').click();
  await page.locator('#outputFilename').fill('trial/日本語.csv');
  const download=page.waitForEvent('download');await page.locator('#bundleButton').click();
  const file=await download;assert.equal(file.suggestedFilename(),'trial-日本語.zip');
  const zip=await readFile(await file.path());assert.equal(zip.readUInt32LE(0),0x04034b50);
  assert(zip.includes(Buffer.from('manual_adjustment')));assert(zip.includes(Buffer.from('trial-日本語-summary.csv')));
  assert.equal(await page.locator('#timeBasis').inputValue(),'media');
+ await page.locator('#resultTimelineDetails > summary').click();
  assert.match(await page.locator('#timelineRows strong').first().textContent(),/^00:00:00 – /);
  assert(zip.includes(Buffer.from('"source_start_ms","source_end_ms"')));
  await page.locator('#timeBasis').selectOption('wall');
@@ -101,12 +108,16 @@ try{
  assert.match(await page.locator('#timelineRows strong').first().textContent(),/^00:00:00 – /);
  await page.locator('#plusB').click();
  assert.match(await page.locator('#timelineRows').textContent(),/Unknown video position|動画内時刻不明/);
+ await page.locator('#resultExportDetails > summary').click();
+ await page.locator('#resultTimelineDetails > summary').click();
  const mediaDownload=page.waitForEvent('download');await page.locator('#intervalsButton').click();
  assert.match(await readFile(await (await mediaDownload).path(),'utf8'),/"video","unknown_position","",""/);
  if(await page.locator('html').getAttribute('lang')!=='en')await page.locator('#languageButton').click();
  assert.match(await page.locator('#bundleButton').textContent(),/ZIP/);
  await page.locator('#timeBasis').selectOption('wall');
- await page.locator('#newSession').click();await page.locator('#confirmReset').click();
+ await page.locator('#newSession').click();
+ await page.waitForFunction(()=>document.querySelector('#appMain').dataset.screen==='source');
+ assert(await page.locator('#confirmDialog').isHidden(),'A saved result can be left in one step');
  await page.locator('#timelineSection').waitFor({state:'hidden'});
  assert(await page.locator('#timeBasisField').evaluate(el=>el.hidden),'Inactive timeline should hide the axis selector');
  await page.locator('#savedList button').first().click();
@@ -115,10 +126,9 @@ try{
   const local=await context.newPage();local.on('pageerror',e=>errors.push(variant+': '+e.message));
   local.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});
   await local.goto(pathToFileURL(resolve('dist',variant)).href);
-  await local.locator('#sourceMode').selectOption('file');
-  await local.locator('#videoFile').setInputFiles({name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
+  await chooseVideo(local,{name:'sample.webm',mimeType:'video/webm',buffer:Buffer.from(buffer)});
   await local.waitForFunction(()=>!document.querySelector('#beginCount').disabled,null,{timeout:40000});
-  await local.locator('#beginCount').click();
+  await local.locator('#dockStart').click();
   await local.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:25000});
   assert.equal(await local.locator('#analysisMode').inputValue(),'sequential');
   await local.close();

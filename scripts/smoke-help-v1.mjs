@@ -57,9 +57,12 @@ try{
       const actual=await page.locator('html').getAttribute('lang');
       if(actual!==lang)await page.locator('#languageButton').click();
       assert.equal(await page.locator('html').getAttribute('lang'),lang);
-      const hero=await page.locator('.hero-copy').evaluate(el=>({title:el.querySelector('h1').textContent,intro:el.querySelector('p').textContent,overflow:el.scrollWidth>el.clientWidth+1}));
+      const hero=await page.locator('.hero-copy').evaluate(el=>{
+        const lines=element=>element.getBoundingClientRect().height/parseFloat(getComputedStyle(element).lineHeight);
+        return {title:lines(el.querySelector('h1')),intro:lines(el.querySelector('p')),overflow:el.scrollWidth>el.clientWidth+1};
+      });
       assert(!hero.overflow,'Short hero stays within the page at '+width);
-      assert(hero.title.length<=15&&hero.intro.length<=45,'Hero stays concise in '+lang);
+      assert(hero.title<=2.1&&hero.intro<=3.1,'The source introduction fits above the actions at '+width+' / '+lang);
       const initialY=await page.evaluate(()=>window.scrollY);
       await page.locator('#helpButton').click();
       await page.locator('#helpDialog').waitFor({state:'visible'});

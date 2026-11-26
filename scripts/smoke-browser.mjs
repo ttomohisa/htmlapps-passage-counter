@@ -166,6 +166,8 @@ try {
   // This is diagnostic only; desktop CI is not a substitute for mobile timing.
   // Setup test must be complete before real counting, and must never mutate totals.
   assert(await page.locator('#beginCount').isDisabled(), 'Counting cannot start before setup test');
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'setup');
+  assert(await page.locator('#counterSummary').isHidden(),'Live totals belong to the measurement screen');
   assert(await page.locator('#minusA').isDisabled(), 'Cannot subtract before session');
   await page.locator('#testButton').click();
   assert.match(await page.locator('#statusPill').textContent(), /設置テスト中|Testing setup/);
@@ -206,6 +208,8 @@ try {
   assert(savedSetup.line[0].y>.52,'Line position was not saved after keyboard move');
 
   await page.locator('#beginCount').click();
+  await page.waitForFunction(()=>document.activeElement?.id==='counterHeading');
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'measure');
   assert.match(await page.locator('#statusPill').textContent(), /計測中|Counting/);
   assert(await page.locator('#testButton').isDisabled(), 'Cannot calibrate during a session');
   assert(await page.locator('#minusB').isDisabled(), 'A zero count cannot go below zero');
@@ -222,8 +226,12 @@ try {
   assert(await page.locator('#beginCount').isEnabled(), 'Can resume after calibration');
   await page.locator('#beginCount').click();
   await page.locator('#finishCount').click();
+  await page.waitForFunction(()=>document.activeElement?.id==='reportHeading');
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'result');
   assert(await page.locator('#report').isVisible(), 'Result should be visible after finish');
   assert.equal((await page.locator('#reportTotal').textContent()).trim(),'0');
+  assert(await page.locator('#bundleButton').isVisible(),'Save all CSVs is available immediately');
+  await page.locator('#resultExportDetails > summary').click();
   await page.locator('#outputFilename').fill('passage-checked');
   const downloadPromise=page.waitForEvent('download');
   await page.locator('#downloadButton').click();
@@ -247,7 +255,8 @@ try {
   const intervalsCsv=await readFile(await (await intervalPromise).path(),'utf8');
   assert(intervalsCsv.includes('"coverage_status"')&&intervalsCsv.includes('"bucket_minutes"'));
   assert(intervalsCsv.includes('"observed_seconds"')&&intervalsCsv.includes('"missing_seconds"'));
-  assert(await page.locator('#timelineSection').isVisible(),'Time aggregation should be visible');
+  await page.locator('#resultTimelineDetails > summary').click();
+  assert(await page.locator('#timelineSection').isVisible(),'Time aggregation opens in results');
   await page.locator('#aggregationMinutes').selectOption('15');
   assert.equal(await page.locator('#aggregationMinutes').inputValue(),'15');
 
@@ -258,6 +267,7 @@ try {
   await page.locator('#savedList .saved-session').first().locator('button').first().click();
   await page.waitForFunction(()=>document.querySelector('#report')?.hidden===false,null,{timeout:15000});
   assert.equal((await page.locator('#reportTotal').textContent()).trim(),'0');
+  await page.locator('#resultTimelineDetails > summary').click();
   assert(await page.locator('#timelineSection').isVisible(),'Timeline restored from IndexedDB');
   console.log('[persistence] Completed session and time aggregation survived page reload.');
 
@@ -348,7 +358,7 @@ try {
   console.log('[persistence] IndexedDB-disabled client retains memory counts and exports CSV.');
 
   if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
-  assert.equal(await page.locator('#pageTitle').textContent(), 'Count crossings');
+  assert.equal(await page.locator('#pageTitle').textContent(), 'Choose your video source');
   assert.equal(await page.locator('#brandName').textContent(),'Passage Counter');
   assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
   assert.equal(await page.locator('#languageButton').textContent(),'JA');

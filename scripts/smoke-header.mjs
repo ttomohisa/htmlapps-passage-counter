@@ -23,6 +23,16 @@ try{
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(http+'/',{waitUntil:'domcontentloaded'});
+  assert(await page.locator('#cameraStart').isVisible(),'Camera starts from the entry screen');
+  assert(await page.locator('#chooseVideo').isVisible(),'A local video is a direct entry action');
+  assert(await page.locator('#cameraStage').isHidden(),'An empty feed must not take up the start screen');
+  assert(await page.locator('#counterSummary').isHidden(),'Start screen must not show inactive counters');
+  assert(await page.locator('#savedSessions').isHidden(),'Empty history should not compete with the two entry actions');
+  const picker=page.waitForEvent('filechooser');
+  await page.locator('#chooseVideo').click();
+  await (await picker).setFiles([]);
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'source','Cancelling keeps the entry screen');
+  assert(await page.locator('#cameraStart').isEnabled(),'Another source remains available after cancellation');
   const design=await page.evaluate(()=>{
     const header=document.querySelector('.app-header');
     const inner=document.querySelector('.header-inner');
