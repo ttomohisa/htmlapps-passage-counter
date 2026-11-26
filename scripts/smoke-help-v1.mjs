@@ -66,7 +66,7 @@ try{
       const initialY=await page.evaluate(()=>window.scrollY);
       await page.locator('#helpButton').click();
       await page.locator('#helpDialog').waitFor({state:'visible'});
-      await page.locator('#helpDialogBody').evaluate(el=>el.scrollTop=0);
+      assert.equal(await page.locator('#helpDialogBody').evaluate(el=>el.scrollTop),0,'Help opens at the first step');
       if([320,1280].includes(width))await page.screenshot({path:`test-results/help-copy/help-${lang}-${width}.png`});
       const state=await page.evaluate(()=>{
         const d=document.querySelector('#helpDialog');
@@ -99,9 +99,9 @@ try{
       assert(state.close.left>=state.dialog.left&&state.close.right<=state.dialog.right+1,
         'Help close X extends beyond the dialog');
       assert.equal(state.buttonCount,1,'Help needs one close control in its header');
-      assert.equal(state.headings.length,3,'Help groups starting, correcting/saving and important limits');
-      assert.equal(state.stepCount,4,'Start instructions cover source, line, camera check and counting');
-      assert(state.limitCount>=5,'Help must describe actual product limitations');
+      assert.equal(state.headings.length,3,'Help groups workflow, cautions and troubleshooting');
+      assert.equal(state.stepCount,4,'Instructions cover the four stages through export');
+      assert.equal(state.limitCount,4,'Cautions cover repeat crossings, accuracy, interruptions and storage');
       assert(state.bodyScrollHeight>state.bodyClientHeight,
         'Help body must be independently scrollable at '+width);
 
@@ -113,9 +113,20 @@ try{
       await page.mouse.wheel(0,400);
       assert.equal(await page.evaluate(()=>document.body.style.top),beforeWheel,
         'Scrolling within help shifted the background');
-      const required=lang==='ja'?/まずは4ステップ|知っておきたいこと/:/Start in four steps|Before you rely on the counts/;
-      assert(state.headings.some(h=>required.test(h)),'Localized help headings are wrong');
-      for(const key of ['helpStep5','helpStep6','helpImportant','helpLimitInterrupt']){
+      const urlBefore=page.url();
+      const labels=lang==='ja'?['注意事項','困ったとき','操作手順']:['Key cautions','Troubleshooting','How to use'];
+      for(const [i,id] of ['helpCautions','helpTroubleshooting','helpGuide'].entries()){
+        const link=page.locator('.help-nav').getByRole('link',{name:labels[i],exact:true});
+        await link.focus();await link.press('Enter');
+        const position=await page.locator('#'+id).evaluate(el=>{
+          const heading=el.getBoundingClientRect(),body=el.closest('.help-dialog-body').getBoundingClientRect();
+          return {focused:document.activeElement===el,visible:heading.top>=body.top-1&&heading.bottom<=body.bottom+1};
+        });
+        assert(position.focused&&position.visible,'Help navigation must focus a visible section: '+id);
+        assert.equal(page.url(),urlBefore,'Section navigation stays inside the dialog');
+        if(id==='helpCautions'&&width===320)await page.screenshot({path:`test-results/help-copy/cautions-${lang}-320.png`});
+      }
+      for(const key of ['helpStep5','helpStep6','helpImportant','helpLimitInterrupt','helpLimitStorage']){
         assert(await page.locator('[data-i18n="'+key+'"]').isVisible(),'Essential guidance stays expanded: '+key);
       }
       for(const topic of await page.locator('.help-topic').all()){

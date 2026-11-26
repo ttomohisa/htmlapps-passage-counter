@@ -73,6 +73,8 @@ Both are self-contained HTML files. The build also creates **passage-counter.htm
 
 ## How to use
 
+Open the **?** in the upper-right corner for step-by-step instructions, key cautions and troubleshooting.
+
 1. **Choose a source.** Fix the device in position and select Start camera for live counting. Choose a video opens a local recording. Open a previous count from Saved sessions.
 2. **Position the counting line.** Drag the line itself to translate it; adjust length and angle with the end circles. Reverse A/B if necessary.
 3. **Verify the setup (camera mode only).** Run the 30-second check to confirm that detection and direction make sense. Trial events are excluded from the actual count. Moving the line requires another check.
@@ -84,7 +86,7 @@ Both are self-contained HTML files. The build also creates **passage-counter.htm
 
 - Keep the page visible while counting. A hidden tab, camera interruption or device rotation can interrupt counting. Time that was not observed is recorded as **missing**, not as zero events.
 - Existing session records can be reopened from Saved sessions. Videos and persistent person IDs are not saved, so cameras and original video sources never resume automatically after reload.
-- After finishing a video, scrub or play it without changing its counts. Choose a recorded event to play from three seconds before it. When reopening a saved session, select the original video to review it. Starting a fresh analysis asks for confirmation before clearing the results.
+- To check a crossing, open **Review the recording** in Results. Pick an event to play from up to three seconds earlier with the counts intact. Reopening a saved session requires the original video for playback. Seeking during an unfinished count or choosing **Reanalyze from start** clears the counts and corrections if you confirm. Export first to keep a copy.
 - The app retains pending records in memory and retries temporary storage failures while the page is open. If the warning persists, export the CSVs before leaving.
 - Browser and origin storage are separate: a downloaded file, a hosted Preview and GitHub Pages do not automatically share saved records. Export any data you need to preserve.
 
