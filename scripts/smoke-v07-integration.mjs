@@ -2,6 +2,7 @@
 // bilingual error states, real bundled inference, CSV, CSP and cold offline HTML.
 // This is NOT an Android/iPhone or real 30-minute field test.
 import assert from 'node:assert/strict';
+import chooseVideo from './choose-video.cjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -59,9 +60,14 @@ async function assertCsp(page,label){
   assert.deepEqual(violations,[],'CSP violations in '+label);
 }
 async function waitCamera(page){
+  const diagnostics=[];
+  const onConsole=message=>{if(message.type()==='error')diagnostics.push(message.text());};
+  page.on('console',onConsole);
   await page.locator('#cameraStart').click();
-  await page.waitForFunction(()=>/計測準備完了|Ready to count/.test(
-    document.querySelector('#statusPill')?.textContent??''),null,{timeout:90000});
+  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#appMain').dataset.phase),null,{timeout:90000});
+  page.off('console',onConsole);
+  assert.equal(await page.locator('#appMain').getAttribute('data-phase'),'ready',
+    [await page.locator('#entryStatus').textContent(),...diagnostics].join('\n'));
   assert(await page.locator('#cameraFeed').evaluate(el=>el.videoWidth>0));
 }
 let tested=0;
@@ -105,23 +111,23 @@ try{
       await page.keyboard.press('Escape');
       assert(!(await page.locator('#helpDialog').isVisible()));
       // Unsupported local file: translated message survives a language switch.
-      await page.locator('#sourceMode').selectOption('file');
-      await page.locator('#videoFile').setInputFiles({
+      await chooseVideo(page,{
         name:'not-a-video.txt',mimeType:'text/plain',buffer:Buffer.from('not video')
       });
-      assert.match(await page.locator('#videoFileStatus').textContent(),/動画ファイルを選んで/);
+      await page.locator('#entryStatus').waitFor({state:'visible'});
+      assert.match(await page.locator('#entryStatus').textContent(),/動画ファイルを選んで/);
       await language(page,'en');
-      assert.match(await page.locator('#videoFileStatus').textContent(),/Choose a video file/);
-      await page.locator('#sourceMode').selectOption('camera');
-      await page.waitForFunction(()=>!document.querySelector('#sourceMode').disabled);
+      assert.match(await page.locator('#entryStatus').textContent(),/Choose a video file/);
       const start=Date.now();
       await waitCamera(page);
       console.log('[v07] '+channel+' first real embedded detector boot '+(Date.now()-start)+'ms on CI desktop');
       assert(await page.locator('#recognitionStatus').isVisible());
-      await page.locator('#testButton').click();
-      await page.locator('#testButton').click();
-      await page.locator('#beginCount').click();
-      await page.waitForFunction(()=>/Counting/.test(document.querySelector('#statusPill')?.textContent??''));
+      await page.locator('#dockStart').click(); // Run and finish the camera setup check.
+      assert.equal(await page.locator('#appMain').getAttribute('data-phase'),'testing');
+      await page.locator('#dockStart').click();
+      assert(await page.locator('#beginCount').isEnabled(),'The completed camera check allows counting');
+      await page.locator('#dockStart').click(); // Start counting from the phone dock.
+      assert.equal(await page.locator('#appMain').getAttribute('data-phase'),'counting',await page.locator('#statusDetails').textContent());
       await page.locator('#plusA').click();
       const count=Number(await page.locator('#countA').textContent());
       assert(count>=1,'Manual correction failed on '+channel);
@@ -138,7 +144,7 @@ try{
       assert(csv.startsWith('\ufeff'),'CSV BOM lost');
       assert(csv.includes('"manual_adjustment"')||csv.includes('"correction"'),
         'Manual event missing from export');
-      await page.locator('#pauseCount').click();
+      await page.locator('#dockPause').click();
       await language(page,'ja');
       assert.match(await page.locator('#statusPill').textContent(),/一時停止/);
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),

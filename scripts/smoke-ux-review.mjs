@@ -34,6 +34,7 @@ try{
    assert(await page.locator('#dockStart').isVisible());await page.locator('#dockStart').click();await page.locator('#dockStart').click();await page.locator('#dockStart').click();}
   else{await page.locator('#testButton').click();await page.locator('#testButton').click();await page.locator('#beginCount').click();}
   await page.waitForFunction(()=>document.querySelector('#appMain').dataset.phase==='counting');
+  assert(await page.locator('#timelineSection').isHidden(),'The timeline is out of the way while counting');
   await page.waitForFunction(()=>/^\d+(\.\d+)? fps$/.test(document.querySelector('#detectorInfo').textContent));
   const labels=await page.evaluate(()=>window.__canvasLabels);
   assert(labels.includes('A')&&labels.includes('B'));assert(!labels.some(t=>/A\s*→\s*B.*A\s*→\s*B|B\s*→\s*A.*B\s*→\s*A/.test(t)),'No repeated direction labels');
@@ -57,8 +58,11 @@ try{
    const geometry=await page.evaluate(()=>({frame:document.querySelector('#cameraStage').getBoundingClientRect().toJSON(),console:document.querySelector('.measure-console').getBoundingClientRect().toJSON()}));
    assert(geometry.console.left>=geometry.frame.right,'PC counts/actions adjacent to frame');
    await page.locator('#pauseCount').click();await page.locator('#beginCount').click();
-   const top=await page.locator('#counterHeading').boundingBox();
-   assert(top.y>=65&&top.y<150,'PC counting heading remains below the header after start/resume');
+   await page.waitForFunction(()=>document.activeElement?.id==='counterHeading');
+   const heading=await page.locator('#counterHeading').boundingBox();
+   const header=await page.locator('header').boundingBox();
+   assert(heading.y>=header.y+header.height-1&&heading.y+heading.height<page.viewportSize().height/2,
+     'The resumed count is visible near the top, clear of the sticky header');
   }
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:`test-results/ux-review/counting-${width}.png`,fullPage:false});

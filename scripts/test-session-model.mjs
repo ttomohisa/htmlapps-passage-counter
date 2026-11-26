@@ -125,4 +125,56 @@ pass('session never stores face, camera frame or persistent person ID',()=>{
  assert.equal(s.schemaVersion,1);assert.equal(s.sourceType,'camera');
  assert(s.runtimeInfo.wasmFlavor==='simd');
 });
+pass('video positions use the same buckets at different analysis speeds',()=>{
+  const events=[
+    {id:'a',direction:'A_TO_B',kind:'auto',delta:1,sourceTimeMs:0},
+    {id:'b',direction:'B_TO_A',kind:'auto',delta:1,sourceTimeMs:300000},
+    {id:'end',direction:'A_TO_B',kind:'correction',delta:1,sourceTimeMs:600000}
+  ];
+  const run=speed=>time.mediaAggregation(events.map((event,i)=>({
+    ...event,occurredAt:new Date(Date.UTC(2026,0,1)+speed*i).toISOString()
+  })),5,600000);
+  const fast=run(100),slow=run(400000);
+  assert.deepEqual(fast,slow);
+  assert.deepEqual(Array.from(fast,r=>[r.startMs,r.endMs,r.totalA,r.totalB]),
+    [[0,300000,1,0],[300000,600000,1,1]]);
+});
+pass('video buckets preserve unknown timestamps, reverse corrections in place and omit unobserved gaps',()=>{
+  const events=[
+    {id:'edit',kind:'correction',direction:'A_TO_B',delta:1,sourceTimeMs:303000},
+    {id:'undo',kind:'undo',undoOf:'edit',direction:'A_TO_B',delta:-1,sourceTimeMs:1080000},
+    {id:'legacy',kind:'auto',direction:'B_TO_A',delta:1},
+    {id:'unknown',kind:'correction',direction:'A_TO_B',delta:1,sourceTimeMs:null},
+    {id:'undo-unknown',kind:'undo',undoOf:'unknown',direction:'A_TO_B',delta:-1,sourceTimeMs:0},
+    {id:'later',kind:'auto',direction:'A_TO_B',delta:1,sourceTimeMs:1080000}
+  ];
+  const rows=time.mediaAggregation(events,5,1090312);
+  assert.deepEqual(Array.from(rows,r=>[r.startMs,r.endMs,r.totalA,r.totalB]),
+    [[300000,600000,0,0],[900000,1090312,1,0],[null,null,0,1]]);
+  assert.equal(time.mediaAggregation([],5,1090312).length,0);
+  assert.equal(time.mediaAggregation([events.at(-1)],15,null)[0].startMs,900000);
+  assert.equal(time.mediaAggregation([events.at(-1)],60,null)[0].endMs,3600000);
+});
+pass('interval export places EOF in the last interval and preserves wall clock exports for cameras and saved videos',()=>{
+  const session=base(),started=at('2026-10-11T10:00:00Z');
+  session.sourceType='file';session.runtimeInfo.sourceDurationMs=600000;
+  time.transition(session,'counting',started);
+  time.transition(session,'done',started+1200000);
+  const events=[{kind:'correction',direction:'A_TO_B',delta:1,sourceTimeMs:600000,
+    occurredAt:new Date(started+1190000).toISOString()}];
+  const fields={'#aggregationMinutes':{value:'5'},'#timeBasis':{value:'media'}};
+  const code=html.slice(html.indexOf('function usesMediaBuckets()'),html.indexOf('function mediaBoundaryText('))+
+    html.slice(html.indexOf('function exportIntervals('),html.indexOf('function exportBundle('));
+  const rows=vm.runInNewContext(code+';()=>exportIntervals(true)',{
+    currentSession:session,state:{startTime:started},$:id=>fields[id],timeline:time,ledger:{history:()=>events}
+  });
+  const media=rows();
+  assert.equal(media.length,2);
+  assert.deepEqual(Array.from(media[1]).slice(1,6),['video','interval',300000,600000,5]);
+  fields['#timeBasis'].value='wall';fields['#aggregationMinutes'].value='15';
+  const wall=rows(),counted=wall.find(r=>r[8]===1);
+  assert.equal(counted[3],15);assert.equal(counted[1],new Date(started+900000).toISOString());
+  session.sourceType='camera';fields['#timeBasis'].value='media';
+  assert.deepEqual(rows(),wall);
+});
 console.log('[sessions] '+passes+' scenario tests passed');

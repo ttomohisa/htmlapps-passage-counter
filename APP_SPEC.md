@@ -66,11 +66,13 @@
 
 ## 3. ユーザー体験
 
+画面は「映像・準備・計測・結果」の4段階とする。起動時は入力の選択、準備中は実映像と判定線の調整、計測中は方向別件数と補正・一時停止・終了、終了後は結果と書き出しを主操作とする。段階が変わったら新しい画面の見出し（映像選択に戻るときは説明文）へキーボードフォーカスを移す。同じ段階での補正・集計更新では操作位置を維持する。
+
 ### 3.1 初期画面
 
 - 製品名「Passage Counter / 通過カウンター」。
-- 説明: 「カメラを固定し、線を横切った人数を方向別に数えます。映像は保存・送信しません。」（通信監査完了後の製品文言）。
-- 主ボタン「カメラを開始」。副ボタン「前回の記録を見る」、動画入力搭載時のみ「動画から計測」。
+- 入力を選ぶボタンの前に、映像に引いた線を人が横切った回数を方向別に数えることを一文で説明する。
+- 「カメラを開始」と「動画を選ぶ」を直接操作できる。記録があるときは「保存した計測」に件数を添え、過去の計測を開ける。
 - 内包モデル展開と推論初期化時は「準備中」と表示。ダウンロード中という誤解を招かない。
 - カメラ未許可、カメラなし、WASMロード失敗等では原因・次の操作を提示。
 
@@ -81,7 +83,7 @@
 - 既定は画面中央の水平線。線が短すぎる・無効な位置にある場合は計測開始不可。
 - 画面上にA→B/B→Aを矢印と文字で表示。「方向を反転」で入れ替え。方向ラベルは「入店」「退店」等に変更可能。
 - 検出枠・足元追跡点の表示ON/OFF。画面は必要時のみ認識領域を表示。
-- 「設置をテスト」で試行してから「計測を開始」。テスト件数は本計測へ引き継がない。
+- カメラは「30秒チェックを開始」で試行してから「計測を開始」。動画では判定線を置いてすぐに開始できる。テスト件数は本計測へ引き継がない。
 - 設定は端末内保存可能。映像、カメラ個体の固有識別子、人物の画像は保存しない。
 - 判定線は動画フレーム固有の幅・高さに対して**正規化した座標**で保持する。`object-fit`の余白/切り抜き、前面カメラの鏡像表示、端末回転を座標変換で考慮する。
 
@@ -99,6 +101,7 @@
 
 ### 3.4 計測結果画面
 
+- 合計、方向別件数と補正、ZIP保存、新しい計測を先に表示する。内訳、個別CSV、動画の見返し、履歴はそれぞれ開いて使う。
 - セッション名、開始/終了日時、計測モード、壁時計経過・有効時間、欠測区間。
 - 方向別「自動カウント」「手動補正」「確定件数」。
 - 5分/15分/60分の棒グラフ・表。欠測をまたぐ区間は「一部欠測」「欠測」と表示し、0件と混同させない。
@@ -109,8 +112,8 @@
 ### 3.5 UI/処理状態
 
 ```text
-initial → loading_local_assets → ready → camera_request → configuring
-  → testing（任意）→ counting ↔ paused → finished → reviewed
+映像を選ぶ → 準備（カメラは設置チェック） → 計測 ⇄ 一時停止 → 結果
+保存した計測 → 結果または中断した計測
 
 exception: unsupported / camera_denied / runtime_error / interrupted / storage_error
 ```
@@ -194,6 +197,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 | `elapsedMs` | セッション開始からの経過ミリ秒。 |
 | `sourceTimeMs` | 動画ファイルの再生時刻。カメラではnull。 |
 | `direction` | `A_TO_B` / `B_TO_A`。 |
+| `directionLabel` | イベント発生時の方向名。設定変更後もイベントCSVにその値を出力する。 |
 | `kind` | `auto` / `manual_adjustment` / `undo_adjustment`。 |
 | `delta` | `+1`または`-1`。自動イベントは必ず+1。 |
 | `referenceEventId` | 補正の取り消し時に対象イベントを参照。 |
@@ -203,7 +207,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 - 手動補正は消去せず追加イベントとして記録し、Undoは相殺イベントで扱う。
 - IndexedDBへイベント発生時に逐次書き込み、必要に応じ周期チェックポイントを行う。実装上は `SessionV1` を `sessions`、イベント配列を別の `events` オブジェクトストアへ正規化する。同一トランザクションでイベントとセッションの整合性を保つ（[ADR-003](docs/ADR-003-LOCAL-PERSISTENCE.md)）。`pagehide`のみの保存には依存しない。
 - ブラウザクラッシュ時は最後に保存できたイベントまで復帰。停止していた時間は欠測、再開は明示操作。
-- 保存できない場合は「保存できません」と表示し、可能であればメモリ内結果からCSV救出。成功と誤表示しない。
+- 保存失敗時は未保存イベントをセッション別に保持し、履歴と合計を同じトランザクションで再保存する。成功するまで警告を表示し、メモリ内の結果からCSVを出力できる。
 - 時計の大きな変更を検出し、イベント順序は単調増加時刻と記録順で再現可能にする。
 
 ### 5.3 集計規則
@@ -298,6 +302,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 - Tab、Enter、Space、Escape操作、線のキーボード微調整、ダイアログフォーカス管理。
 - カウントが高頻度に変わってもスクリーンリーダーが読み上げ続けない制御。
 - 全状態・説明・CSVガイド・ヘルプを日本語/英語に対応。専門用語（WASM/ONNX等）は診断詳細に隔離。
+- ヘルプの目次から「操作手順」「注意事項」「困ったとき」へ移動できる。手順は結果の保存までを扱い、カメラの設置チェック、欠測の意味、保存失敗時のCSV出力、動画の見返しと再解析の違いを説明する。
 
 ## 10. エラーと境界条件
 
@@ -316,17 +321,18 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 | EX-11 | セッション0件 | 「イベントはありません」、欠測の有無も説明。 |
 | EX-12 | 0件で-1補正 | 0未満にできないと説明。 |
 | EX-13 | 動画が非対応/破損 | 読めない理由。ファイル変更・送信なし。 |
-| EX-14 | 動画シーク/ループ | 再解析確認、トラッカーと結果の再初期化。 |
+| EX-14 | 動画シーク/ループ | 計測中の位置変更・再解析は結果を消す前に確認。終了後は件数を保持して再生・シークできる。 |
 | EX-15 | 保存済み記録の削除 | 誤タップ防止の確認。 |
 
 ## 11. ローカル動画入力（v0.5.0で評価）
 
-**2026-10-11 Draft実装:** カメラとの入力切替、端末内ファイル選択・ドラッグ＆ドロップ、ブラウザ標準デコーダ、先頭からの動画通過解析、終了時の停止、実際の `sourceTimeMs` 出力、シーク・再解析前の確認、IndexedDBに動画内容を保存しない構成を実装した。[ADR-004](docs/ADR-004-LOCAL-VIDEO.md) を参照。5/15/60分の時間帯集計は実際に解析を行った時刻を示し、動画内時刻の集計とは区別して案内する。Chrome CIでは実動画の再生・解析経路を検証済み。Android/iOSの実機評価・現場精度評価は未完了で、正式採用判断は保留。
+端末内ファイルはブラウザ標準のデコーダで再生し、`sourceTimeMs` に通過を検出した動画位置を記録する。計測記録には映像を保存しない。[ローカル動画の導入時の設計](docs/ADR-004-LOCAL-VIDEO.md)を参照。
 
 
 - ローカル動画ファイルをブラウザ標準デコーダで開き、1本の線を設置して人物通過数を解析。
 - ファイル内容の送信/永続保存なし。必要な範囲でフレームをデコードし、ファイル全量の無駄なメモリ展開を避ける。
-- `sourceTimeMs`で動画位置を記録。シーク後は追跡時系列が破綻するため、「現在の結果を破棄して再解析しますか？」を確認。
+- `sourceTimeMs`で動画位置を記録。終了後のイベント選択は、その3秒前（最短で先頭）から見返し再生する。見返し中は自動加算を停止する。保存した終了済み計測は元の動画を再選択して見返せる。
+- 動画の時間帯集計は先頭からの5/15/60分区間を既定とし、記録がある区間を表示する。取り消しは元の補正と同じ区間に集計し、動画位置を特定できない記録は独立した行にまとめる。実時刻集計への切り替えに対応し、時間帯CSV・ZIPにも選んだ時間軸を使用する。
 - MP4/WebM等はブラウザ・OSでデコードできる形式のみ対応。FFmpeg内包/動画変換は別目的なのでv1.0に含めない。
 - **v1.0の追加候補**であり必須中核ではない。条件未達時は開発計画・仕様とUIを明示的に変更して後続版へ延期する。
 
@@ -386,7 +392,7 @@ exception: unsupported / camera_denied / runtime_error / interrupted / storage_e
 - Calibration reports actual samples, processing speed, directional test counts and a request to compare with observed crossings. No crossings does not distinguish no traffic from missed detection; no accuracy score is inferred.
 - Local video defaults to sequential 100 ms samples, including frame zero and the last decodable position. Processing waits for each seek and inference; this is not every-frame analysis or a guarantee against misses. Existing playback analysis remains selectable. Unknown duration falls back explicitly to playback mode. Pause, finish, source replacement and hidden tabs invalidate in-flight seeks.
 - Line placement offers horizontal/vertical/center presets. An optional rectangle is defined by left/right/top/bottom percentages (minimum 5% width/height); only foot points inside it enter tracking. The model still sees the full image. Leave observation space on both sides of the line. Invalid fields prevent starting. Area and method are recorded in configuration segments and restored when reviewing a session.
-- Timeline bars show directions separately; partial/missing buckets use hatching plus the existing text. For video, buckets continue to represent analysis wall-clock time, not media time.
+- Timeline bars show directions separately. Wall-clock buckets show partial or missing coverage using hatching and text. Video-time buckets show event counts.
 - Result summary includes final directional counts, active/missing duration and manual correction action count. Three existing BOM CSV exports can also be downloaded together in a native stored ZIP. A copy action exposes selectable text if Clipboard API access fails. No video is exported.
 - Existing unverified physical device/30-minute/100+ real crossing accuracy gates remain open. No dependency, model or CSP permission is changed.
 

@@ -23,6 +23,16 @@ try{
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(http+'/',{waitUntil:'domcontentloaded'});
+  assert(await page.locator('#cameraStart').isVisible(),'Camera starts from the entry screen');
+  assert(await page.locator('#chooseVideo').isVisible(),'A local video is a direct entry action');
+  assert(await page.locator('#cameraStage').isHidden(),'An empty feed must not take up the start screen');
+  assert(await page.locator('#counterSummary').isHidden(),'Start screen must not show inactive counters');
+  assert(await page.locator('#savedSessions').isHidden(),'Empty history should not compete with the two entry actions');
+  const picker=page.waitForEvent('filechooser');
+  await page.locator('#chooseVideo').click();
+  await (await picker).setFiles([]);
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'source','Cancelling keeps the entry screen');
+  assert(await page.locator('#cameraStart').isEnabled(),'Another source remains available after cancellation');
   const design=await page.evaluate(()=>{
     const header=document.querySelector('.app-header');
     const inner=document.querySelector('.header-inner');
@@ -46,8 +56,7 @@ try{
           iconWidth:icon.getBoundingClientRect().width,buttonWidth:rect.width,
           buttonHeight:rect.height};
       })(),
-      version:document.querySelector('#versionBadge').textContent,
-      text:document.querySelector('#pageTitle').textContent
+      version:document.querySelector('#versionBadge').textContent
     };
   });
   assert.equal(design.sticky,'sticky','Non-sticky BK header at '+width);
@@ -73,7 +82,9 @@ try{
     assert.equal(await page.locator('#brandName').textContent(),lang==='en'?'Passage Counter':'通過カウンター');
     assert.equal(await page.locator('#languageButton').textContent(),lang==='en'?'JA':'EN');
     assert.match(await page.locator('.local-badge').textContent(),lang==='en'?/local processing/i:/完全ローカル処理/);
-    assert((await page.locator('#pageTitle').textContent()).trim().length>8);
+    assert.equal(await page.locator('.page-intro :is(h1,h2)').count(),0);
+    assert(await page.getByRole('heading',{level:1,name:lang==='en'?'Passage Counter':'通過カウンター',exact:true}).isVisible());
+    assert.match(await page.locator('#entryIntro').textContent(),lang==='en'?/each direction/:/方向別/);
     assert(await page.locator('#helpButton').getAttribute('aria-label'));
     assert(await page.locator('#languageButton').getAttribute('aria-label'));
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),

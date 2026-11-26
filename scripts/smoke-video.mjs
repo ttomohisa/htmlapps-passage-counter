@@ -1,6 +1,7 @@
 // v0.5.0 Chrome E2E: true browser-encoded local WebM, not a mocked file.
 // Tests deterministic source/seek/count invariants and no movie persistence.
 import assert from 'node:assert/strict';
+import chooseVideo from './choose-video.cjs';
 import {readFile,writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {resolve} from 'node:path';
@@ -111,13 +112,9 @@ try{
   const fixture=Buffer.from(base64,'base64');
   console.log('[video] Browser-encoded WebM fixture bytes '+fixture.length);
   assert(fixture.length>1000);
-  await page.locator('#sourceMode').selectOption('file');
-  await page.locator('#videoSourceBox').waitFor({state:'visible'});
-  await page.locator('#videoFile').waitFor({state:'visible'});
-  await page.waitForFunction(()=>!document.querySelector('#videoFile').disabled,null,{timeout:8000});
-  assert(await page.locator('#cameraStart').isHidden(),'Camera action must disappear for local video');
-  await page.locator('#videoFile').setInputFiles({name:'synthetic-local.webm',mimeType:'video/webm',buffer:fixture});
+  await chooseVideo(page,{name:'synthetic-local.webm',mimeType:'video/webm',buffer:fixture});
   await awaitLoaded(page);
+  assert(await page.locator('#cameraStart').isHidden(),'Camera action must disappear for local video');
   assert(await page.locator('#videoSeek').isEnabled());
   assert(await page.locator('#testCard').isHidden(),'Camera calibration must not be required for recorded video');
   assert(await page.locator('#videoFileStatus').textContent().then(t=>t.includes('synthetic-local.webm')));
@@ -171,12 +168,36 @@ try{
   await page.waitForFunction(()=>document.querySelector('#report')?.hidden===false,
     null,{timeout:15000});
   console.log('[video] Reaching EOF automatically finalized counting without looping.');
+  assert.equal(await page.locator('#appMain').getAttribute('data-screen'),'result');
+  assert(await page.locator('#bundleButton').isVisible());
+  assert(await page.locator('#newSession').isVisible());
+  assert(await page.locator('#previewVideo').isHidden(),'Opening a finished result starts with its counts');
+  await page.locator('#resultExportDetails > summary').click();
   const evtDownload=page.waitForEvent('download');
   await page.locator('#downloadButton').click();
   const csv=await readFile(await(await evtDownload).path(),'utf8');
   assert(csv.startsWith('\ufeff'),'CSV should have UTF-8 BOM');
   assert(csv.includes('"source_time_ms"'),'Source media timestamp column absent');
   assert(csv.includes('"manual_adjustment"'),'Video correction audit row absent');
+  const recordedTotal=await page.locator('#countTotal').textContent();
+  await page.locator('#resultVideoDetails > summary').click();
+  const reviewEvent=page.locator('#reviewEvent');
+  assert(await page.locator('#previewVideo').isEnabled(),'Completed video must allow review playback');
+  await triggerSeek(page,800);
+  await page.waitForFunction(()=>!document.querySelector('#cameraFeed').seeking&&Number(document.querySelector('#videoSeek').value)>750);
+  assert(await page.locator('#confirmDialog').isHidden(),'Review seeking must retain results without confirmation');
+  const eventOption=reviewEvent.locator('option').nth(1);
+  assert.match(await eventOption.textContent(),/\d\d:\d\d:\d\d/);
+  await reviewEvent.selectOption({index:1});
+  await page.waitForFunction(()=>!document.querySelector('#cameraFeed').paused&&document.querySelector('#cameraFeed').currentTime<1);
+  await page.locator('#previewVideo').click();
+  assert.equal(await page.locator('#countTotal').textContent(),recordedTotal);
+  const reviewedDownload=page.waitForEvent('download');
+  await page.locator('#downloadButton').click();
+  assert.equal(await readFile(await(await reviewedDownload).path(),'utf8'),csv,'Review must leave the event log intact');
+  await page.locator('#reanalyzeVideo').click();
+  await page.locator('#cancelReset').click();
+  assert.equal(await page.locator('#countTotal').textContent(),recordedTotal);
   const summaryDownload=page.waitForEvent('download');
   await page.locator('#summaryButton').click();
   const summary=await readFile(await(await summaryDownload).path(),'utf8');
@@ -214,7 +235,36 @@ try{
     });
   assert(await page.locator('#videoPlayback').isHidden(),'Video persisted across reload');
   assert(await page.locator('#beginCount').isDisabled(),'Video session must never auto-restart');
+  await page.locator('#resultVideoDetails > summary').click();
   assert(await page.locator('#videoSourceBox').isVisible());
+  await page.waitForFunction(()=>!document.querySelector('#sourceMode').disabled&&!document.querySelector('#videoFile').disabled,
+    null,{timeout:5000});
+  async function reattachOriginal(){
+    const picker=page.waitForEvent('filechooser');
+    await page.locator('#videoFile').click();
+    await (await picker).setFiles({name:'synthetic-local.webm',mimeType:'video/webm',buffer:fixture});
+  }
+  await reattachOriginal();
+  await page.locator('#reviewEvent').waitFor({state:'visible'});
+  assert.equal(await page.locator('#countTotal').textContent(),recordedTotal);
+  assert(await page.locator('#report').isVisible(),'Attaching the original file must keep the saved analysis open');
+  await page.locator('#reviewEvent').selectOption({index:1});
+  await page.waitForFunction(()=>!document.querySelector('#cameraFeed').paused);
+  assert(await page.locator('#beginCount').isDisabled());
+  await page.locator('#removeVideo').click();
+  assert(await page.locator('#videoPlayback').isHidden());
+  assert(await page.locator('#report').isVisible(),'Closing a review video must retain the finished report');
+  await reattachOriginal();
+  await page.locator('#reviewEvent').waitFor({state:'visible'});
+  await page.locator('#previewVideo').click();
+  await page.locator('#resultExportDetails > summary').click();
+  await page.locator('#resetButton').click();
+  await page.locator('#confirmReset').click();
+  await page.waitForFunction(()=>!document.querySelector('#beginCount').disabled);
+  assert(await page.locator('#cameraFeed').evaluate(v=>v.paused),'Reset must stop review playback');
+  assert.equal(await page.locator('#countTotal').textContent(),'0');
+  await startAnalysis(page);
+  await page.waitForFunction(()=>!document.querySelector('#report').hidden,null,{timeout:15000});
   console.log('[video] IndexedDB restores counts and timestamps, without retaining video.');
   await page.setViewportSize({width:320,height:640});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),
@@ -226,10 +276,7 @@ try{
   // Local file HTML: actual model/WASM/video decoding with no HTTP requests.
   const local=await context.newPage();observe(local,'file');
   await local.goto(pathToFileURL(resolve('dist/index.html')).href,{waitUntil:'domcontentloaded'});
-  await local.locator('#sourceMode').selectOption('file');
-  await local.locator('#videoSourceBox').waitFor({state:'visible'});
-  await local.waitForFunction(()=>!document.querySelector('#videoFile').disabled,null,{timeout:8000});
-  await local.locator('#videoFile').setInputFiles({name:'local-file-webm.webm',mimeType:'video/webm',buffer:fixture});
+  await chooseVideo(local,{name:'local-file-webm.webm',mimeType:'video/webm',buffer:fixture});
   await awaitLoaded(local);
   await startAnalysis(local);
   await local.locator('#plusA').click();
@@ -240,19 +287,16 @@ try{
   // Verify drag/drop and unsupported file choices without ever uploading.
   const dropPage=await context.newPage();observe(dropPage,'drop');
   await dropPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
-  await dropPage.locator('#sourceMode').selectOption('file');
-  await dropPage.locator('#videoSourceBox').waitFor({state:'visible'});
-  await dropPage.waitForFunction(()=>!document.querySelector('#videoFile').disabled);
-  await dropPage.locator('#videoFile').setInputFiles({
+  await chooseVideo(dropPage,{
     name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('not a video')
   });
   await dropPage.waitForFunction(()=>/動画ファイルを選んでください|Choose a video file/.test(
-    document.querySelector('#videoFileStatus')?.textContent??''));
+    document.querySelector('#entryStatus')?.textContent??''));
   await dropPage.evaluate(value=>{
     const bytes=Uint8Array.from(atob(value),c=>c.charCodeAt(0));
     const transfer=new DataTransfer();
     transfer.items.add(new File([bytes],'dropped-movie.webm',{type:'video/webm'}));
-    document.querySelector('#videoSourceBox').dispatchEvent(
+    document.querySelector('#chooseVideo').dispatchEvent(
       new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:transfer}));
   },base64);
   await awaitLoaded(dropPage);

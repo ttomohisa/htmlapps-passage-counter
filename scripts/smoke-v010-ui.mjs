@@ -48,6 +48,35 @@ async function pointerDrag(page,source,dx,dy){
 }
 const close=(n,m,tolerance=1.4)=>assert(Math.abs(n-m)<=tolerance,
  'Expected '+n+' to be within '+tolerance+'px of '+m);
+async function verifyCorrectionLayout(page){
+  for(const key of ['A','B']){
+    const {minus,plus,count,tile}=await page.locator('#count'+key).evaluate(el=>{
+      const tile=el.closest('.counter');
+      const [minus,plus]=tile.querySelectorAll('button');
+      return Object.fromEntries(Object.entries({minus,plus,count:el,tile}).map(([k,node])=>[k,node.getBoundingClientRect().toJSON()]));
+    });
+    assert(minus.width>=44&&minus.height>=44&&plus.width>=44&&plus.height>=44);
+    assert(minus.left>=tile.left-1&&plus.right<=tile.right+1&&minus.right<=plus.left+1);
+    assert(count.right<=minus.left+1||count.bottom<=minus.top+1,'Corrections must not overlap their count');
+  }
+  assert(await page.locator('.total #undoCorrection').isVisible(),'Undo is beside the total');
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  const stress=await page.evaluate(()=>{
+    const label=document.querySelector('#displayLabelA'),count=document.querySelector('#countA');
+    const saved=[label.textContent,count.textContent,count.dataset.digits];
+    label.textContent='A→B 長い方向名・複数の通過カウンター表示';
+    count.textContent='999999';count.dataset.digits='6';
+    const rect=node=>node.getBoundingClientRect();
+    const digits=document.createRange();digits.selectNodeContents(count);
+    const value=digits.getBoundingClientRect(),tile=rect(count.closest('.counter')),adjust=rect(document.querySelector('#minusA'));
+    const fits=value.left>=tile.left-1&&value.right<=tile.right+1&&rect(label).right<=tile.right+1&&
+      (value.right<=adjust.left+1||value.bottom<=adjust.top+1)&&document.documentElement.scrollWidth<=innerWidth+1;
+    [label.textContent,count.textContent]=saved;
+    if(saved[2]===undefined)delete count.dataset.digits;else count.dataset.digits=saved[2];
+    return {fits,value:value.toJSON(),tile:tile.toJSON(),adjust:adjust.toJSON(),width:innerWidth};
+  });
+  assert(stress.fits,'Large counts and long direction labels fit inside the tile '+JSON.stringify(stress));
+}
 try{
  await mkdir('dist/screenshots',{recursive:true});
  const ctx=await browser.newContext({
@@ -68,43 +97,13 @@ try{
  assert(await page.locator('#testCard').isVisible());
  assert(await page.locator('#testButton').isEnabled());
  assert(await page.locator('#beginCount').isHidden());
- const geometryDesktop=await page.evaluate(()=>{
-   const rect=id=>document.querySelector(id).getBoundingClientRect().toJSON();
-   const result={
-     preview:rect('#cameraStage'),measure:rect('.measure-console'),
-     cardA:rect('#countA'),cardB:rect('#countB'),
-     tileA:null
-   };
-   result.tileA=document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON();
-   result.tileB=document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON();
-   for(const id of ['minusA','plusA','minusB','plusB','undoCorrection','countTotal'])
-     result[id]=rect('#'+id);
-   result.total=rect('.total');
-   return result;
- });
- assert(geometryDesktop.preview.left<geometryDesktop.measure.left&&
-   geometryDesktop.measure.top<=geometryDesktop.preview.top,
-   'Desktop counter must stay adjacent to the camera');
- for(const [card,minus,plus,number] of [
-   ['tileA','minusA','plusA','cardA'],['tileB','minusB','plusB','cardB']]){
-   const tile=geometryDesktop[card],m=geometryDesktop[minus],p=geometryDesktop[plus],n=geometryDesktop[number];
-   assert(m.left>=n.right-1&&m.top<p.top&&p.top>=m.bottom-1&&
-     m.right<=tile.right+1&&p.right<=tile.right+1&&p.bottom<=tile.bottom+1,
-     'Quick correction buttons must remain within the right side of each count tile');
-   assert(m.width>=44&&p.width>=44&&m.height>=44&&p.height>=44,
-     'Quick correction buttons need 44px touch targets');
- }
- assert(geometryDesktop.undoCorrection.top>=geometryDesktop.total.top-1&&
-   geometryDesktop.undoCorrection.bottom<=geometryDesktop.total.bottom+1,
-   'Undo must sit alongside the total, not in another panel');
- assert(await page.evaluate(()=>
-   document.querySelector('#plusA').closest('.counter')?.contains(document.querySelector('#countA'))&&
-   document.querySelector('#minusB').closest('.counter')?.contains(document.querySelector('#countB'))&&
-   document.querySelector('#undoCorrection').closest('.total')!==null&&
-   document.querySelector('#correctionPanel').classList.contains('counter-grid')&&
-   document.querySelector('.export-panel').closest('.support-panel')!==null),
-   'Quick correction controls / export must have the right DOM owners');
- console.log('[v010] Desktop quick corrections occupy each tile top-right; Undo is beside the total.');
+ assert(await page.locator('#counterSummary').isHidden(),'No empty counter while placing the line');
+ assert(await page.locator('#lineToolsHeading').isVisible());
+ assert(await page.locator('#inputOptions').isVisible());
+ await page.locator('#inputOptions').click();
+ assert(await page.locator('#sourceMode').isVisible(),'Input options stay reachable after connecting');
+ await page.locator('#inputOptions').click();
+ assert(await page.locator('#sourceMode').isHidden());
  // Starting the camera button can scroll the stage above the viewport;
  // bring the gesture target back into view before physical pointer input.
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
@@ -182,6 +181,7 @@ try{
  assert(await page.locator('#testCard').isHidden());
  assert(await page.locator('#pauseCount').isVisible());
  assert(await page.locator('#finishCount').isVisible());
+ await verifyCorrectionLayout(page);
  assert(await page.locator('#lineGestureLayer').isHidden());
  await page.locator('#cameraStage').scrollIntoViewIfNeeded();
  const locked=await frame(page);
@@ -209,85 +209,21 @@ try{
  console.log('[v010] Counting locks line edits; pause makes the line editable again.');
  await ctx.close();
 
- // Mobile: correct workflow order, no fixed overlay, no overflowing controls;
+ // Mobile: correct workflow order, reachable dock actions, no overflowing controls;
  // actual touch drag via Chromium input dispatch, not synthetic JS events.
  for(const width of [320,360,390,820]){
   const context=await browser.newContext({viewport:{width,height:844},
    permissions:['camera'],serviceWorkers:'block',hasTouch:true,isMobile:true});
   const mobile=await context.newPage();observe(mobile,'mobile-'+width);
   await mobile.goto(origin+'/',{waitUntil:'domcontentloaded'});
-  const geometry=await mobile.evaluate(()=>{
-   const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();
-   return {
-     stage:rect('#cameraStage'),measure:rect('.measure-console'),summary:rect('#counterSummary'),
-     cardA:rect('#countA'),cardB:rect('#countB'),
-     tileA:document.querySelector('#countA').closest('.counter').getBoundingClientRect().toJSON(),
-     tileB:document.querySelector('#countB').closest('.counter').getBoundingClientRect().toJSON(),
-     minusA:rect('#minusA'),plusA:rect('#plusA'),
-     minusB:rect('#minusB'),plusB:rect('#plusB'),
-     undo:rect('#undoCorrection'),total:rect('.total'),
-     next:rect('#nextAction'),extras:rect('.setup-extras'),
-     exports:rect('.support-panel'),
-     scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,
-     touchAction:getComputedStyle(document.querySelector('#cameraStage')).touchAction
-   };
-  });
-  assert(geometry.scrollWidth<=geometry.viewWidth+1,'Mobile overflow at '+width);
-  assert(geometry.summary.top<=geometry.tileA.top&&
-    geometry.tileA.bottom<=geometry.total.top+1&&
-    geometry.total.bottom<=geometry.stage.top+1&&
-    geometry.stage.top<geometry.measure.top&&
-    geometry.measure.bottom<geometry.extras.top&&
-    geometry.extras.top<geometry.exports.top,
-    'Counters and quick corrections must precede setup/settings/exports at '+width);
-  for(const [tileKey,minusKey,plusKey,numberKey] of [
-    ['tileA','minusA','plusA','cardA'],['tileB','minusB','plusB','cardB']]){
-    const card=geometry[tileKey],minus=geometry[minusKey],plus=geometry[plusKey],num=geometry[numberKey];
-    assert(minus.width>=44&&minus.height>=44&&plus.width>=44&&plus.height>=44,
-      'Quick corrections need 44px touch targets at '+width);
-    assert(minus.left>=num.right-1&&minus.top<plus.top&&
-      plus.top>=minus.bottom-1&&plus.bottom<=card.bottom+1&&
-      minus.right<=card.right+1&&plus.right<=card.right+1,
-      'Quick corrections overlap the count or escape tile at '+width);
-  }
-  assert(geometry.undo.height>=44&&
-    geometry.undo.top>=geometry.total.top-1&&
-    geometry.undo.bottom<=geometry.total.bottom+1&&
-    geometry.undo.right<=geometry.summary.right+1&&
-    geometry.exports.right<=geometry.viewWidth+1,
-    'Undo or export clips the card at '+width);
-  assert(await mobile.locator('#testCard').isHidden(),
-    'Setup check must remain hidden until a camera is ready');
-  assert(geometry.measure.right<=geometry.viewWidth+1,
-    'Mobile count panel overflows horizontally at '+width);
-  // DOM-only stress verifies that a long custom label and a large count remain
-  // within the direction tile. Never place synthetic events in the real ledger.
-  const stressed=await mobile.evaluate(()=>{
-    const a=document.querySelector('#displayLabelA'),n=document.querySelector('#countA');
-    const previousLabel=a.textContent,previousValue=n.textContent,previousDigits=n.dataset.digits;
-    a.textContent='A→B 長い方向名・複数の通過カウンター表示';
-    n.textContent='999999';n.dataset.digits='6';
-    const overflow=document.documentElement.scrollWidth>innerWidth+1;
-    const number=n.getBoundingClientRect(),button=document.querySelector('#minusA').getBoundingClientRect();
-    const overlap=number.right>button.left+1;
-    a.textContent=previousLabel;n.textContent=previousValue;
-    if(previousDigits===undefined)delete n.dataset.digits;else n.dataset.digits=previousDigits;
-    return {overflow,overlap};
-  });
-  assert(!stressed.overflow&&!stressed.overlap,
-    'Long direction label or large count clips quick controls at '+width);
-  assert((await mobile.locator('#appMain').getAttribute('data-next'))==='camera',
-    'Initial state should make Start camera the next action');
-  assert.equal(geometry.touchAction,'pan-y','Blank video area should allow phone page scrolling');
+  assert(await mobile.locator('#counterSummary').isHidden(),'Source screen must not expose unused counters');
+  assert(await mobile.locator('#testCard').isHidden());
+  await ready(mobile);
+  assert(await mobile.locator('#dockStart').isVisible(),'The primary setup action belongs in the mobile dock');
+  assert(await mobile.locator('#testButton').isHidden(),'No duplicate calibration action');
+  assert(await mobile.locator('#counterSummary').isHidden(),'Setup reserves the frame for the counting line');
+  assert.equal(await mobile.locator('#cameraStage').evaluate(el=>getComputedStyle(el).touchAction),'pan-y');
   if(width===390){
-   await ready(mobile);
-   assert(await mobile.locator('#testCard').isVisible());
-   assert(await mobile.evaluate(()=>{
-     const c=document.querySelector('#countA').getBoundingClientRect();
-     const t=document.querySelector('#testCard').getBoundingClientRect();
-     const b=document.querySelector('#beginCount');
-     return c.top<t.top&&b.getBoundingClientRect().height===0;
-   }),'Test CTA should appear below visible count but before real-count action');
    await mobile.locator('#cameraStage').scrollIntoViewIfNeeded();
    const original=await frame(mobile);
    const cdp=await context.newCDPSession(mobile);
@@ -301,6 +237,11 @@ try{
    close(after.y1-original.y1,after.y2-original.y2);
    console.log('[v010] Mobile 390px actual touch drag keeps line angle and length.');
   }
+  await mobile.locator('#dockStart').click();
+  await mobile.locator('#dockStart').click();
+  await mobile.locator('#dockStart').click();
+  await mobile.waitForFunction(()=>document.querySelector('#appMain').dataset.phase==='counting');
+  await verifyCorrectionLayout(mobile);
   await context.close();
   console.log('[v010] '+width+'px layout order and safe horizontal geometry passed.');
  }

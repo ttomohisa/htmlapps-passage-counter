@@ -139,7 +139,8 @@ dialog::backdrop{background:#0a1c1866}dialog h2{margin:0 0 10px}dialog p,dialog 
 .saved-session .row{flex-shrink:0}
 .saved-session button{min-height:44px}
 .timeline-card{margin-top:15px}
-.timeline-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.timeline-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.timeline-head h2{margin-right:auto}
 .timeline-head label{display:flex;align-items:center;gap:8px}
 .timeline-head select{width:auto;min-width:112px}
 .timeline-list{display:grid;gap:8px;margin-top:10px}
@@ -202,14 +203,12 @@ html{min-height:100%;background:var(--background)}
 .header-icon-button:active{transform:none;opacity:.65}
 .shell.main{padding:22px clamp(14px,2.8vw,30px) 54px}
 .page-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:0 2px 18px}
-.page-intro .hero-copy{min-width:0;flex:1 1 auto}
-.page-intro h1{font-size:clamp(21px,3vw,26px);font-weight:750;letter-spacing:-.025em;line-height:1.3;margin:0;overflow-wrap:anywhere}
 .page-intro p{max-width:760px;margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
 .local-badge{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;margin-top:3px;padding:7px 0;border:0;border-radius:0;color:var(--brand);background:transparent;font-size:12px;font-weight:500;white-space:nowrap}
 .local-badge svg{width:15px;height:15px;display:block}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--focus) 60%,transparent);outline-offset:2px}
 @media(max-width:820px){.page-intro{align-items:stretch;flex-direction:column;gap:10px}.local-badge{align-self:flex-start}}
-@media(max-width:520px){.header-inner{gap:10px}.brand-name{font-size:15px}.brand-meta{font-size:11px}.header-actions{gap:7px}.shell.main{padding:18px 14px 36px}.page-intro{padding-bottom:14px}.page-intro h1{font-size:23px}}
+@media(max-width:520px){.header-inner{gap:10px}.brand-name{font-size:15px}.brand-meta{font-size:11px}.header-actions{gap:7px}.shell.main{padding:18px 14px 36px}.page-intro{padding-bottom:14px}}
 @media(max-width:340px){.brand-meta{max-width:172px}.header-actions{gap:3px}.brand-name{font-size:14px}.version-badge{font-size:9px;padding:1px 4px}}
 
 
@@ -229,7 +228,6 @@ html{min-height:100%;background:var(--background)}
 body{background:var(--background);color:var(--text);font-size:14px}
 .shell.main{max-width:1240px;padding-top:24px;padding-bottom:48px}
 .page-intro{padding:0 0 18px;gap:16px}
-.page-intro h1{font-size:clamp(22px,2.8vw,29px);letter-spacing:-.035em}
 .page-intro p{max-width:630px;font-size:13px}
 
 .setup-flow{margin:0 0 17px;gap:6px;align-items:center}
@@ -370,7 +368,6 @@ footer{max-width:1240px;padding-top:3px}
 @media(max-width:610px){
   footer{display:none}
   .page-intro{padding:0 1px 15px;gap:10px}
-  .page-intro h1{font-size:21px}
   .page-intro p{font-size:12px}
   .local-badge{font-size:11px}
   .setup-flow{margin-bottom:13px;gap:6px}
@@ -682,26 +679,35 @@ body.help-scroll-locked{
 @media (max-width:767px),(pointer:coarse) and (max-height:600px){
   .file-fallback-button{display:block}
 }
+#helpDialog .help-nav{
+  display:flex;align-items:stretch;flex:0 0 auto;gap:12px;padding:0 16px;
+  background:#f2f6f1;border-bottom:1px solid var(--border);
+}
+#helpDialog .help-nav a{
+  display:inline-flex;align-items:center;min-height:44px;color:var(--brand-dark);
+  font-size:13px;font-weight:650;text-decoration:underline;text-underline-offset:3px;
+}
 #helpDialog .help-dialog-body{
   min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   padding:18px 19px calc(26px + env(safe-area-inset-bottom));
 }
 #helpDialog .help-dialog-body h3{
-  font-size:14px;line-height:1.45;margin:24px 0 7px;
+  font-size:17px;line-height:1.45;margin:24px 0 10px;scroll-margin-block-start:10px;
   border-top:1px solid var(--border);padding-top:17px;
 }
 #helpDialog .help-dialog-body h3:first-child{margin-top:0;padding-top:0;border-top:0}
 #helpDialog .help-dialog-body p,#helpDialog .help-dialog-body li{
-  color:var(--muted);font-size:13px;line-height:1.7;overflow-wrap:anywhere;
+  color:#42554c;font-size:14px;line-height:1.65;overflow-wrap:anywhere;
 }
 #helpDialog .help-dialog-body p{margin:7px 0 0}
 #helpDialog .help-dialog-body ol,#helpDialog .help-dialog-body ul{margin:7px 0 0;padding-left:21px}
 #helpDialog .help-steps li{padding:0 0 14px 4px}
 #helpDialog .help-steps li:last-child{padding-bottom:0}
 #helpDialog .help-steps li::marker{color:var(--brand);font-weight:700}
-#helpDialog .help-steps strong{display:block;color:var(--text);font-size:14px}
-#helpDialog .help-steps p{margin-top:3px}
+#helpDialog :is(.help-steps,.help-cautions) strong{display:block;color:var(--text);font-size:14px}
+#helpDialog :is(.help-steps,.help-cautions) p{margin:3px 0 0}
+#helpDialog .help-steps p+p{margin-top:6px}
 #helpDialog .help-dialog-body ul li+li{margin-top:9px}
 #helpDialog .help-topic{border-top:1px solid var(--border);margin-top:12px;padding-top:3px}
 #helpDialog .help-topic summary{cursor:pointer;min-height:44px;padding:11px 0;box-sizing:border-box;color:var(--brand);font-size:13px;font-weight:700;line-height:1.6;overflow-wrap:anywhere}
@@ -774,7 +780,7 @@ body.help-scroll-locked{
 @media(min-width:821px){.workspace>.measure-console{position:sticky;top:82px}.camera-stage{max-height:62dvh;aspect-ratio:16/9}.video-panel .operation-tools,.video-panel .operation-note,.video-panel .latest-crossing{margin-left:20px;margin-right:20px}}
 @media(max-width:820px){
  .local-badge{display:none!important}
- .page-intro{gap:0;padding-bottom:14px}.page-intro h1{font-size:22px}
+ .page-intro{gap:0;padding-bottom:14px}
  .workspace>.video-panel{padding-bottom:12px}.workspace-topline{padding:13px 14px 10px}
  .video-panel>.counter-summary{margin:0 12px 10px}
  .workspace .counter-summary .measure-heading{margin:0 0 8px;gap:8px}
@@ -808,6 +814,278 @@ body.help-scroll-locked{
  .setup-extras{scroll-margin-top:80px}
 }
 
+/* Source selection and the shared workflow indicator. */
+.workflow-progress{display:flex;align-items:center;padding:0;list-style:none;margin:4px 0 26px;max-width:780px;color:#65706b}
+.workflow-progress li{display:flex;align-items:center;gap:9px;min-width:0;font-size:13px;font-weight:600;white-space:nowrap}
+.workflow-progress li:not(:last-child){flex:1}
+.workflow-progress li:not(:last-child)::after{content:"";height:1px;flex:1;background:#cbd4cc;margin:0 15px 0 6px}
+.workflow-progress .step-index{display:grid;place-items:center;border:1px solid #b4bfb8;width:24px;height:24px;border-radius:50%;font:600 12px/1 system-ui;font-variant-numeric:tabular-nums}
+.workflow-progress li[aria-current]{color:#154e3c}
+.workflow-progress li[aria-current] .step-index{background:#175841;border-color:#175841;color:#fff}
+#appMain[data-screen="source"] .workspace,#appMain[data-screen="source"] #report,#appMain[data-screen="source"] #timelineSection,
+#appMain[data-screen="source"] #savedSessions:not([data-has-records]),#appMain[data-screen="source"] #newSession{display:none}
+#appMain:not([data-screen="source"]) #entrySource,#appMain:not([data-screen="source"]) .page-intro{display:none}
+#appMain[data-screen="source"] .page-intro{display:flex;align-items:baseline;padding:0 0 16px}
+#appMain[data-screen="source"] .page-intro p{font-size:15px;line-height:1.7;color:#35493e;margin:0;text-wrap:balance}
+.entry-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:#fff;border:1px solid #ccd5cc;border-radius:15px;overflow:hidden}
+.entry-choices{padding:26px 30px;align-self:center}
+.entry-choices button.entry-choice{width:100%;display:grid;grid-template-columns:46px minmax(0,1fr) 18px;gap:15px;align-items:center;min-height:82px;text-align:left;padding:15px;border-radius:10px;font-size:17px;line-height:1.4}
+.entry-choices .entry-choice.primary{background:#16553f;color:#fff;border-color:#16553f}
+.entry-choices .entry-choice.primary:hover:enabled{background:#10432f}
+.entry-choices .video-choice{background:white;color:#163a2b;border:1px solid #adbbb1;margin-top:10px}
+.entry-choices .video-choice:hover:enabled,.entry-choices .video-choice[data-active="true"]{background:#edf5ef;border-color:#347756}
+.entry-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:9px;background:#e8f0e9;color:#225e45}
+.entry-icon svg{width:23px;height:23px}
+.entry-choice.primary .entry-icon{background:#337055;color:white}
+.entry-choice .entry-label{display:block;font-weight:720}
+.entry-choice .entry-detail{display:block;font-size:12px;font-weight:450;margin-top:3px;color:#53665b}
+.entry-choice.primary .entry-detail{color:#e2efe6}
+.entry-arrow{width:18px;height:18px}
+.entry-choices .file-fallback-button{width:auto;margin:0;padding:5px 0;border:0;color:var(--brand);background:transparent;text-decoration:underline;text-underline-offset:3px;font-size:12px}
+#cameraActions .entry-icon,#cameraActions .entry-detail,#cameraActions .entry-arrow{display:none}
+.entry-figure{margin:0;background:#173e30;color:#edf8ec;display:flex;flex-direction:column;justify-content:center;padding:22px 30px 18px}
+.entry-figure svg{width:100%;height:136px;display:block}
+.entry-figure figcaption{padding-top:10px;margin:8px 0 0;border-top:1px solid #45705b;font-size:13px;line-height:1.6;color:#dfede2}
+.entry-status{padding:12px 14px;margin:16px 0 0;border:1px solid #b9cec1;border-radius:8px;color:#214d39;background:#f1f7f2;font-size:14px}
+.entry-status[data-error="true"]{color:#793f25;background:#fff5ed;border-color:#d8b9a4}
+.entry-history{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-top:8px;font-size:14px;color:#235a42;text-underline-offset:4px}
+.entry-history[hidden]{display:none}
+#savedHeading{scroll-margin-top:90px}
+@media(max-width:820px){
+ .workflow-progress{margin:3px 0 18px;max-width:none}
+ .workflow-progress li{gap:5px;font-size:12px}
+ .workflow-progress li:not(:last-child)::after{margin:0 8px 0 3px}
+ .workflow-progress .step-index{width:21px;height:21px;font-size:11px}
+ .entry-choices,.entry-figure{padding:18px}
+}
+@media(max-width:610px){
+ .entry-body{grid-template-columns:1fr}
+ .entry-choices{padding:14px}
+ .entry-choices button.entry-choice{min-height:69px;grid-template-columns:38px minmax(0,1fr) 16px;gap:10px;padding:10px 12px;font-size:16px}
+ .entry-icon{width:38px;height:38px}
+ .entry-figure{padding:13px 17px}
+ .entry-figure svg{height:98px}
+ .entry-figure figcaption{margin-top:6px;padding-top:8px;font-size:12px}
+ #appMain[data-screen="source"] .page-intro p{font-size:14px}
+}
+@media(max-width:380px){
+ .workflow-progress li{gap:4px;font-size:11px}
+ .workflow-progress li:not(:last-child)::after{margin:0 4px}
+}
+/* In the two working screens the preview and the tools for the current task
+   share a workbench. The phone dock provides the primary action on narrow screens. */
+.line-tools,#inputOptions{display:none}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .workspace{
+  grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr);gap:14px 24px;
+}
+#appMain[data-screen="setup"] .workspace{grid-template-areas:"video measure" "video setup";align-content:start}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) :is(.video-panel,.measure-console,.setup-extras){
+  border-radius:10px;box-shadow:none;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .video-panel{
+  background:#162d29;color:#f0f4ed;border:1px solid #203c34;padding:0 0 6px;overflow:hidden;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .workspace-topline{padding:6px 16px;min-height:50px;gap:12px}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #cameraHeading{font-size:15px;color:#f8fbf5}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #statusPill{
+  background:transparent;border:0;color:#d9e6de;padding:0;margin-left:auto;font-weight:600;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #statusPill::before{
+  content:"";display:inline-block;vertical-align:middle;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#b2c7bb;
+}
+#appMain[data-screen="measure"] #statusPill[data-kind="active"]::before{background:#a5e5ad}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #statusPill[data-kind="error"]::before{background:#ffb293}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .camera-stage{
+  border:0;border-radius:0;margin:0;min-height:0;aspect-ratio:16/9;background:#101916;box-shadow:none;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .video-footer{
+  margin:0;padding:6px 16px;min-height:30px;color:#dce8e0;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) :is(#recognitionStatus,.processing-speed,.latest-crossing){
+  color:#dce8e0;font-size:12px;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .latest-crossing{margin:9px 16px 0}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .media-controls:has(#videoPlayback:not([hidden])){
+  background:#f7f9f5;color:var(--text);padding:12px 16px 8px;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .file-controls{border:0;background:none;padding:0}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .file-controls label{color:var(--text)}
+#appMain:is([data-screen="setup"],[data-screen="measure"])[data-has-source="true"] #inputOptions{
+  display:inline-flex;align-items:center;gap:7px;min-height:44px;border:0;border-radius:4px;
+  padding:6px;color:#eaf2ec;background:transparent;font-size:12px;font-weight:650;
+}
+#inputOptions::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-2px) rotate(45deg)}
+#inputOptions[aria-expanded="true"]::after{transform:translateY(2px) rotate(225deg)}
+#appMain[data-screen="measure"][data-focused="true"] #inputOptions,
+#appMain:is([data-screen="setup"],[data-screen="measure"])[data-has-source="true"] .video-panel:has(#inputOptions[aria-expanded="false"]) :is(.source-bar,#videoSourceBox,#cameraLaunch){display:none}
+#appMain[data-screen="measure"][data-has-source="false"] :is(.source-bar,#cameraLaunch),
+#appMain[data-screen="measure"][data-has-source="false"] #videoSourceBox:not([hidden]){display:block}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .source-bar,
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #cameraLaunch,
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #videoSourceBox{
+  background:#f6f8f3;color:var(--text);margin:0;padding:12px 16px;border:0;border-radius:0;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .source-caption{display:none}
+#appMain[data-screen="setup"] :is(#counterSummary,.support-panel,#setupFlow,#savedSessions),
+#appMain[data-screen="measure"][data-focused="true"] #timelineSection,
+#appMain[data-screen="measure"] :is(#setupFlow,.count-footnote),
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .next-action{display:none}
+#appMain[data-screen="setup"] .measure-console{padding:20px 20px 16px;position:static}
+#appMain[data-screen="setup"] .line-tools,
+#appMain[data-screen="measure"]:is([data-phase="paused"],[data-phase="interrupted"])[data-focused="false"] .line-tools{display:block}
+.line-tools h2{margin:0;font-size:19px;line-height:1.4;letter-spacing:-.025em}
+.line-tools .line-instruction{display:block;margin:6px 0 12px;color:#44584e;font-size:14px;line-height:1.55}
+.line-tools .operation-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin:0;border:1px solid #ced9cf;border-radius:6px;background:#edf2eb;padding:3px}
+.line-tools .operation-tools button{padding:6px 4px;min-height:44px;background:#fff;border:1px solid transparent;border-radius:3px;font-size:13px}
+.line-tools .operation-tools button:hover:enabled{border-color:#6b9681;background:#f7fbf7}
+.line-tools .reverse-action{display:inline-flex;gap:8px;align-items:center;max-width:100%;margin-top:3px;padding:6px 2px;min-height:44px;background:none;border:0;border-radius:3px;color:#215745;font-size:13px;font-weight:650}
+.line-tools .reverse-action::before{content:"⇄";font-size:20px;line-height:1}
+#appMain[data-screen="setup"] .test-card{display:block;margin:8px 0 0;padding:16px 0 0;border:0;border-radius:0;border-top:1px solid var(--border);background:transparent}
+#appMain[data-screen="setup"] .test-card h2{font-size:16px;line-height:1.5}
+#appMain[data-screen="setup"] .test-card p{font-size:13px;line-height:1.55}
+#appMain[data-screen="setup"] .test-card button{margin-top:12px;max-width:none;min-height:46px;font-size:14px}
+#appMain[data-screen="setup"] .test-card .test-result{margin:12px 0 0;padding:10px 12px}
+#appMain[data-screen="setup"][data-phase="testing"] .line-tools{display:none}
+#appMain[data-screen="setup"][data-phase="testing"] .test-card{margin:0;padding:0;border:0}
+#appMain[data-screen="setup"] .count-footnote{display:none}
+#appMain[data-screen="setup"] #sessionControls:not(:has(button:enabled)){display:none}
+#appMain[data-screen="setup"] #beginCount:enabled{margin-top:12px;font-size:15px}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .setup-extras{padding:0;background:transparent;border:0}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #setupOptions{
+  margin:0;background:#fff;border-radius:8px;padding:2px 16px;
+}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #setupOptions summary{min-height:48px;font-size:14px}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) #setupOptions[open]{padding-bottom:12px}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .setup-extras:not(:has(#setupOptions[open])) .precount-row{display:none}
+#appMain:is([data-screen="setup"],[data-screen="measure"]) .setup-extras .precount-row{padding:12px 2px 0}
+#appMain[data-screen="measure"] .measure-console{padding:16px 18px}
+#appMain[data-screen="measure"] .measure-heading h2{font-size:18px}
+#appMain[data-screen="measure"] .summary-state{display:none}
+#appMain[data-screen="measure"] .clock{padding:4px 0;border:0;background:transparent;color:#334d41;font-size:15px;letter-spacing:.025em}
+#appMain[data-screen="measure"] .counter-grid{display:grid;grid-template-columns:1fr;gap:0}
+#appMain[data-screen="measure"] .counter{
+  --direction-color:#226647;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;
+  grid-template-areas:"label quick" "value quick";gap:4px 12px;min-height:0;
+  background:transparent;border:0;border-top:1px solid var(--border);border-radius:0;padding:14px 0;
+}
+#appMain[data-screen="measure"] .counter[data-direction="b"]{--direction-color:#88551e}
+#appMain[data-screen="measure"] .counter .label{color:var(--direction-color);font-size:14px;font-weight:750}
+#appMain[data-screen="measure"] .counter strong{color:var(--text);font-variant-numeric:tabular-nums;line-height:1;margin:0}
+#appMain[data-screen="measure"] .counter strong[data-digits="1"],
+#appMain[data-screen="measure"] .counter strong[data-digits="2"]{font-size:46px}
+#appMain[data-screen="measure"] .counter-adjustments{
+  width:auto;grid-template-columns:44px 44px;grid-template-rows:44px;gap:4px;align-self:center;
+}
+#appMain[data-screen="measure"] .counter-adjustments button{border-radius:5px;font-size:14px}
+#appMain[data-screen="measure"] .counter-adjustments button[id^="plus"]{background:#e5efe5;border-color:#c4d6c6;color:#214e36}
+#appMain[data-screen="measure"] .counter[data-direction="b"] button[id^="plus"]{background:#f6ecdc;border-color:#e0cfb7;color:#70471b}
+#appMain[data-screen="measure"] .total{border-top:1px solid var(--border);border-bottom:0;margin-bottom:8px;padding:8px 0 0}
+#appMain[data-screen="measure"] #focusToggle{float:right;margin:0 0 6px 8px;padding:6px 2px;color:#315d49;background:none;border:0;text-decoration:underline;text-underline-offset:3px}
+#appMain[data-screen="measure"] .counter-grid{clear:both}
+#appMain[data-screen="measure"] #sessionControls button{font-size:14px}
+#appMain[data-screen="measure"] #pauseCount:enabled,#appMain[data-screen="measure"] #beginCount:enabled{background:#205a43;color:#fff;border-color:#205a43}
+#appMain[data-screen="measure"] #finishCount:enabled{background:#fff;border:1px solid #9daea2;color:#283c31}
+@media(max-width:820px){
+  #appMain:is([data-screen="setup"],[data-screen="measure"]) .workspace{
+    grid-template-columns:minmax(0,1fr);grid-template-areas:"video" "measure" "setup" "support";gap:12px;
+  }
+  #appMain[data-screen="setup"] .workspace{grid-template-areas:"video" "measure" "setup"}
+  #appMain[data-screen="setup"] .measure-console{padding:16px}
+  #appMain[data-screen="setup"] .line-tools h2{font-size:17px}
+  #appMain[data-screen="setup"] .test-card #testButton,
+  #appMain[data-screen="setup"] #sessionControls,
+  #appMain[data-screen="measure"] #sessionControls{display:none}
+  #appMain[data-screen="setup"][data-next="count"] #testButton{display:block}
+  #appMain[data-screen="measure"] .video-panel>.counter-summary{margin:0;color:var(--text);background:#fff;padding:10px 14px 4px}
+  #appMain[data-screen="measure"] .measure-heading{margin:0 0 7px}
+  #appMain[data-screen="measure"] .measure-heading h2{font-size:15px}
+  #appMain[data-screen="measure"] .counter-grid{grid-template-columns:1fr 1fr;gap:12px}
+  #appMain[data-screen="measure"] .counter{
+    grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;grid-template-areas:"label" "value" "quick";
+    gap:4px;padding:6px 0 0;
+  }
+  #appMain[data-screen="measure"] .counter strong[data-digits="1"],
+  #appMain[data-screen="measure"] .counter strong[data-digits="2"]{font-size:34px}
+  #appMain[data-screen="measure"] .counter strong:is([data-digits="4"],[data-digits="5"],[data-digits="6"]){font-size:clamp(22px,6.6vw,32px)}
+  #appMain[data-screen="measure"] .counter strong:is([data-digits="7"],[data-digits="8"],[data-digits="9"]){font-size:18px}
+  #appMain[data-screen="measure"] .counter-adjustments{grid-template-columns:repeat(2,minmax(44px,1fr));width:100%;gap:3px}
+  #appMain[data-screen="measure"] .counter-adjustments button{width:100%}
+  #appMain[data-screen="measure"] .total{border:0;margin:0;padding:0}
+  #appMain[data-screen="measure"][data-focused="true"] .camera-stage{height:clamp(135px,31dvh,300px);max-height:36dvh}
+  .live-dock:not([hidden]){grid-template-columns:1.2fr 1fr 1fr}
+  .live-dock[data-preparing="true"]:not([hidden]){grid-template-columns:minmax(0,2fr) minmax(80px,1fr)}
+  .live-dock #dockPause,.live-dock #dockResume{background:#205a43;border-color:#205a43;color:#fff}
+}
+/* Finished measurements use the same controls as live counting, arranged for review. */
+#appMain[data-screen="result"] .workspace{display:none}
+#appMain[data-screen="result"] #report{padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+#report .result-sheet{background:#fff;border:1px solid #cbd5cc;border-radius:12px;padding:22px 26px}
+.result-head{display:flex;align-items:baseline;gap:8px 18px;flex-wrap:wrap;margin-bottom:18px}
+#report .result-head h2{font-size:clamp(24px,3vw,35px);line-height:1.25;margin:0;letter-spacing:-.03em}
+.result-head p{color:#52645b;font-size:14px;margin:0;overflow-wrap:anywhere}
+.result-counts{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:0;border:1px solid #bfcfc2;border-radius:9px;overflow:hidden}
+.result-counts>div{min-width:0;padding:16px 18px;display:grid;align-content:start;gap:6px}
+.result-counts>div>span{font-size:15px;font-weight:650;overflow-wrap:anywhere}
+.result-counts strong{font-size:clamp(32px,4vw,50px);font-weight:720;line-height:1.05;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.result-total{background:#173d30;color:#f0f7ed}
+.result-total strong{font-size:clamp(43px,5.4vw,72px)}
+.result-direction{color:#244b38;background:#f4f7f1}
+.result-direction-b{color:#624721;background:#faf6ec;border-left:1px solid #d6d6ca}
+#report .result-direction .counter-adjustments{display:flex;position:static;gap:5px;width:auto;height:auto;margin-top:2px}
+#report .result-direction .counter-adjustments button{width:46px;min-height:44px;height:44px;font-size:14px;border:1px solid #bccbbb;border-radius:5px;background:#fff;color:#214632}
+#report .result-direction-b .counter-adjustments button{border-color:#d6c9b4;color:#624721}
+.result-audit,.result-main-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.result-audit{padding:8px 0;min-height:55px;color:#4b5c52;font-size:13px;border-bottom:1px solid #dbe2da}
+.result-audit b{color:#24382c;font-variant-numeric:tabular-nums}
+#resultUndo{margin-left:auto}
+#resultUndo #undoCorrection{display:inline-flex;align-items:center;gap:6px;min-height:44px}
+#resultUndo svg{width:16px;height:16px;flex:0 0 16px}
+.result-main-actions{margin-top:15px;gap:9px}
+.result-main-actions button{min-height:46px;padding:8px 18px;font-size:15px}
+.result-main-actions #bundleButton{background:#205a42;color:#fff;border-color:#205a42}
+.result-main-actions #newSession{background:#fff;color:#254c37;border:1px solid #9eb2a3}
+.result-sections{margin:15px 0 0;border-top:1px solid #bbc9be}
+.result-sections>details{border-bottom:1px solid #cbd5cd}
+.result-sections>details>summary{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:10px 8px;cursor:pointer;color:#244836;font-size:15px;font-weight:650;list-style:none}
+.result-sections>details>summary::-webkit-details-marker{display:none}
+.result-sections>details>summary::after{content:"";width:8px;height:8px;margin:0 7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.result-sections>details[open]>summary::after{transform:rotate(225deg)}
+.result-detail-body{padding:0 8px 18px}
+#report .result-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px;margin:0 0 14px}
+#report .result-facts div{border-top:1px solid #dce4dc;border-radius:0;padding:7px 0;background:transparent}
+#report .result-facts dt{font-size:13px;color:#4a5e50;overflow-wrap:anywhere}
+#resultExportSlot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
+#resultExportSlot>.precount-row,#resultExportSlot>.export-panel{grid-column:1/-1}
+#resultExportSlot label>span{font-weight:650;font-size:13px}
+#resultExportSlot .export-panel{padding-top:12px;border-top:1px solid #cbd5cd}
+#resultExportSlot :is(.support-header,#coverageSummary){display:none}
+#report :is(#timelineSection,#savedSessions,.video-panel){margin:0;padding:0;box-shadow:none;border:0;background:transparent;border-radius:0}
+#resultHistorySlot #savedHeading{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+#resultHistorySlot .section-head{margin:0}
+#savedList .saved-session{border:0;border-bottom:1px solid #d9e1d9;border-radius:0;padding:12px 0;background:transparent}
+#savedList .saved-session:last-child{border:0}
+#savedList .saved-session small{color:#516155}
+#resultVideoSlot :is(.workspace-topline,.source-bar,#cameraLaunch,#counterSummary,.operation-note,.latest-crossing,.video-footer,#statusDetails:not([data-kind="error"])){display:none}
+#resultVideoSlot #videoSourceBox{margin:0;padding:0;border:0;background:transparent}
+#resultVideoSlot #videoSourceBox summary,#resultVideoSlot #videoSourceBox :is(label[for="analysisMode"],#analysisMode,[data-i18n="samplingNote"]){display:none}
+#appMain[data-has-source="true"] #resultVideoSlot #videoSourceBox,#appMain[data-has-source="false"] #resultVideoSlot .camera-stage{display:none}
+#resultVideoSlot .camera-stage{margin:0;aspect-ratio:16/9;max-height:56vh;border-radius:8px}
+#resultVideoSlot .media-controls{margin:0;padding:12px 0 0}
+#resultVideoSlot .file-actions{margin:0}
+@media(max-width:610px){
+ #report .result-sheet{padding:16px 13px}
+ .result-head{display:block;margin-bottom:13px}.result-head p{margin-top:4px;font-size:13px}
+ .result-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .result-counts>.result-total{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px}
+ .result-counts>.result-direction{padding:11px 10px}
+ .result-total strong{font-size:37px}.result-counts>div>span{font-size:14px}
+ .result-audit{gap:3px 12px;padding:8px 0;font-size:12px}
+ .result-main-actions{gap:7px;margin-top:12px}.result-main-actions button{padding:8px 10px;font-size:13px}
+ #report .result-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #resultExportSlot{grid-template-columns:minmax(0,1fr)}
+ .result-sections>details>summary{padding:10px 2px}.result-detail-body{padding:0 2px 14px}
+}
 </style>
 </head><body>
 
@@ -818,7 +1096,7 @@ body.help-scroll-locked{
         <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
       </div>
       <div class="brand-copy">
-        <p class="brand-name"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.1.0</span></p>
+        <h1 class="brand-name" aria-labelledby="brandName"><span id="brandName">通過カウンター</span><span class="version-badge" id="versionBadge">v1.1.0</span></h1>
         <p class="brand-meta" data-i18n="brandMeta">カメラ・動画で通過を方向別に記録</p>
       </div>
     </div>
@@ -833,20 +1111,54 @@ body.help-scroll-locked{
   </div>
 </header>
 <!-- APP:BEGIN -->
-<main class="shell main" id="appMain" data-phase="idle" data-source="camera">
-  <section class="page-intro" aria-labelledby="pageTitle">
-    <div class="hero-copy">
-      <h1 id="pageTitle" data-i18n="title">通過した人を数える</h1>
-      <p data-i18n="intro">カメラ・動画で、通過を方向別に記録。</p>
-    </div>
+<main class="shell main" id="appMain" data-phase="idle" data-screen="source" data-source="camera">
+  <ol class="workflow-progress" id="workflowProgress" data-i18n-aria-label="workflowSteps" aria-label="計測の流れ">
+    <li data-screen-step="source" aria-current="step"><span class="step-index" aria-hidden="true">1</span><span data-i18n="sourceStep">映像</span></li>
+    <li data-screen-step="setup"><span class="step-index" aria-hidden="true">2</span><span data-i18n="setupStep">準備</span></li>
+    <li data-screen-step="measure"><span class="step-index" aria-hidden="true">3</span><span data-i18n="measureStep">計測</span></li>
+    <li data-screen-step="result"><span class="step-index" aria-hidden="true">4</span><span data-i18n="resultStep">結果</span></li>
+  </ol>
+  <div class="page-intro">
+    <p id="entryIntro" tabindex="-1" data-i18n="entryIntro">映像に線を引くと、人が横切った回数を方向別に数えます。</p>
     <div class="local-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/>
       </svg>
       <span data-i18n="localBadge">完全ローカル処理</span>
     </div>
-  </section>
+  </div>
 
+  <div id="entrySource">
+    <div class="entry-body">
+      <div class="entry-choices">
+        <div id="sourceCameraSlot">
+          <button class="primary entry-choice" type="button" id="cameraStart">
+            <span class="entry-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="13" height="14" rx="2.5"/><path d="m15.5 10 6-3.5v11L15.5 14z"/></svg></span>
+            <span><span class="entry-label" data-i18n="startCamera">カメラを開始</span><span class="entry-detail" data-i18n="cameraEntryHint">今この場所を計測する</span></span>
+            <svg class="entry-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 10h13m-6-6 6 6-6 6"/></svg>
+          </button>
+        </div>
+        <button id="chooseVideo" class="entry-choice video-choice" type="button">
+          <span class="entry-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="m10 8 6 4-6 4z"/></svg></span>
+          <span><span class="entry-label" data-i18n="chooseRecording">動画を選ぶ</span><span class="entry-detail" data-i18n="recordingEntryHint">端末にある動画を解析する</span></span>
+          <svg class="entry-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 10h13m-6-6 6 6-6 6"/></svg>
+        </button>
+        <button id="chooseAnyVideo" class="file-fallback-button" type="button" data-i18n="fileFallback">ファイルから選択</button>
+        <div id="entryStatus" class="entry-status" role="status" aria-live="polite" hidden></div>
+      </div>
+      <figure class="entry-figure">
+        <svg viewBox="0 0 350 126" fill="none" aria-hidden="true" focusable="false">
+          <g stroke="#719683" stroke-width="1.4"><path d="M13 29V13h22m280 0h22v16m0 69v16h-22m-280 0H13V98"/></g>
+          <g stroke="#e2f5d7" stroke-width="2"><path d="M175 13v101" stroke-dasharray="4 4"/><circle cx="175" cy="13" r="4" fill="#e3f6d7"/><circle cx="175" cy="114" r="4" fill="#e3f6d7"/></g>
+          <g fill="#dcebdc" font-family="system-ui,sans-serif" font-size="16" font-weight="650" text-anchor="middle"><text x="65" y="68">A</text><text x="285" y="68">B</text></g>
+          <g stroke="#bedf9a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M108 47h126m-8-7 8 7-8 7"/><circle cx="104" cy="47" r="4" fill="#bedf9a"/></g>
+          <g stroke="#b0d6ce" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M240 80H118m8-7-8 7 8 7"/><circle cx="244" cy="80" r="4" fill="#b0d6ce"/></g>
+        </svg>
+        <figcaption data-i18n="entryDiagram">人の足元が判定線を横切ると、AからB、BからAの通過を別々に数えます。</figcaption>
+      </figure>
+    </div>
+    <a id="jumpToSaved" class="entry-history" href="#savedHeading" hidden><span data-i18n="savedHeading">保存した計測</span><span id="savedEntryCount"></span></a>
+  </div>
   <div class="storage-notice" id="storageNotice" data-kind="idle" role="status" aria-live="polite" hidden></div>
   <div class="workspace">
     <section class="video-panel" aria-labelledby="cameraHeading">
@@ -856,6 +1168,7 @@ body.help-scroll-locked{
           <h2 id="cameraHeading" data-i18n="camera">カメラ映像</h2>
         </div>
         <span class="status-pill" id="statusPill" data-kind="idle" role="status" aria-live="polite" data-i18n="idle">未接続</span>
+        <button id="inputOptions" type="button" aria-expanded="false" aria-controls="sourceMode videoSourceBox cameraLaunch" data-i18n="inputOptions">入力設定</button>
       </div>
 
       <div class="source-bar">
@@ -881,7 +1194,6 @@ body.help-scroll-locked{
 
       <div class="camera-launch" id="cameraLaunch">
         <div class="actions" id="cameraActions">
-          <button class="primary" type="button" id="cameraStart" data-i18n="startCamera">カメラを開始</button>
           <button type="button" id="cameraStop" disabled data-i18n="stopCamera">カメラを閉じる</button>
         </div>
       </div>
@@ -899,16 +1211,6 @@ body.help-scroll-locked{
           <span data-i18n="previewEmpty">カメラを開始すると映像が表示されます。</span>
         </div>
       </div>
-      <div class="line-toolbar">
-        <div class="line-instruction">
-          <span data-i18n="lineHelp">線の途中をドラッグして移動。両端の丸で角度・長さを調整。</span>
-        </div>
-        <button class="minor reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
-      </div>
-      <div class="operation-tools" role="group" data-i18n-aria-label="linePresets" aria-label="判定線の配置">
-        <button id="lineHorizontal" type="button" data-i18n="horizontalLine">横線</button><button id="lineVertical" type="button" data-i18n="verticalLine">縦線</button><button id="lineCenter" type="button" data-i18n="centerLine">中央に戻す</button>
-      </div>
-      <p class="operation-note" data-i18n="footNote">検出枠の下辺中央を足元として判定します。足元が横切る位置に線を置いてください。</p>
       <p class="latest-crossing" id="latestCrossing" aria-live="off"></p>
       <div class="context-message" id="statusDetails" role="status" aria-live="polite" data-i18n="instruction">カメラを開始すると、判定線を調整できます。</div>
       <div class="video-footer">
@@ -922,13 +1224,17 @@ body.help-scroll-locked{
             <label for="videoSeek" data-i18n="videoPosition">動画の位置</label>
             <input id="videoSeek" type="range" min="0" max="1000" step="1" value="0" disabled>
             <div class="file-time" id="videoTime">00:00 / 00:00</div>
+            <div id="reviewEvents" hidden>
+              <label for="reviewEvent" data-i18n="reviewEventLabel">イベントから見返す</label>
+              <select id="reviewEvent"></select>
+            </div>
             <div class="row">
               <button id="previewVideo" type="button" disabled data-i18n="previewVideo">プレビュー再生</button>
               <button id="reanalyzeVideo" type="button" disabled data-i18n="reanalyzeVideo">最初から再解析</button>
               <button id="removeVideo" type="button" disabled data-i18n="removeVideo">動画を閉じる</button>
             </div>
           </div>
-          <p class="file-note" data-i18n="videoReminder">計測開始時は先頭から再生します。シーク・再解析は結果を消去する前に確認します。</p>
+          <p class="file-note" id="videoReminder" data-i18n="videoReminder">計測は動画の先頭から開始します。</p>
         </div>
       </div>
 
@@ -978,6 +1284,16 @@ body.help-scroll-locked{
         <p class="sr-only" id="correctionHelpText" data-i18n="correctionHelp">補正履歴はCSVに残ります。件数が0未満になる操作はできません。</p>
         </section>
         <div id="measureWorkflow">
+        <section class="line-tools" aria-labelledby="lineToolsHeading">
+          <h2 id="lineToolsHeading" data-i18n="lineToolsHeading">判定線を置く</h2>
+          <p class="line-instruction" data-i18n="linePlacement">人の足元が横切る位置に線をドラッグします。両端の丸で角度と長さを変えられます。</p>
+          <div class="operation-tools" role="group" data-i18n-aria-label="linePresets" aria-label="判定線の配置">
+            <button id="lineHorizontal" type="button" data-i18n="horizontalLine">横線</button>
+            <button id="lineVertical" type="button" data-i18n="verticalLine">縦線</button>
+            <button id="lineCenter" type="button" data-i18n="centerLine">中央に戻す</button>
+          </div>
+          <button class="reverse-action" type="button" id="reverseLine" disabled data-i18n="reverse">A/B方向を反転</button>
+        </section>
         <div class="next-action" id="nextAction" role="status" aria-live="polite" data-next="camera">
           <span class="next-kicker" id="nextActionKicker" data-i18n="nextKicker">次の操作</span>
           <strong id="nextActionTitle" data-i18n="nextStartCamera">まずカメラを開始</strong>
@@ -1064,16 +1380,37 @@ body.help-scroll-locked{
     </aside>
   </div>
   <section class="report" id="report" aria-labelledby="reportHeading" hidden>
-    <h2 id="reportHeading" data-i18n="reportTitle">計測結果</h2>
-    <dl><div><dt data-i18n="autoA">A → B</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="total">延べ通過件数</dt><dd id="reportTotal">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div></dl>
-    <dl><div><dt id="reportLabelA">A → B</dt><dd id="reportFinalA">0</dd></div><div><dt id="reportLabelB">B → A</dt><dd id="reportFinalB">0</dd></div><div><dt data-i18n="covered">有効計測</dt><dd id="reportObserved">—</dd></div><div><dt data-i18n="missingCoverage">欠測</dt><dd id="reportMissing">—</dd></div><div><dt data-i18n="correctionCount">補正操作</dt><dd id="reportCorrections">0</dd></div></dl>
-    <p class="helper" data-i18n="prototypeNote">判定線を移動しやすくしました。実環境の精度確認はまだ完了していません。</p>
+    <div class="result-sheet">
+      <div class="result-head"><h2 id="reportHeading" tabindex="-1" data-i18n="reportTitle">計測結果</h2><p id="resultSessionName"></p></div>
+      <div class="result-counts">
+        <div class="result-total"><span data-i18n="total">延べ通過件数</span><strong id="reportTotal">0</strong></div>
+        <div class="result-direction"><span id="reportLabelA">A → B</span><strong id="reportFinalA">0</strong><div id="resultAdjustA"></div></div>
+        <div class="result-direction result-direction-b"><span id="reportLabelB">B → A</span><strong id="reportFinalB">0</strong><div id="resultAdjustB"></div></div>
+      </div>
+      <div class="result-audit"><div><span data-i18n="covered">有効計測</span> <b id="reportObserved">—</b></div><div><span data-i18n="missingCoverage">欠測</span> <b id="reportMissing">—</b></div><div id="resultUndo"></div></div>
+      <div id="resultMainActions" class="result-main-actions"></div>
+    </div>
+    <div class="result-sections">
+      <details id="resultTimelineDetails"><summary data-i18n="resultBreakdown">時間帯・補正の内訳</summary><div class="result-detail-body">
+        <dl class="result-facts"><div><dt data-i18n="autoA">A → B 自動</dt><dd id="reportA">0</dd></div><div><dt data-i18n="autoB">B → A 自動</dt><dd id="reportB">0</dd></div><div><dt data-i18n="manualA">A → B 手動補正</dt><dd id="reportManualA">0</dd></div><div><dt data-i18n="manualB">B → A 手動補正</dt><dd id="reportManualB">0</dd></div><div><dt data-i18n="elapsed">計測時間</dt><dd id="reportElapsed">—</dd></div><div><dt data-i18n="correctionCount">補正操作</dt><dd id="reportCorrections">0</dd></div></dl>
+        <div id="resultTimelineSlot"></div>
+      </div></details>
+      <details id="resultExportDetails"><summary data-i18n="resultExportOptions">個別CSV・出力設定</summary><div id="resultExportSlot" class="result-detail-body"></div></details>
+      <details id="resultVideoDetails"><summary data-i18n="resultReviewRecording">動画を見返す</summary><div id="resultVideoSlot" class="result-detail-body"></div></details>
+      <details id="resultHistoryDetails"><summary data-i18n="savedHeading">保存した計測</summary><div id="resultHistorySlot" class="result-detail-body"></div></details>
+    </div>
   </section>
   <section class="report timeline-card" id="timelineSection" aria-labelledby="timelineHeading" hidden>
     <div class="timeline-head"><h2 id="timelineHeading" data-i18n="timelineHeading">時間帯別の通過</h2>
+      <label id="timeBasisField" for="timeBasis" hidden><span data-i18n="timeBasis">時間軸</span>
+        <select id="timeBasis">
+          <option value="media" data-i18n="mediaBasis">動画の先頭から</option>
+          <option value="wall" data-i18n="wallBasis">解析時刻</option>
+        </select>
+      </label>
       <label for="aggregationMinutes"><span data-i18n="intervalSize">区切り</span>
         <select id="aggregationMinutes" data-i18n-aria-label="aggregationAria" aria-label="集計の時間間隔">
-          <option value="5">5 min</option><option value="15">15 min</option><option value="60">60 min</option>
+          <option value="5" data-i18n="bucket5">5分</option><option value="15" data-i18n="bucket15">15分</option><option value="60" data-i18n="bucket60">60分</option>
         </select>
       </label>
     </div>
@@ -1081,7 +1418,7 @@ body.help-scroll-locked{
     <div id="timelineRows" class="timeline-list"></div>
   </section>
   <section class="report" aria-labelledby="savedHeading" id="savedSessions">
-    <div class="section-head"><h2 id="savedHeading" data-i18n="savedHeading">保存した計測</h2>
+    <div class="section-head"><h2 id="savedHeading" tabindex="-1" data-i18n="savedHeading">保存した計測</h2>
       <button id="newSession" type="button" class="minor" data-i18n="newSession">新しい計測</button></div>
     <p id="savedHint" class="helper" data-i18n="savedHint">保存した計測はこのブラウザ内に残ります。画像・映像は保存しません。</p>
     <div id="savedList" class="saved-list" aria-live="polite"><p class="saved-empty" data-i18n="savedEmpty">保存された記録はありません。</p></div>
@@ -1104,43 +1441,60 @@ body.help-scroll-locked{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg>
     </button>
   </div>
+  <nav class="help-nav" data-i18n-aria-label="helpGuideNav" aria-label="ヘルプの目次">
+    <a href="#helpGuide" data-i18n="helpGuideLink">操作手順</a>
+    <a href="#helpCautions" data-i18n="helpNotesLink">注意事項</a>
+    <a href="#helpTroubleshooting" data-i18n="helpTroubleLink">困ったとき</a>
+  </nav>
   <div class="help-dialog-body" id="helpDialogBody">
-    <h3 data-i18n="helpBasicsTitle">まずは4ステップ</h3>
+    <h3 id="helpGuide" tabindex="-1" data-i18n="helpBasicsTitle">映像を選んでから結果を保存するまで</h3>
     <ol class="help-steps">
-      <li><strong data-i18n="helpStep1Title">映像を選ぶ</strong><p data-i18n="helpStep1">端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。</p></li>
-      <li><strong data-i18n="helpStep2Title">数える位置に線を置く</strong><p data-i18n="helpStep2">人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。</p></li>
-      <li><strong data-i18n="helpStep3Title">カメラの映り方を確認する</strong><p data-i18n="helpStep3">30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。</p></li>
-      <li><strong data-i18n="helpStep4Title">計測を始める</strong><p data-i18n="helpStep4">「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。</p></li>
+      <li><strong data-i18n="helpStep1Title">映像を選ぶ</strong><p data-i18n="helpStep1">現場で数えるときは端末を固定し、「カメラを開始」を押して使用を許可します。録画があるときは「動画を選ぶ」でファイルを開きます。</p></li>
+      <li><strong data-i18n="helpStep2Title">足元が横切る位置に線を置く</strong><p data-i18n="helpStep2">線をドラッグして通路を横切るように置きます。両端の白丸で角度と長さを調整します。</p><p data-i18n="helpCameraCheck">カメラは「30秒チェックを開始」を押し、誰かが1回通ったとき、どちらの件数が増えるか確認します。チェックの件数は本計測に含まれません。動画はそのまま次へ進めます。</p></li>
+      <li><strong data-i18n="helpStep3Title">計測を始め、必要に応じて補正する</strong><p data-i18n="helpStep3">「計測を開始」を押します。動画はプレビューの位置にかかわらず、先頭から解析します。スマホの一時停止・再開は画面下部にあります。</p><p data-i18n="helpStep5">1件見落としたら、その方向の「＋1」。余分に数えたら「−1」。「元に戻す」で直前の補正を取り消せます。</p></li>
+      <li><strong data-i18n="helpStep4Title">結果を確認して保存する</strong><p data-i18n="helpStep4">「終了」を押すと合計と方向別の件数が開きます。動画は最後まで解析すると自動で結果が開きます。</p><p data-i18n="helpStep6">「CSVをまとめて保存（ZIP）」で、概要・イベント履歴・時間帯別の3ファイルを保存できます。補正と取り消しはイベント履歴に残ります。</p></li>
     </ol>
-    <h3 data-i18n="helpResultsTitle">件数の修正と保存</h3>
-    <ul>
-      <li data-i18n="helpStep5">数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。</li>
-      <li data-i18n="helpStep6">「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。</li>
+    <h3 id="helpCautions" tabindex="-1" data-i18n="helpNotesTitle">計測・保存の注意事項</h3>
+    <ul class="help-cautions">
+      <li><strong data-i18n="helpCountsTitle">1人が往復すると2件</strong><p data-i18n="helpLimitCounts">A側からB側へ行き、戻れば各方向に1件ずつ加算されます。延べ通過件数から来場者の実人数は分かりません。</p></li>
+      <li><strong data-i18n="helpAccuracyTitle">足元が見える位置から撮る</strong><p data-i18n="helpLimitAccuracy">混雑で人が重なる、暗い、逆光、手ぶれ、速い動きは数え間違いの原因です。設置時に実際の通過と表示を見比べてください。</p></li>
+      <li><strong data-i18n="helpInterruptTitle">計測中は画面を表示しておく</strong><p data-i18n="helpLimitInterrupt">タブを切り替えたり、画面をロックしたりすると計測が中断します。「欠測」は観測できなかった時間です。画面に戻ったら状態を確認し、準備が整ってから「計測を再開」を押してください。</p></li>
+      <li><strong data-i18n="helpStorageTitle">必要な結果はブラウザを閉じる前に書き出す</strong><p data-i18n="helpLimitStorage">「保存した計測」は同じブラウザ・同じサイトに残ります。ブラウザのデータを消すと記録も消えます。保存エラーが出たら、ページを閉じる前にCSVを保存してください。</p></li>
     </ul>
-    <p data-i18n="helpFocus">計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。</p>
-    <h3 data-i18n="helpNotesTitle">知っておきたいこと</h3>
-    <ul>
-      <li data-i18n="helpLimitCounts">数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。</li>
-      <li data-i18n="helpLimitAccuracy">人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。</li>
-      <li data-i18n="helpLimitInterrupt">計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。</li>
-    </ul>
-    <p data-i18n="helpImportant" class="help-dialog-note">安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。</p>
+    <p data-i18n="helpImportant" class="help-dialog-note">安全管理や請求、正式な報告に使う件数は、現場の記録など別の方法でも照合してください。</p>
+    <h3 id="helpTroubleshooting" tabindex="-1" data-i18n="helpTroubleTitle">困ったとき</h3>
     <details class="help-topic">
-      <summary data-i18n="helpPlacementTitle">線の位置や方向を調整するには</summary>
-      <p data-i18n="helpImprovements">線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。</p>
+      <summary data-i18n="helpBrowserTitle">カメラが開かない・動画を読み込めない</summary>
+      <p data-i18n="helpLimitBrowser">カメラはブラウザのサイト設定で使用を許可し、Web版ならHTTPSのページを開いてから「カメラを開始」を押します。動画は同じブラウザで再生できるファイルを選んでください。</p>
     </details>
     <details class="help-topic">
-      <summary data-i18n="helpVideoTitle">動画の解析で気をつけること</summary>
-      <p data-i18n="helpSampling">動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。</p>
+      <summary data-i18n="helpPlacementTitle">入場と退場の向きが逆になる</summary>
+      <p data-i18n="helpImprovements">準備画面で「A/B方向を反転」を押し、もう一度横切って向きを確かめます。「カメラ・表示の設定」で、方向に「入場」「退場」などの名前を付けられます。カメラで線を動かしたときは、設置チェックをやり直してください。</p>
     </details>
     <details class="help-topic">
-      <summary data-i18n="helpPrivacyTitle">映像と記録はどこに保存される？</summary>
-      <p data-i18n="helpPrivacyBody">映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。</p>
-      <p data-i18n="helpLimitStorage">計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。</p>
+      <summary data-i18n="helpAreaTitle">通路の外を歩く人も数えてしまう</summary>
+      <p data-i18n="helpAreaBody">準備画面で「横線」「縦線」や両端の白丸を使い、線を通路に合わせます。さらに絞るには「カメラ・表示の設定」で「範囲を指定する」を選びます。人の足元が線の手前と奥の両方で枠に入るよう調整してください。</p>
     </details>
     <details class="help-topic">
-      <summary data-i18n="helpBrowserTitle">カメラや動画を使えないとき</summary>
-      <p data-i18n="helpLimitBrowser">カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。</p>
+      <summary data-i18n="helpVideoTitle">動画の通過を件数を残して見返したい</summary>
+      <p data-i18n="helpVideoReview">結果の「動画を見返す」を開き、「イベントから見返す」で記録を選ぶと3秒前から再生します。保存した計測を開き直したときは、元の動画を選び直してください。</p>
+      <p data-i18n="helpSeekWarning">未終了の計測で再生位置を変える場合や「最初から再解析」では、確認画面で進めると現在の件数と補正履歴が消えます。残す場合は先にCSVを書き出してください。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpSlowTitle">動画の解析に時間がかかる</summary>
+      <p data-i18n="helpSampling">既定では動画の先頭から0.1秒ごとに順番に調べるため、動画の長さより時間がかかる場合があります。短い通過は見落とすことがあります。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpTimelineTitle">動画のどの時間帯に通過が多かったか知りたい</summary>
+      <p data-i18n="helpTimelineBody">結果の「時間帯・補正の内訳」を開きます。「動画の先頭から」では録画内の時間別に、「解析時刻」ではアプリが処理した時刻別に集計します。選んだ時間軸は時間帯CSVとZIPにも使われます。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpExportTitle">CSVを個別に保存したい・結果をコピーしたい</summary>
+      <p data-i18n="helpFocus">計測中にCSVを書き出すには「設定・記録」を開きます。結果画面では「個別CSV・出力設定」から個別のCSV保存や「結果をコピー」を選べます。</p>
+    </details>
+    <details class="help-topic">
+      <summary data-i18n="helpPrivacyTitle">映像や記録はどこに残る？</summary>
+      <p data-i18n="helpPrivacyBody">映像の解析は端末内で行います。アプリは映像・顔画像・音声を保存・送信しません。記録に残るのは計測名・件数・履歴などです。Web版を開くときは、ページの読み込みに通信を使います。</p>
     </details>
     <details class="embedded-license-notice" id="embeddedLicenseNotice">
       <summary data-i18n="thirdPartyLicenseTitle">ソフトウェアとモデルのライセンス</summary>
@@ -1282,6 +1636,11 @@ body.help-scroll-locked{
           language:'言語',subTitle:'通過カウンター · v1.0.0',help:'使い方',privacyShort:'登録不要 · 端末内処理',
           brandMeta:'カメラ・動画で通過を方向別に記録',switchLanguage:'英語に切り替え',localBadge:'完全ローカル処理',
           title:'通過した人を数える',intro:'カメラ・動画で、通過を方向別に記録。',
+          entryIntro:'映像に線を引くと、人が横切った回数を方向別に数えます。',
+          cameraEntryHint:'今この場所を計測する',chooseRecording:'動画を選ぶ',recordingEntryHint:'端末にある動画を解析する',
+          entryDiagram:'人の足元が判定線を横切ると、AからB、BからAの通過を別々に数えます。',
+          workflowSteps:'計測の流れ',sourceStep:'映像',setupStep:'準備',measureStep:'計測',resultStep:'結果',
+          openingCamera:'カメラを準備しています。使用許可を求められたら、ブラウザで許可してください。',openingVideo:'動画を読み込んでいます…',
           videoPreviewAria:'カメラ・動画のプレビュー',aggregationAria:'集計の時間間隔',camera:'カメラ映像',idle:'未接続',loading:'準備中',ready:'計測準備完了',active:'計測中',paused:'一時停止',finished:'計測終了',error:'エラー',interrupted:'中断',
           lineTooShort:'判定線が短すぎます。白丸を離して調整してください。',previewEmpty:'カメラを開始すると映像が表示されます。',lineAria:'判定線。線の途中をドラッグすると形を保ったまま移動し、端の丸をドラッグすると角度と長さを調整できます。矢印キーでも移動できます。',lineHelp:'線の途中をドラッグして移動。両端の丸で角度・長さを調整。',startCamera:'カメラを開始',reverse:'A/B方向を反転',stopCamera:'カメラを閉じる',
           countHeading:'通過カウント',instruction:'カメラを開始すると、判定線を調整できます。',directionA:'A → B',directionB:'B → A',passed:'通過',total:'延べ通過件数',
@@ -1291,31 +1650,47 @@ body.help-scroll-locked{
           prototypeNote:'実映像での精度評価とスマートフォン実機での長時間試験は未完了です。',
           footer:'カメラ・動画・計測記録は端末内で処理し、送信しません。',
           helpTitle:'使い方と注意事項',
-          helpBasicsTitle:'まずは4ステップ',
+          helpGuideNav:'ヘルプの目次',
+          helpGuideLink:'操作手順',
+          helpNotesLink:'注意事項',
+          helpTroubleLink:'困ったとき',
+          helpBasicsTitle:'映像を選んでから結果を保存するまで',
           helpStep1Title:'映像を選ぶ',
-          helpStep2Title:'数える位置に線を置く',
-          helpStep3Title:'カメラの映り方を確認する',
-          helpStep4Title:'計測を始める',
-          helpResultsTitle:'件数の修正と保存',
-          helpPlacementTitle:'線の位置や方向を調整するには',
-          helpVideoTitle:'動画の解析で気をつけること',
-          helpBrowserTitle:'カメラや動画を使えないとき',
-
-          helpStep1:'端末を固定して「カメラを開始」を押し、カメラの使用を許可します。録画済みの動画は「端末の動画」から選べます。',
-          helpStep2:'人の足元が横切る位置へ線をドラッグします。両端の白丸で長さ・角度を調整できます。',
-          helpStep3:'30秒の「設置チェック」で、実際に通った回数・方向と表示を比べます。チェックの件数は本計測に入りません。線を動かしたら再チェックしてください。動画では不要です。',
-          helpStep4:'「計測を開始」を押します。途中で一時停止・再開・終了できます。動画は先頭から解析し、最後まで進むと終了します。',
-          helpStep5:'数え間違いは各方向の「−1」「＋1」で直せます。「元に戻す」で直前の補正を取り消せます。どちらもCSVの履歴に残ります。',
-          helpStep6:'「CSVをまとめて保存（ZIP）」でイベント・概要・時間帯別の3種類を保存できます。「結果をコピー」も使えます。ZIPに映像は入りません。',
-          helpPrivacyTitle:'映像と記録はどこに保存される？',
-          helpPrivacyBody:'映像・動画ファイル・顔画像・音声は外部へ送りません。認識に必要なものはHTMLに含まれ、処理は端末内で行います。映像そのものは保存しません。Web版を開くときは、ページを読み込むための通信が発生します。',
-          helpNotesTitle:'知っておきたいこと',
-          helpLimitCounts:'数えるのは「通過した回数」です。同じ人が行って戻ると2回になります。人数の重複は取り除きません。',
-          helpLimitAccuracy:'人が重なる、暗い、逆光、カメラが揺れる、速く通り過ぎるときは、数え間違いが起こります。実際の映像での精度は保証できません。',
-          helpLimitBrowser:'カメラの使用許可を確認してください。対応する動画形式や必要な機能はブラウザ・端末によって異なります。新しいブラウザを使っても動かない場合、その環境では利用できないことがあります。',
-          helpLimitInterrupt:'計測中はこの画面を表示したままにしてください。別のタブへ移る、画面が消える、カメラが切れると計測は中断します。中断した時間は「通過0件」として扱いません。',
-          helpLimitStorage:'計測名・件数・履歴は「保存した計測」から見返せます。記録は使ったブラウザ・サイト内だけに残り、ブラウザのデータを消すと失われます。必要な結果はCSVでも保存してください。',
-          helpImportant:'安全管理・請求・法的報告など、正確さが必要な用途では、この結果だけで判断せず、別の方法でも確認してください。',
+          helpStep1:'現場で数えるときは端末を固定し、「カメラを開始」を押して使用を許可します。録画があるときは「動画を選ぶ」でファイルを開きます。',
+          helpStep2Title:'足元が横切る位置に線を置く',
+          helpStep2:'線をドラッグして通路を横切るように置きます。両端の白丸で角度と長さを調整します。',
+          helpCameraCheck:'カメラは「30秒チェックを開始」を押し、誰かが1回通ったとき、どちらの件数が増えるか確認します。チェックの件数は本計測に含まれません。動画はそのまま次へ進めます。',
+          helpStep3Title:'計測を始め、必要に応じて補正する',
+          helpStep3:'「計測を開始」を押します。動画はプレビューの位置にかかわらず、先頭から解析します。スマホの一時停止・再開は画面下部にあります。',
+          helpStep5:'1件見落としたら、その方向の「＋1」。余分に数えたら「−1」。「元に戻す」で直前の補正を取り消せます。',
+          helpStep4Title:'結果を確認して保存する',
+          helpStep4:'「終了」を押すと合計と方向別の件数が開きます。動画は最後まで解析すると自動で結果が開きます。',
+          helpStep6:'「CSVをまとめて保存（ZIP）」で、概要・イベント履歴・時間帯別の3ファイルを保存できます。補正と取り消しはイベント履歴に残ります。',
+          helpNotesTitle:'計測・保存の注意事項',
+          helpCountsTitle:'1人が往復すると2件',
+          helpLimitCounts:'A側からB側へ行き、戻れば各方向に1件ずつ加算されます。延べ通過件数から来場者の実人数は分かりません。',
+          helpAccuracyTitle:'足元が見える位置から撮る',
+          helpLimitAccuracy:'混雑で人が重なる、暗い、逆光、手ぶれ、速い動きは数え間違いの原因です。設置時に実際の通過と表示を見比べてください。',
+          helpInterruptTitle:'計測中は画面を表示しておく',
+          helpLimitInterrupt:'タブを切り替えたり、画面をロックしたりすると計測が中断します。「欠測」は観測できなかった時間です。画面に戻ったら状態を確認し、準備が整ってから「計測を再開」を押してください。',
+          helpStorageTitle:'必要な結果はブラウザを閉じる前に書き出す',
+          helpLimitStorage:'「保存した計測」は同じブラウザ・同じサイトに残ります。ブラウザのデータを消すと記録も消えます。保存エラーが出たら、ページを閉じる前にCSVを保存してください。',
+          helpImportant:'安全管理や請求、正式な報告に使う件数は、現場の記録など別の方法でも照合してください。',
+          helpTroubleTitle:'困ったとき',
+          helpAreaTitle:'通路の外を歩く人も数えてしまう',
+          helpAreaBody:'準備画面で「横線」「縦線」や両端の白丸を使い、線を通路に合わせます。さらに絞るには「カメラ・表示の設定」で「範囲を指定する」を選びます。人の足元が線の手前と奥の両方で枠に入るよう調整してください。',
+          helpTimelineTitle:'動画のどの時間帯に通過が多かったか知りたい',
+          helpTimelineBody:'結果の「時間帯・補正の内訳」を開きます。「動画の先頭から」では録画内の時間別に、「解析時刻」ではアプリが処理した時刻別に集計します。選んだ時間軸は時間帯CSVとZIPにも使われます。',
+          helpPlacementTitle:'入場と退場の向きが逆になる',
+          helpVideoTitle:'動画の通過を件数を残して見返したい',
+          helpVideoReview:'結果の「動画を見返す」を開き、「イベントから見返す」で記録を選ぶと3秒前から再生します。保存した計測を開き直したときは、元の動画を選び直してください。',
+          helpSeekWarning:'未終了の計測で再生位置を変える場合や「最初から再解析」では、確認画面で進めると現在の件数と補正履歴が消えます。残す場合は先にCSVを書き出してください。',
+          helpSlowTitle:'動画の解析に時間がかかる',
+          helpPrivacyTitle:'映像や記録はどこに残る？',
+          helpPrivacyBody:'映像の解析は端末内で行います。アプリは映像・顔画像・音声を保存・送信しません。記録に残るのは計測名・件数・履歴などです。Web版を開くときは、ページの読み込みに通信を使います。',
+          helpBrowserTitle:'カメラが開かない・動画を読み込めない',
+          helpLimitBrowser:'カメラはブラウザのサイト設定で使用を許可し、Web版ならHTTPSのページを開いてから「カメラを開始」を押します。動画は同じブラウザで再生できるファイルを選んでください。',
+          helpExportTitle:'CSVを個別に保存したい・結果をコピーしたい',
           thirdPartyLicenseTitle:'ソフトウェアとモデルのライセンス',thirdPartyLicenseNote:'MediaPipeとEfficientDet-Lite0は、上流のモデル向けライセンス説明に基づいてApache 2.0としています。EigenにはMPL 2.0などの第三者条件があります。',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'MediaPipe v0.10.35のソースはEigenのMPL 2.0/BSD部分を参照します。参照ソース: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd 。npm配布WASMとタグ上のWASMにハッシュ差があり、厳密なビルド対応は引き続き調査対象です。',
           thirdPartyBsdTitle:'Eigen — BSD形式の権利表示',thirdPartyMinpackTitle:'Eigen配布元のMINPACK関連権利表示',thirdPartyEigenReadmeTitle:'Eigen — 元のライセンス案内',appLicenseTitle:'Passage Counter — MIT License',
@@ -1378,7 +1753,11 @@ body.help-scroll-locked{
           videoSelect:'端末から動画を選ぶ',fileFallback:'ファイルから選択',videoFileHint:'動画は送信・永続保存しません。MP4/WebMなどブラウザが再生できる形式のみ対応します。ここへドラッグ＆ドロップも可能です。',
           videoEmpty:'動画が未選択です。',videoPosition:'動画の位置',previewVideo:'プレビュー再生',
           pausePreview:'プレビューを停止',reanalyzeVideo:'最初から再解析',removeVideo:'動画を閉じる',
-          videoReminder:'計測は動画の先頭から開始します。シーク・再解析は、結果を破棄する前に確認します。',
+          videoReminder:'計測は動画の先頭から開始します。計測途中で位置を移動する場合は、結果を破棄する前に確認します。',
+          reviewVideo:'見返し再生',reviewEventLabel:'イベントから見返す',reviewEventPrompt:'イベントを選択（3秒前から再生）',
+          reviewHint:'再生や位置の移動中も計測結果は保持されます。',reviewOriginal:'見返すために元の動画を選ぶ',
+          reviewDurationMismatch:'計測時の動画と長さが異なります。元の動画を選んでください。',
+          reviewOriginalHint:'同じ長さの別の動画は識別できません。計測に使った動画を選んでください。',
           videoCameraHeading:'動画プレビュー',videoReady:'動画の準備完了。線を置いて計測を開始できます。',
           videoFileLoaded:'選択中: {name}',videoLoadFailed:'この動画を再生できません。ブラウザで再生できるMP4/WebM等を選んでください。',
           videoBadFormat:'動画ファイルを選んでください。',videoMissing:'動画を選択してください。',
@@ -1395,7 +1774,11 @@ body.help-scroll-locked{
           videoSeekRejected:'位置の移動は取り消されました。',videoPlaybackFailed:'動画を再生できません。ファイル形式を確認してください。',
           videoEnd:'動画の最後まで解析しました。',videoModeStart:'この動画を先頭から解析します。',
           videoFileStart:'動画の先頭へ戻して計測を開始します。',videoModeHint:'動画はこの端末内で解析します。再生位置を変えると再解析が必要です。',
-          fileCoverageHint:'時間帯別集計は解析中の実時間です。動画内の位置はイベントCSVの source_time_ms を確認してください。欠測を0件とは扱いません。',
+          timeBasis:'時間軸',mediaBasis:'動画の先頭から',wallBasis:'解析時刻',bucket5:'5分',bucket15:'15分',bucket60:'60分',
+          mediaHeading:'動画内の通過',unknownMediaTime:'動画内時刻不明',
+          mediaBucketHint:'通過・補正を記録した直近16区間です。解析済みの範囲は示しません。時間帯CSVには選択した時間軸で全記録を出力します。',
+          mediaBucketEmpty:'動画の通過・補正はまだ記録されていません。',
+          fileCoverageHint:'解析を実行した時刻で集計します。中断・一時停止の時間も表示します。',
           fileTimelineHeading:'解析時刻別の通過',
           previewOnly:'プレビュー中です。件数は増えません。',fileReadyState:'動画準備完了',
           fileSeekBusy:'ファイルを読み込み中です。',fileSourceSwitch:'入力を切り替えます。',
@@ -1407,6 +1790,11 @@ body.help-scroll-locked{
           language:'Language',subTitle:'People crossing counter · v1.0.0',help:'Help',privacyShort:'No account · On-device processing',
           brandMeta:'Count crossings from camera or video',switchLanguage:'Switch to Japanese',localBadge:'Fully local processing',
           title:'Count crossings',intro:'Use a camera or a video from your device.',
+          entryIntro:'Draw a line on the video to count how many times people cross it in each direction.',
+          cameraEntryHint:'Count live at this location',chooseRecording:'Choose a video',recordingEntryHint:'Analyze a recording on your device',
+          entryDiagram:'When a person’s feet cross the line, the app counts the crossing as A to B or B to A.',
+          workflowSteps:'Counting workflow',sourceStep:'Source',setupStep:'Setup',measureStep:'Count',resultStep:'Results',
+          openingCamera:'Preparing the camera. Allow camera access if your browser asks.',openingVideo:'Opening the video…',
           videoPreviewAria:'Camera or local video preview',aggregationAria:'Aggregation interval',camera:'Camera preview',idle:'Not connected',loading:'Preparing',ready:'Ready to count',active:'Counting',paused:'Paused',finished:'Finished',error:'Error',interrupted:'Interrupted',
           lineTooShort:'The counting line is too short. Move its endpoints farther apart.',previewEmpty:'Start the camera to view the scene.',lineAria:'Counting line. Drag anywhere along the line to move it without changing its angle or length. Drag an end handle to adjust it. Arrow keys move the whole line.',lineHelp:'Drag the line itself to move it. Drag an end circle to change the angle or length.',startCamera:'Start camera',reverse:'Reverse A/B directions',stopCamera:'Close camera',
           countHeading:'Crossings',instruction:'Start the camera, then adjust the counting line.',directionA:'A → B',directionB:'B → A',passed:'crossings',total:'Total crossing events',
@@ -1415,32 +1803,48 @@ body.help-scroll-locked{
           exportHeading:'Record',outputFilename:'Export filename',fileHint:'A file-type suffix and .csv extension are added when exporting.',download:'Events CSV',reset:'Reset counts',reportTitle:'Session result',autoA:'A → B',autoB:'B → A',elapsed:'Elapsed time',
           prototypeNote:'Accuracy and long-duration physical-phone tests remain unverified.',
           footer:'Camera, video and session records are processed on this device and are not uploaded.',
-          helpTitle:'How to use and limitations',
-          helpBasicsTitle:'Start in four steps',
-          helpStep1Title:'Choose a video source',
-          helpStep2Title:'Place the counting line',
-          helpStep3Title:'Check your camera setup',
-          helpStep4Title:'Start counting',
-          helpResultsTitle:'Correct and save counts',
-          helpPlacementTitle:'Adjust the line and directions',
-          helpVideoTitle:'About video analysis',
-          helpBrowserTitle:'If a camera or video will not work',
-
-          helpStep1:'Keep the device still, select Start camera and allow camera access. For a recorded video, choose Local video.',
-          helpStep2:'Drag the line to where people’s feet will cross it. Drag the white endpoints to change its length or angle.',
-          helpStep3:'Run the 30-second setup check and compare the counts and directions with what you see. Trial counts stay out of your session. Check again after moving the line. Local video skips this step.',
-          helpStep4:'Select Start counting. You can pause, resume or finish. Video analysis starts at the beginning and finishes at the end of the file.',
-          helpStep5:'Use −1 or +1 in either direction tile to correct a count. Undo reverses the last manual correction. Both actions are recorded in the CSV history.',
-          helpStep6:'Save all CSVs (ZIP) downloads Events, Summary and Time buckets files together. You can also Copy results. Video is never included in the ZIP.',
-          helpPrivacyTitle:'Where are video and records stored?',
-          helpPrivacyBody:'Camera footage, local video files, face images and audio are not sent to a server. Recognition runs on your device using resources included in the HTML. Video itself is not saved. Opening the web version downloads the page.',
-          helpNotesTitle:'Before you rely on the counts',
-          helpLimitCounts:'These are crossing events, not unique visitors. Someone who crosses and comes back counts twice.',
-          helpLimitAccuracy:'People overlapping, darkness, backlighting, camera shake and fast movement can cause missed or extra counts. Real-world accuracy is not guaranteed.',
-          helpLimitBrowser:'Check that camera access is allowed. Video formats and the required browser features vary by device and browser. Some environments may remain unsupported even with an up-to-date browser.',
-          helpLimitInterrupt:'Keep this page visible while counting. Switching tabs, screen sleep or a camera disconnect interrupts measurement. Unobserved time is not recorded as zero crossings.',
-          helpLimitStorage:'Session names, counts and history can be reviewed under Saved sessions. Records stay in the browser and site you used. Clearing browser data removes them, so export any results you need as CSV too.',
-          helpImportant:'For safety, billing or legal reports, check the result independently before relying on it.',
+          helpTitle:'How to use & notes',
+          helpGuideNav:'Help sections',
+          helpGuideLink:'How to use',
+          helpNotesLink:'Key cautions',
+          helpTroubleLink:'Troubleshooting',
+          helpBasicsTitle:'From choosing a source to saving your results',
+          helpStep1Title:'Choose the source',
+          helpStep1:'For a live count, fix the device in place, select Start camera and allow camera access. For a recording, select Choose a video and open the file.',
+          helpStep2Title:'Place the line where people’s feet will cross',
+          helpStep2:'Drag the line across the walking path. Move the white handles to adjust its angle and length.',
+          helpCameraCheck:'With a camera, select Start 30-second check and watch which count increases when someone crosses once. The check is separate from your session. With a recording, go straight to the next step.',
+          helpStep3Title:'Start counting and correct missed crossings',
+          helpStep3:'Select Start counting. Recordings are analyzed from the beginning, wherever you left the preview. On phones, Pause and Resume are at the bottom of the screen.',
+          helpStep5:'Missed a crossing? Select +1 for that direction. For an extra crossing, select −1. Undo reverses the last correction.',
+          helpStep4Title:'Finish and save the results',
+          helpStep4:'Select Finish to see the total and the count for each direction. A recording opens its results automatically when analysis reaches the end.',
+          helpStep6:'Select Save all CSVs (ZIP) for the summary, event history and time buckets. The event history includes corrections and undos.',
+          helpNotesTitle:'What to watch for',
+          helpCountsTitle:'A round trip counts twice',
+          helpLimitCounts:'Someone who crosses from A to B and back adds one crossing in each direction. The total cannot tell you how many different people visited.',
+          helpAccuracyTitle:'Keep people’s feet in view',
+          helpLimitAccuracy:'Crowding, poor light, backlighting, camera shake and fast movement can cause missed or extra counts. Compare a few visible crossings with the on-screen counts.',
+          helpInterruptTitle:'Keep the counting screen visible',
+          helpLimitInterrupt:'Switching tabs or locking the screen interrupts counting. A gap means the app could not observe that period. When you return, check the session and select Resume when it is ready.',
+          helpStorageTitle:'Export results you need to keep',
+          helpLimitStorage:'Saved sessions stay in the same browser on the same site. Clearing browser data removes them. If a save error appears, export your CSVs before closing the page.',
+          helpImportant:'For safety decisions, billing or formal reports, cross-check the counts against an independent record.',
+          helpTroubleTitle:'Troubleshooting',
+          helpAreaTitle:'People outside the walkway are being counted',
+          helpAreaBody:'In Setup, use Horizontal or Vertical and the end handles to fit the line across the walkway. To narrow the area further, open Camera and display settings and select Limit counting to an area. Keep people’s feet inside the area on both sides of the line.',
+          helpTimelineTitle:'Find the busiest part of a recording',
+          helpTimelineBody:'In Results, open Time intervals and corrections. From video start groups crossings by their position in the recording. Analysis time groups them by the clock when the app processed them. The time buckets CSV and ZIP use the selected time axis.',
+          helpPlacementTitle:'Entry and exit are the wrong way round',
+          helpVideoTitle:'Review a crossing and keep the counts',
+          helpVideoReview:'In Results, open Review the recording and choose a crossing under Review an event. Playback starts up to three seconds before it. When reopening a saved session, select the original video again.',
+          helpSeekWarning:'Seeking during an unfinished count or choosing Reanalyze from start asks for confirmation. Continuing clears the current counts and corrections. Export first if you need to keep them.',
+          helpSlowTitle:'Video analysis is taking a long time',
+          helpPrivacyTitle:'Where does the footage go?',
+          helpPrivacyBody:'Analysis runs on your device. The app does not store or send footage, face images or audio. It saves session details such as the name, counts and history. Opening the web version downloads the page.',
+          helpBrowserTitle:'The camera or video will not open',
+          helpLimitBrowser:'For a camera, allow access in your browser’s site settings. On the web version, open the HTTPS page and select Start camera. For a recording, choose a file that plays in the same browser.',
+          helpExportTitle:'Save one CSV or copy the results',
           thirdPartyLicenseTitle:'Software and model licenses',thirdPartyLicenseNote:'The upstream MediaPipe model-license statements support Apache 2.0 for the runtime and EfficientDet-Lite0. Eigen has separate MPL 2.0 and BSD-style license terms.',
           thirdPartyEigenTitle:'Eigen — Mozilla Public License 2.0',thirdPartyEigenSource:'The MediaPipe v0.10.35 source tree references Eigen MPL 2.0/BSD components. Source reference: https://gitlab.com/libeigen/eigen/-/tree/4c38131a16803130b66266a912029504f2cf23cd . The exact npm WASM differs in SHA from the release-tag WASM, so precise compiled-artifact provenance remains under investigation.',
           thirdPartyBsdTitle:'Eigen — BSD notices',thirdPartyMinpackTitle:'Eigen upstream MINPACK-related notices',thirdPartyEigenReadmeTitle:'Eigen — upstream license notes',appLicenseTitle:'Passage Counter — MIT License',
@@ -1503,7 +1907,11 @@ body.help-scroll-locked{
           videoSelect:'Choose a video on this device',fileFallback:'Choose from files',videoFileHint:'Video is never uploaded or saved. Only formats playable by this browser (e.g., MP4/WebM) work. You can also drag and drop here.',
           videoEmpty:'No video selected.',videoPosition:'Video position',previewVideo:'Preview playback',
           pausePreview:'Pause preview',reanalyzeVideo:'Reanalyze from start',removeVideo:'Close video',
-          videoReminder:'Counting starts at the beginning of the video. Seeking or reanalysis requires confirmation before discarding counts.',
+          videoReminder:'Counting starts at the beginning of the video. Seeking during an unfinished count asks before clearing its results.',
+          reviewVideo:'Play recording',reviewEventLabel:'Review an event',reviewEventPrompt:'Choose an event to play from 3 seconds earlier',
+          reviewHint:'Playback and seeking preserve your results.',reviewOriginal:'Select the original video to review it',
+          reviewDurationMismatch:'This video has a different duration. Select the original recording.',
+          reviewOriginalHint:'Recordings with the same duration cannot be distinguished. Choose the clip used for this count.',
           videoCameraHeading:'Video preview',videoReady:'Video ready. Place the line and start counting.',
           videoFileLoaded:'Selected: {name}',videoLoadFailed:'Cannot play this video. Choose MP4/WebM or another format your browser can decode.',
           videoBadFormat:'Choose a video file.',videoMissing:'Choose a video first.',
@@ -1520,7 +1928,11 @@ body.help-scroll-locked{
           videoSeekRejected:'Seeking was cancelled.',videoPlaybackFailed:'Cannot play this video. Check the file format.',
           videoEnd:'Reached the end of the video.',videoModeStart:'Count this video from the beginning.',
           videoFileStart:'Returning to the beginning before counting.',videoModeHint:'The video stays on this device. Seeking during an analysis requires starting again.',
-          fileCoverageHint:'Time buckets use the real time of analysis, not the movie timeline. For positions within the video, use source_time_ms in events CSV. Missing time is never treated as zero.',
+          timeBasis:'Time axis',mediaBasis:'From video start',wallBasis:'Analysis time',bucket5:'5 min',bucket15:'15 min',bucket60:'60 min',
+          mediaHeading:'Crossings in the video',unknownMediaTime:'Unknown video position',
+          mediaBucketHint:'Latest 16 intervals with crossings or corrections. Video coverage is unknown. The CSV includes all recorded intervals on the selected time axis.',
+          mediaBucketEmpty:'No crossings or corrections have been recorded for this video yet.',
+          fileCoverageHint:'Buckets follow the clock during analysis, including paused and missing time.',
           fileTimelineHeading:'Crossings by analysis time',
           previewOnly:'Preview playback. Crossings are not counted.',fileReadyState:'Video ready',
           fileSeekBusy:'Loading a video file.',fileSourceSwitch:'Switching source.',
@@ -1582,7 +1994,7 @@ body.help-scroll-locked{
 
       // LEDGER:BEGIN
       // Append-only correction history. Trial crossings never enter this ledger.
-      function createCountingLedger(){
+      function createCountingLedger(labelFor=direction=>direction==='A_TO_B'?'A → B':'B → A'){
         let records=[],sequence=0,lastCorrection=null;
         const total={A_TO_B:0,B_TO_A:0},automatic={A_TO_B:0,B_TO_A:0};
         const valid=d=>d==='A_TO_B'||d==='B_TO_A';
@@ -1590,7 +2002,7 @@ body.help-scroll-locked{
           if(!valid(direction)||!Number.isInteger(delta)||!['auto','correction','undo'].includes(kind))return null;
           if(total[direction]+delta<0)return null;
           const event={id:'pc-'+Date.now()+'-'+(++sequence),occurredAt:new Date().toISOString(),
-            direction,kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf,
+            direction,directionLabel:labelFor(direction),kind,delta,elapsedMs:Math.max(0,Math.round(elapsedMs||0)),undoOf,
             sourceTimeMs:Number.isFinite(sourceTimeMs)?Math.max(0,Math.round(sourceTimeMs)):null};
           records.push(event);total[direction]+=delta;
           if(kind==='auto')automatic[direction]+=delta;
@@ -1636,6 +2048,7 @@ body.help-scroll-locked{
             if(total[item.direction]+item.delta<0)throw new Error('Negative saved count');
             if(item.kind==='auto'&&item.delta!==1)throw new Error('Invalid automatic delta');
             const record={id:item.id,occurredAt:item.occurredAt,direction:item.direction,
+              directionLabel:item.directionLabel||(item.direction==='A_TO_B'?'A → B':'B → A'),
               kind:item.kind,delta:item.delta,elapsedMs:Math.max(0,Math.round(item.elapsedMs)),
               undoOf:typeof item.undoOf==='string'?item.undoOf:'',
               sourceTimeMs:Number.isFinite(item.sourceTimeMs)?Math.max(0,Math.round(item.sourceTimeMs)):null};
@@ -1657,7 +2070,7 @@ body.help-scroll-locked{
         return Object.freeze({auto,correct,undo,summary,history,size,reset,restore});
       }
       // LEDGER:END
-      const ledger=createCountingLedger();
+      const ledger=createCountingLedger(countName);
       // Supports SIMD-only execution; unlike the full build, no non-SIMD fallback is embedded.
       // This standard SIMD test module uses i8x16.splat and is validated before camera access.
       const SIMD_PROBE=new Uint8Array([
@@ -1790,18 +2203,42 @@ body.help-scroll-locked{
               else{target=entry;break;}
             }
             if(!target)continue;
-            const key=event.direction==='A_TO_B'?'A':'B';
-            if(event.kind==='auto')target['auto'+key]+=event.delta;
-            else target['manual'+key]+=event.delta;
+            addToBucket(target,event);
           }
           for(const row of rows){
-            row.totalA=row.autoA+row.manualA;row.totalB=row.autoB+row.manualB;
             row.coverageStatus=row.observedMs>0
               ?(row.pausedMs+row.missingMs>0?'partial':'observed'):'missing';
           }
           return rows;
         }
-        return Object.freeze({create,transition,checkpoint,recover,intervalsUntil,durations,aggregation});
+        function addToBucket(row,event){
+          const direction=event.direction==='A_TO_B'?'A':'B';
+          const kind=event.kind==='auto'?'auto':'manual';
+          row[kind+direction]+=event.delta;
+          row['total'+direction]+=event.delta;
+        }
+        function mediaAggregation(events,minutes,durationMs){
+          if(![5,15,60].includes(minutes))throw Error('Invalid interval size');
+          const step=minutes*60000;
+          const duration=Number.isFinite(durationMs)&&durationMs>0?durationMs:null;
+          const buckets=new Map(),correctionTimes=new Map();
+          for(const event of events){
+            let position=event.sourceTimeMs;
+            if(event.kind==='correction')correctionTimes.set(event.id,position);
+            if(event.kind==='undo'&&correctionTimes.has(event.undoOf))position=correctionTimes.get(event.undoOf);
+            const timed=Number.isFinite(position)&&position>=0&&(duration===null||position<=duration);
+            // A correction made at the exact end belongs to the final video interval.
+            const tick=timed&&position===duration?Math.max(0,duration-1):position;
+            const startMs=timed?Math.floor(tick/step)*step:null;
+            if(!buckets.has(startMs)){
+              const endMs=timed?Math.min(startMs+step,duration??Infinity):null;
+              buckets.set(startMs,{startMs,endMs,autoA:0,autoB:0,manualA:0,manualB:0,totalA:0,totalB:0});
+            }
+            addToBucket(buckets.get(startMs),event);
+          }
+          return Array.from(buckets.values()).sort((a,b)=>(a.startMs??Infinity)-(b.startMs??Infinity));
+        }
+        return Object.freeze({create,transition,checkpoint,recover,intervalsUntil,durations,aggregation,mediaAggregation});
       }
       // SESSION:END
       const timeline=createSessionTimeline();
@@ -1811,7 +2248,7 @@ body.help-scroll-locked{
         function open(){
           if(!opened)opened=new Promise((resolve,reject)=>{
             if(typeof indexedDB==='undefined')return reject(Error('IndexedDB is unavailable'));
-            let request;
+            let request,abandoned=false;
             try{request=indexedDB.open('passage-counter-sessions-v1',1);}
             catch(error){reject(error);return;}
             request.onupgradeneeded=()=>{
@@ -1825,12 +2262,16 @@ body.help-scroll-locked{
             };
             request.onsuccess=()=>{
               const db=request.result;
-              db.onversionchange=()=>db.close();
+              if(abandoned){db.close();return;}
+              db.onversionchange=()=>{db.close();opened=null;};
               resolve(db);
             };
             request.onerror=()=>reject(request.error||Error('IndexedDB open failed'));
-            request.onblocked=()=>reject(Error('IndexedDB upgrade blocked by another tab'));
-          });
+            request.onblocked=()=>{
+              abandoned=true;
+              reject(Error('IndexedDB upgrade blocked by another tab'));
+            };
+          }).catch(error=>{opened=null;throw error;});
           return opened;
         }
         async function list(){
@@ -1857,12 +2298,16 @@ body.help-scroll-locked{
             tx.onerror=()=>reject(tx.error||Error('Read failed'));
           });
         }
-        async function write(session,event=null){
+        async function write(session,events){
           const db=await open();
           return new Promise((resolve,reject)=>{
-            const tx=db.transaction(event?['sessions','events']:['sessions'],'readwrite');
-            tx.objectStore('sessions').put(session);
-            if(event)tx.objectStore('events').put(event);
+            const tx=db.transaction(events.length?['sessions','events']:['sessions'],'readwrite');
+            try{
+              tx.objectStore('sessions').put(session);
+              for(const event of events)tx.objectStore('events').put(event);
+            }catch(error){
+              tx.abort();reject(error);return;
+            }
             tx.oncomplete=resolve;
             tx.onabort=()=>reject(tx.error||Error('Write aborted'));
             tx.onerror=()=>reject(tx.error||Error('Write failed'));
@@ -1907,6 +2352,7 @@ body.help-scroll-locked{
       let language='ja';
       try { language=localStorage.getItem(STORAGE_KEY)==='en'?'en':(/^(ja)/i.test(navigator.language)?'ja':'en'); } catch { language=/^ja/i.test(navigator.language)?'ja':'en'; }
       Object.assign(translations.ja, {
+        resultBreakdown:'時間帯・補正の内訳',resultExportOptions:'個別CSV・出力設定',resultReviewRecording:'動画を見返す',
         automaticCount:'自動',manualCount:'手動補正',finalCount:'補正後',videoSourceSettings:'動画ファイルと解析方法',analysisMode:'解析方法',sequentialMode:'順番に解析（0.1秒間隔）',realtimeMode:'再生しながら解析',
         samplingNote:'順番に解析すると処理が終わるまで次へ進みません。全フレーム解析ではありません。動画時間より長くかかる場合があります。',
         linePresets:'判定線の配置',horizontalLine:'横線',verticalLine:'縦線',centerLine:'中央に戻す',
@@ -1915,16 +2361,18 @@ body.help-scroll-locked{
         areaInvalid:'左右・上下の順序と0〜100%を確認し、幅と高さを5%以上にしてください。',
         areaNote:'枠内に足元がある人だけを追跡します。判定線の両側に余裕を残してください。映像全体の認識処理は行います。',
         settingsShort:'設定',focusOn:'計測画面へ',focusOff:'設定・記録',latestNone:'まだ通過の記録はありません。',latestPassage:'直近の通過：{name} · {seconds}秒前',
+        inputOptions:'入力設定',lineToolsHeading:'判定線を置く',linePlacement:'人の足元が横切る位置に線をドラッグします。両端の丸で角度と長さを変えられます。',
         checkNone:'通過0件：人が通らなかった場合と、検出できなかった場合は区別できません。実際に通って確認してください。',
         checkCompare:'実際に通った回数・方向と照合してください。この結果は認識精度を保証しません。',
         checkSpeed:'処理速度：{fps} fps',checkSlow:'処理が遅く、通過を見落とす可能性があります。',checkNoSamples:'認識した映像がありません。カメラや処理状態を確認してください。',
         bundleCsv:'CSVをまとめて保存（ZIP）',copyResult:'結果をコピー',copyFallback:'コピー用の計測結果',copiedResult:'結果をコピーしました',copySelect:'コピーできませんでした。表示された結果を選択してコピーしてください。',
         correctionCount:'補正操作',measurementActions:'計測操作',sampleProgress:'動画の解析：{percent}% · 0.1秒間隔',
-        helpImprovements:'線の途中をつかむと全体を移動できます。「横線」「縦線」「中央に戻す」でも配置できます。AとBの位置が逆なら「A/B方向を反転」を使います。範囲を絞るときは設定内の左右上下の割合を指定し、線の両側に余裕を残してください。',
-        helpSampling:'動画は通常、0.1秒間隔で順番に調べます。すべてのコマを見るわけではなく、短い通過を見落とすことがあります。動画の長さより時間がかかる場合があります。再生しながら解析する方法も選べます。時間帯別の集計は、動画に映っている時刻ではなく、このアプリで解析した実際の時刻です。',
-        helpFocus:'計測中に設定や記録を見るときは「設定・記録」を押します。スマホでは画面下のボタンを使います。'
+        helpImprovements:'準備画面で「A/B方向を反転」を押し、もう一度横切って向きを確かめます。「カメラ・表示の設定」で、方向に「入場」「退場」などの名前を付けられます。カメラで線を動かしたときは、設置チェックをやり直してください。',
+        helpSampling:'既定では動画の先頭から0.1秒ごとに順番に調べるため、動画の長さより時間がかかる場合があります。短い通過は見落とすことがあります。',
+        helpFocus:'計測中にCSVを書き出すには「設定・記録」を開きます。結果画面では「個別CSV・出力設定」から個別のCSV保存や「結果をコピー」を選べます。'
       });
       Object.assign(translations.en, {
+        resultBreakdown:'Time intervals and corrections',resultExportOptions:'Individual CSVs and export settings',resultReviewRecording:'Review the recording',
         automaticCount:'Automatic',manualCount:'Manual adjustments',finalCount:'After corrections',videoSourceSettings:'Video file and analysis method',analysisMode:'Analysis method',sequentialMode:'Sequential samples (every 0.1 s)',realtimeMode:'Analyze during playback',
         samplingNote:'Sequential analysis waits for each sample to finish. It does not analyze every frame and may take longer than the video duration.',
         linePresets:'Counting line placement',horizontalLine:'Horizontal',verticalLine:'Vertical',centerLine:'Center line',
@@ -1933,14 +2381,15 @@ body.help-scroll-locked{
         areaInvalid:'Check boundary order and the 0–100% range. Width and height must each be at least 5%.',
         areaNote:'Only people with their foot point inside the rectangle are tracked. Leave space on both sides of the line. Recognition still processes the full image.',
         settingsShort:'Settings',focusOn:'Counting view',focusOff:'Settings & records',latestNone:'No crossings recorded yet.',latestPassage:'Latest crossing: {name} · {seconds} s ago',
+        inputOptions:'Input settings',lineToolsHeading:'Place the counting line',linePlacement:'Drag the line to where people’s feet will cross. Drag either end to adjust its angle and length.',
         checkNone:'No crossings: this cannot distinguish no one passing from a missed detection. Walk across the line to check.',
         checkCompare:'Compare the counts and directions with what you observed. This result does not guarantee accuracy.',
         checkSpeed:'Processing speed: {fps} fps',checkSlow:'Processing is slow and may miss crossings.',checkNoSamples:'No images analyzed. Check the camera and processing status.',
         bundleCsv:'Save all CSVs (ZIP)',copyResult:'Copy results',copyFallback:'Results to copy',copiedResult:'Results copied',copySelect:'Could not copy. Select and copy the displayed results.',
         correctionCount:'Correction actions',measurementActions:'Measurement actions',sampleProgress:'Video analysis: {percent}% · 0.1 s samples',
-        helpImprovements:'Drag the middle of the line to move it as a whole, or use Horizontal, Vertical or Center line. Use Reverse A/B directions to swap the A and B sides. Set area boundaries as percentages in settings if needed, leaving room on both sides of the line.',
-        helpSampling:'By default, video is analyzed at 0.1-second intervals in order. Not every frame is checked, so brief crossings may be missed. Analysis may take longer than the video. You can also choose analysis during playback. Time buckets use the actual time of analysis, not positions in the video.',
-        helpFocus:'While counting, open Settings & records to view settings and records. On phones, use the bottom bar.'
+        helpImprovements:'In Setup, select Reverse A/B directions, then check another crossing. Under Camera and display settings, you can name the directions Entry and Exit. Repeat the camera check after moving the line.',
+        helpSampling:'By default the app processes one sample at a time, every 0.1 seconds of video. Analysis can take longer than playback and can miss very brief crossings.',
+        helpFocus:'During a count, open Settings & records to export. In Results, open Individual CSVs and export settings to save a single CSV or use Copy results.'
       });
       function tr(key){return translations[language][key]||translations.en[key]||key;}
       // PERSIST:BEGIN
@@ -1948,6 +2397,11 @@ body.help-scroll-locked{
       // transaction. Errors never masquerade as successful saves; memory data
       // remains available for CSV export.
       let currentSession=null,writeTail=Promise.resolve(),savedSessions=[];
+      let savedListGeneration=0;
+      // A failed transaction commits neither the snapshot nor its events.
+      // Retain its ordered records until a later transaction commits both.
+      const pendingWrites=new WeakMap();
+      const deletedSessions=new WeakSet();
       function createSessionId(){
         if(crypto.randomUUID)return crypto.randomUUID();
         const bytes=crypto.getRandomValues(new Uint8Array(16));
@@ -1974,11 +2428,11 @@ body.help-scroll-locked{
         return {schemaVersion:1,eventId:event.id,sessionId:currentSession.sessionId,
           ordinal:ledger.size(),occurredAt:event.occurredAt,
           elapsedMs:event.elapsedMs,sourceTimeMs:event.sourceTimeMs??null,direction:event.direction,
-          directionLabel:countName(event.direction),
+          directionLabel:event.directionLabel,
           kind:({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[event.kind],
           delta:event.delta,referenceEventId:event.undoOf||null};
       }
-      function queueSnapshot(event=null){
+      function queueSnapshot(event=null,refreshList=false){
         if(!currentSession)return writeTail;
         const session=currentSession;
         timeline.checkpoint(session);
@@ -1992,23 +2446,55 @@ body.help-scroll-locked{
           session.runtimeInfo.sourceDurationMs=state.videoDurationMs||session.runtimeInfo.sourceDurationMs||null;
         const saved=JSON.parse(JSON.stringify(session));
         const record=event?serializeEvent(event):null;
-        writeTail=writeTail.then(()=>sessionStore.write(saved,record))
-          .then(()=>{state.storageReady=true;state.storageFailure=null;updateStorageNotice();},
-            error=>warnStorage(error));
+        writeTail=writeTail.then(async()=>{
+          if(deletedSessions.has(session))return;
+          const records=pendingWrites.get(session)||[];
+          if(record)records.push(record);
+          try{
+            await sessionStore.write(saved,records);
+            const recovered=pendingWrites.delete(session);
+            state.storageReady=true;state.storageFailure=null;updateStorageNotice();
+            if(recovered||refreshList)void refreshSavedSessions();
+          }catch(error){
+            pendingWrites.set(session,records);
+            warnStorage(error);
+          }
+        });
         return writeTail;
+      }
+      function deleteSessionRecord(sessionId){
+        const active=currentSession?.sessionId===sessionId?currentSession:null;
+        const deletion=writeTail.then(async()=>{
+          await sessionStore.deleteSession(sessionId);
+          if(active){
+            deletedSessions.add(active);
+            pendingWrites.delete(active);
+            if(currentSession===active){state.storageFailure=null;updateStorageNotice();}
+          }
+        });
+        writeTail=deletion.catch(()=>{});
+        return deletion;
       }
       function transitionSession(phase,reason=''){
         if(!currentSession)return;
         timeline.transition(currentSession,phase,Date.now(),reason);
-        queueSnapshot();
+        queueSnapshot(null,true);
       }
       async function refreshSavedSessions(){
         if(!state.storageReady)return;
-        try{savedSessions=await sessionStore.list();renderSavedSessions();}
-        catch(error){warnStorage(error);}
+        const generation=++savedListGeneration;
+        try{
+          const entries=await sessionStore.list();
+          if(generation!==savedListGeneration)return;
+          savedSessions=entries;renderSavedSessions();
+        }catch(error){if(generation===savedListGeneration)warnStorage(error);}
       }
       function renderSavedSessions(){
         const root=$('#savedList');
+        const hasRecords=savedSessions.length>0;
+        $('#savedSessions').toggleAttribute('data-has-records',hasRecords);
+        $('#jumpToSaved').hidden=!hasRecords;
+        $('#savedEntryCount').textContent='('+savedSessions.length+')';
         root.replaceChildren();
         if(!savedSessions.length){
           const note=document.createElement('p');note.className='saved-empty';note.textContent=tr('savedEmpty');root.append(note);return;
@@ -2026,10 +2512,10 @@ body.help-scroll-locked{
           info.append(name,secondary);
           const actions=document.createElement('div');actions.className='row';
           const open=document.createElement('button');open.type='button';open.textContent=tr('openSaved');
-          open.disabled=state.restoring;
+          open.disabled=state.restoring||state.sourceBusy;
           open.addEventListener('click',()=>loadSavedSession(session.sessionId));
           const del=document.createElement('button');del.type='button';del.className='danger';del.textContent=tr('deleteSaved');
-          del.disabled=state.restoring;
+          del.disabled=state.restoring||state.sourceBusy;
           del.addEventListener('click',()=>deleteSavedSession(session.sessionId));
           actions.append(open,del);row.append(info,actions);root.append(row);
         }
@@ -2049,19 +2535,34 @@ body.help-scroll-locked{
       }
       async function prepareToSwitch(){
         if(!state.startTime)return true;
+        const previous=currentSession;
+        await writeTail;
+        if(currentSession!==previous)return false;
+        if(state.phase==='done'&&state.storageReady&&!state.storageFailure&&!pendingWrites.has(previous))return true;
+        const warned=Boolean(state.storageFailure);
         const ok=await AppConfirm.ask({title:tr('switchTitle'),
-          message:state.storageFailure?tr('switchUnsafe'):tr('switchMessage'),
+          message:warned?tr('switchUnsafe'):tr('switchMessage'),
           confirmLabel:tr('switchConfirm'),cancelLabel:tr('cancel')});
-        if(!ok)return false;
+        if(!ok||currentSession!==previous)return false;
         if(state.phase==='counting')pauseCount();
         await writeTail;
-        return true;
+        if(currentSession!==previous)return false;
+        if(pendingWrites.has(previous))await queueSnapshot();
+        if(pendingWrites.has(previous)&&!warned){
+          const discard=await AppConfirm.ask({title:tr('switchTitle'),message:tr('switchUnsafe'),
+            confirmLabel:tr('switchConfirm'),cancelLabel:tr('cancel')});
+          if(!discard)return false;
+        }
+        return currentSession===previous;
       }
       async function loadSavedSession(sessionId){
-        if(state.restoring)return;
-        if(!(await prepareToSwitch()))return;
-        state.restoring=true;renderSavedSessions();
+        if($('#appMain').dataset.screen==='source')cancelPermissionRequest();
+        if(state.phase==='loading')return;
+        if(state.restoring||state.sourceBusy)return;
+        state.restoring=true;renderState();renderSavedSessions();
+        let message;
         try{
+          if(!(await prepareToSwitch()))return;
           await writeTail;
           const saved=await sessionStore.load(sessionId);
           if(!saved.session)throw Error('Saved session not found');
@@ -2069,6 +2570,7 @@ body.help-scroll-locked{
           if(session.schemaVersion!==1||!['camera','file'].includes(session.sourceType))throw Error('Incompatible session');
           const mapped=saved.events.map(item=>({
             id:item.eventId,occurredAt:item.occurredAt,direction:item.direction,
+            directionLabel:item.directionLabel||session.directionLabels?.[item.direction],
             kind:({auto:'auto',manual_adjustment:'correction',undo_adjustment:'undo'})[item.kind],
             delta:item.delta,elapsedMs:item.elapsedMs,undoOf:item.referenceEventId||'',
             sourceTimeMs:Number.isFinite(item.sourceTimeMs)?item.sourceTimeMs:null
@@ -2099,15 +2601,15 @@ body.help-scroll-locked{
           state.testCompleted=false;
           if(session.state==='interrupted')await queueSnapshot();
           saveSetup();draw();renderTimeline();
-          renderState(session.sourceType==='file'?tr('videoReopenRequired'):undefined);
+          if(session.sourceType==='file')message=tr('videoReopenRequired');
           toast(tr(session.sourceType==='file'?'videoReopenRequired':
             session.state==='done'?'openedSaved':'restoredStopped'));
           await refreshSavedSessions();
         }catch(error){warnStorage(error);toast(tr('restoreFailed'));}
-        finally{state.restoring=false;renderSavedSessions();}
+        finally{state.restoring=false;renderState(message);renderSavedSessions();}
       }
       async function deleteSavedSession(sessionId){
-        if(state.restoring)return;
+        if(state.restoring||state.sourceBusy)return;
         const ok=await AppConfirm.ask({title:tr('deleteTitle'),message:tr('deleteMessage'),
           confirmLabel:tr('deleteSaved'),cancelLabel:tr('cancel')});
         if(!ok)return;
@@ -2115,18 +2617,17 @@ body.help-scroll-locked{
         try{
           if(currentSession?.sessionId===sessionId){
             if(state.phase==='counting')pauseCount();
-            await writeTail;
-            await sessionStore.deleteSession(sessionId);resetActiveView();
+            await deleteSessionRecord(sessionId);resetActiveView();
           }else{
-            await writeTail;await sessionStore.deleteSession(sessionId);
+            await deleteSessionRecord(sessionId);
           }
           await refreshSavedSessions();
           toast(tr('deleted'));
         }catch(error){warnStorage(error);toast(tr('deleteFailed'));}
-        finally{state.restoring=false;renderSavedSessions();}
+        finally{state.restoring=false;renderState();renderSavedSessions();}
       }
       async function startNewSession(){
-        if(state.restoring)return;
+        if(state.restoring||state.sourceBusy)return;
         if(!(await prepareToSwitch()))return;
         resetActiveView();await refreshSavedSessions();
       }
@@ -2257,53 +2758,111 @@ body.help-scroll-locked{
         const sec=Math.max(0,Math.floor(ms/1000));
         return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
       }
+      function usesMediaBuckets(){
+        return currentSession?.sourceType==='file'&&$('#timeBasis').value==='media';
+      }
+      function selectedBuckets(minutes){
+        const events=ledger.history();
+        return usesMediaBuckets()
+          ?timeline.mediaAggregation(events,minutes,currentSession.runtimeInfo?.sourceDurationMs)
+          :timeline.aggregation(currentSession,events,minutes);
+      }
+      function mediaBoundaryText(ms){
+        const seconds=formatElapsed(ms),fraction=ms%1000;
+        return fraction?seconds+'.'+String(fraction).padStart(3,'0'):seconds;
+      }
       function renderTimeline(){
         const section=$('#timelineSection'),coverage=$('#coverageSummary');
         const active=Boolean(currentSession&&state.startTime);
+        const file=active&&currentSession.sourceType==='file';
         section.hidden=!active;coverage.hidden=!active;
-        if(!active){$('#timelineRows').replaceChildren();return;}
+        $('#timeBasisField').hidden=!file;
+        if(!active){
+          $('#timeBasis').value='media';
+          $('#timelineRows').replaceChildren();
+          return;
+        }
+        const media=usesMediaBuckets();
+        $('#timelineHeading').textContent=tr(media?'mediaHeading':file?'fileTimelineHeading':'timelineHeading');
+        $('#coverageHint').textContent=tr(media?'mediaBucketHint':file?'fileCoverageHint':'coverageHint');
         const info=timeline.durations(currentSession,Date.now());
         const observed=formatElapsed(info.observedMs),paused=formatElapsed(info.pausedMs),missing=formatElapsed(info.missingMs);
         const since=currentSession.startedAt?Math.max(0,(currentSession.endedAt?
           Date.parse(currentSession.endedAt):Date.now())-Date.parse(currentSession.startedAt)):0;
-        coverage.textContent=tr('covered')+': '+observed+' · '+tr('pausedCoverage')+': '+paused+
+        coverage.textContent=(file?tr('wallBasis')+' · ':'')+tr('covered')+': '+observed+' · '+tr('pausedCoverage')+': '+paused+
           ' · '+tr('missingCoverage')+': '+missing+' · '+tr('wallElapsed')+': '+formatElapsed(since);
         const step=Number($('#aggregationMinutes').value)||5;
-        const entries=timeline.aggregation(currentSession,ledger.history(),step);
+        const entries=selectedBuckets(step);
         const root=$('#timelineRows');root.replaceChildren();
         if(!entries.length){
           const empty=document.createElement('p');empty.className='saved-empty';
-          empty.textContent=tr('noIntervalRows');root.append(empty);return;
+          empty.textContent=tr(media?'mediaBucketEmpty':'noIntervalRows');root.append(empty);return;
         }
         const last=entries.slice(-16),max=Math.max(1,...last.flatMap(entry=>[entry.totalA,entry.totalB]));
         for(const item of last){
           const container=document.createElement('div');container.className='timeline-item';
-          container.dataset.coverage=item.coverageStatus;
           const heading=document.createElement('strong');
-          heading.textContent=new Date(item.start).toLocaleString(language==='ja'?'ja-JP':'en-US',{
-            month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
-          });
+          if(media){
+            heading.textContent=item.startMs===null?tr('unknownMediaTime'):
+              mediaBoundaryText(item.startMs)+' – '+mediaBoundaryText(item.endMs);
+          }else{
+            container.dataset.coverage=item.coverageStatus;
+            heading.textContent=new Date(item.start).toLocaleString(language==='ja'?'ja-JP':'en-US',{
+              month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
+            });
+          }
           const summary=document.createElement('div');summary.className='meta';
           summary.textContent=countName('A_TO_B')+': '+item.totalA+' · '+countName('B_TO_A')+': '+item.totalB;
           const bar=document.createElement('div');bar.className='direction-bars';bar.setAttribute('aria-hidden','true');
           for(const [index,total] of [item.totalA,item.totalB].entries()){
             const track=document.createElement('div');track.className='bar';
             const value=document.createElement('span');value.className=index?'direction-b':'direction-a';
+            value.hidden=total<=0;
             value.style.width=Math.max(0,Math.min(100,100*total/max))+'%';track.append(value);bar.append(track);
           }
-          const coverageText=document.createElement('div');coverageText.className='coverage';
-          coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
-            missing:'coverageMissing'})[item.coverageStatus])+
-            ' · '+tr('covered')+' '+formatElapsed(item.observedMs)+
-            ' · '+tr('pausedCoverage')+' '+formatElapsed(item.pausedMs)+
-            ' · '+tr('missingCoverage')+' '+formatElapsed(item.missingMs);
-          container.append(heading,summary,bar,coverageText);root.append(container);
+          container.append(heading,summary,bar);
+          if(!media){
+            const coverageText=document.createElement('div');coverageText.className='coverage';
+            coverageText.textContent=tr(({observed:'coverageObserved',partial:'coveragePartial',
+              missing:'coverageMissing'})[item.coverageStatus])+
+              ' · '+tr('covered')+' '+formatElapsed(item.observedMs)+
+              ' · '+tr('pausedCoverage')+' '+formatElapsed(item.pausedMs)+
+              ' · '+tr('missingCoverage')+' '+formatElapsed(item.missingMs);
+            container.append(coverageText);
+          }
+          root.append(container);
         }
       }
 
       function isFileMode(){return state.sourceMode==='file';}
       function hasActiveSource(){return isFileMode()?state.videoReady:Boolean(state.stream);}
       function fileMediaTimeMs(){return isFileMode()&&state.videoReady?Math.max(0,Math.round(video.currentTime*1000)):null;}
+      function renderReviewEvents(){
+        const group=$('#reviewEvents'),select=$('#reviewEvent');
+        if(!isFileMode()||state.phase!=='done'||!state.videoReady||!state.videoDurationMs){
+          group.hidden=true;
+          if(select.options.length)select.replaceChildren();
+          delete select.dataset.revision;
+          return;
+        }
+        const revision=JSON.stringify([currentSession.sessionId,ledger.size(),language,countName('A_TO_B'),countName('B_TO_A')]);
+        if(select.dataset.revision===revision)return;
+        select.dataset.revision=revision;
+        const events=ledger.history().filter(event=>Number.isFinite(event.sourceTimeMs));
+        group.hidden=!events.length;
+        if(!events.length)return;
+        events.sort((a,b)=>a.sourceTimeMs-b.sourceTimeMs);
+        const options=document.createDocumentFragment();
+        options.append(new Option(tr('reviewEventPrompt'),''));
+        for(const event of events){
+          const kind={auto:'automaticCount',correction:'manualCount',undo:'undo'}[event.kind];
+          const time=formatElapsed(event.sourceTimeMs)+'.'+String(event.sourceTimeMs%1000).padStart(3,'0');
+          const direction=event.directionLabel||countName(event.direction);
+          const label=time+' · '+direction+' · '+tr(kind)+' '+(event.delta>0?'+1':'−1');
+          options.append(new Option(label,String(event.sourceTimeMs)));
+        }
+        select.replaceChildren(options);
+      }
       function renderVideoTime(){
         if(!isFileMode())return;
         const elapsed=Math.max(0,Number(video.currentTime)||0);
@@ -2494,8 +3053,79 @@ body.help-scroll-locked{
         updateRecognitionStatus();
       }
 
+      function workflowScreen(phase,sourceAvailable,fileMode){
+        if(phase==='done')return 'result';
+        if(phase==='testing')return 'setup';
+        if(phase==='ready'&&sourceAvailable&&(!state.startTime||(!fileMode&&!state.testCompleted)))return 'setup';
+        if(state.startTime)return 'measure';
+        if(sourceAvailable&&phase==='interrupted')return 'setup';
+        return 'source';
+      }
+      // Each live control keeps its single event handler and value across workflow screens.
+      const resultPlacements=[
+        ['#minusA','#resultAdjustA','.counter-adjustments'],['#minusB','#resultAdjustB','.counter-adjustments'],
+        ['#undoCorrection','#resultUndo'],['#bundleButton','#resultMainActions'],['#newSession','#resultMainActions'],
+        ['.precount-row','#resultExportSlot'],['label[for="labelA"]','#resultExportSlot'],['label[for="labelB"]','#resultExportSlot'],
+        ['.export-panel','#resultExportSlot'],['#timelineSection','#resultTimelineSlot'],
+        ['.video-panel','#resultVideoSlot'],['#savedSessions','#resultHistorySlot']
+      ].map(([selector,slot,group])=>{
+        const element=group?$(selector).closest(group):$(selector);
+        const original=document.createComment('return '+selector);
+        element.before(original);
+        return {element,original,slot:$(slot)};
+      });
+      let resultLayoutActive=false;
+      function placeResultControls(active){
+        if(active===resultLayoutActive)return;
+        resultLayoutActive=active;
+        for(const {element,original,slot} of resultPlacements){
+          if(active)slot.append(element);else original.after(element);
+        }
+        for(const detail of $('#report').querySelectorAll('.result-sections > details'))detail.open=false;
+      }
+      let screenFocusFrame=0;
+      function focusWorkflowHeading(screen){
+        cancelAnimationFrame(screenFocusFrame);
+        screenFocusFrame=requestAnimationFrame(()=>{
+          if($('#appMain').dataset.screen!==screen||document.querySelector('dialog[open]'))return;
+          const targets={source:'#entryIntro',setup:'#cameraHeading',measure:'#counterHeading',result:'#reportHeading'};
+          const target=$(targets[screen]);
+          target.tabIndex=-1;
+          target.focus({preventScroll:true});
+          window.scrollTo({top:0,behavior:'instant'});
+        });
+      }
+      function updateWorkflowScreen(screen){
+        const main=$('#appMain');
+        if(main.dataset.screen===screen)return;
+        main.dataset.screen=screen;
+        focusWorkflowHeading(screen);
+      }
+      function renderSourceEntry(){
+        const screen=$('#appMain').dataset.screen;
+        for(const step of $('#workflowProgress').children){
+          if(step.dataset.screenStep===screen)step.setAttribute('aria-current','step');
+          else step.removeAttribute('aria-current');
+        }
+        const camera=$('#cameraStart'),atEntry=screen==='source';
+        const cameraParent=atEntry?$('#sourceCameraSlot'):$('#cameraActions');
+        if(camera.parentElement!==cameraParent)cameraParent.prepend(camera);
+        if(!atEntry)return;
+        const loading=state.phase==='loading',busy=state.sourceBusy||state.restoring;
+        camera.disabled=!simdAvailable||busy||loading;
+        const waitingForPermission=loading&&!isFileMode()&&!state.stream;
+        $('#chooseVideo').disabled=!simdAvailable||busy||(loading&&!waitingForPermission);
+        $('#chooseAnyVideo').disabled=$('#chooseVideo').disabled;
+        const errorKey=!simdAvailable?'simdUnsupported':isFileMode()?state.videoErrorKey:state.errorKey;
+        const status=$('#entryStatus'),text=loading?tr(isFileMode()?'openingVideo':'openingCamera'):
+          errorKey?tr(errorKey):'';
+        status.hidden=!text;
+        status.dataset.error=String(Boolean(errorKey)&&!loading);
+        if(status.textContent!==text)status.textContent=text;
+      }
       function renderState(message){
         const phase=state.phase,sourceAvailable=hasActiveSource(),fileMode=isFileMode();
+        updateWorkflowScreen(workflowScreen(phase,sourceAvailable,fileMode));
         renderOperations();
         $('#appMain').dataset.phase=phase;
         $('#appMain').dataset.hasSource=String(sourceAvailable);
@@ -2530,7 +3160,9 @@ body.help-scroll-locked{
         $('#reportManualB').textContent=totals.manualB>0?'+'+totals.manualB:totals.manualB;
         $('#reportTotal').textContent=totals.a+totals.b;
         $('#reportFinalA').textContent=totals.a;$('#reportFinalB').textContent=totals.b;
-        $('#reportLabelA').textContent=nameA+' · '+tr('finalCount');$('#reportLabelB').textContent=nameB+' · '+tr('finalCount');
+        $('#reportLabelA').textContent=nameA;$('#reportLabelB').textContent=nameB;
+        $('#resultSessionName').textContent=$('#sessionName').value;
+        $('#resultVideoDetails').hidden=!fileMode;
         for(const [key,name,suffix] of [['autoA',nameA,'automaticCount'],['autoB',nameB,'automaticCount'],['manualA',nameA,'manualCount'],['manualB',nameB,'manualCount']])
           $('#report [data-i18n='+key+']').textContent=name+' · '+tr(suffix);
         $('#reportCorrections').textContent=ledger.history().filter(e=>e.kind==='correction').length;
@@ -2547,21 +3179,27 @@ body.help-scroll-locked{
         $('#sourceMode').value=state.sourceMode;
         $('#sourceMode').disabled=state.sourceBusy||state.restoring;
         $('#videoFile').disabled=state.sourceBusy||state.restoring;
+        $('#newSession').disabled=state.sourceBusy||state.restoring;
+        for(const button of document.querySelectorAll('#savedList button'))button.disabled=state.sourceBusy||state.restoring;
         $('#cameraActions').hidden=fileMode;
         $('#videoSourceBox').hidden=!fileMode;
         if(!state.videoReady)$('#videoSourceBox').open=true;
+        const reviewing=fileMode&&phase==='done';
+        const attachOriginal=reviewing&&!state.videoReady;
         $('#videoSourceSummary').textContent=state.videoReady?state.videoFilename+' · '+tr($('#analysisMode').value==='sequential'?'sequentialMode':'realtimeMode'):tr('videoSourceSettings');
+        $('label[for="videoFile"]').textContent=tr(attachOriginal?'reviewOriginal':'videoSelect');
+        $('#videoFileHint').textContent=tr(attachOriginal?'reviewOriginalHint':'videoFileHint');
         $('#videoPlayback').hidden=!fileMode||!state.videoReady;
         $('#cameraHeading').textContent=tr(fileMode?'videoCameraHeading':'camera');
-        $('#timelineHeading').textContent=tr(fileMode?'fileTimelineHeading':'timelineHeading');
-        $('#coverageHint').textContent=tr(fileMode?'fileCoverageHint':'coverageHint');
         $('#cameraPlaceholder').querySelector('span').textContent=tr(fileMode?'videoEmpty':'previewEmpty');
         $('#videoFileStatus').textContent=(state.videoErrorKey?tr(state.videoErrorKey):'')||
           (state.videoReady?tr('videoFileLoaded').replace('{name}',state.videoFilename):tr('videoEmpty'));
-        $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':'previewVideo');
+        $('#previewVideo').textContent=tr(state.filePreviewing?'pausePreview':reviewing?'reviewVideo':'previewVideo');
+        $('#videoReminder').textContent=tr(reviewing?'reviewHint':'videoReminder');
+        renderReviewEvents();
         $('#videoSeek').disabled=!state.videoReady||state.sourceBusy||
           state.fileSeekingConfirmation||!(state.videoDurationMs>0);
-        $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||Boolean(state.startTime);
+        $('#previewVideo').disabled=!state.videoReady||state.sourceBusy||(Boolean(state.startTime)&&!reviewing);
         $('#reanalyzeVideo').disabled=!state.videoReady||!state.startTime||state.sourceBusy;
         $('#removeVideo').disabled=!state.videoReady||state.sourceBusy;
         $('#testCard').hidden=fileMode||!sourceAvailable||!state.detector||
@@ -2592,9 +3230,11 @@ body.help-scroll-locked{
         $('#downloadButton').disabled=!state.startTime;
         $('#summaryButton').disabled=!state.startTime;
         $('#intervalsButton').disabled=!state.startTime;
-        $('#resetButton').disabled=!state.startTime&&!totals.hasEvents;
+        $('#resetButton').disabled=state.sourceBusy||state.restoring||(!state.startTime&&!totals.hasEvents);
         $('#report').hidden=phase!=='done';
+        placeResultControls(phase==='done');
         $('#cameraPlaceholder').hidden=sourceAvailable;
+        renderSourceEntry();
         const next=renderNextAction(phase,fileMode,sourceAvailable,validLine);
         const activeStep=next==='count'||next==='counting'||next==='done'?'flowMeasure':
           next==='test'||next==='testing'?'flowTest':'flowSet';
@@ -2838,7 +3478,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const event=ledger.correct(direction,delta,effectiveElapsed(),fileMediaTimeMs());
         if(!event){toast(tr('negativeBlocked'));return;}
-        void queueSnapshot(event).then(refreshSavedSessions);renderState();renderTimeline();
+        queueSnapshot(event,true);renderState();renderTimeline();
         AppToast.show({message:countName(direction)+' '+(delta>0?'+1':'−1')+' · '+tr('corrected'),
           actionLabel:tr('undo'),onAction:()=>undoLastCorrection(event.id)});
       }
@@ -2846,7 +3486,7 @@ body.help-scroll-locked{
         if(!state.startTime||state.phase==='testing')return;
         const entry=ledger.undo(effectiveElapsed(),eventId,fileMediaTimeMs());
         if(!entry){toast(tr('undoUnavailable'));return;}
-        void queueSnapshot(entry).then(refreshSavedSessions);renderState();renderTimeline();toast(tr('undone'));
+        queueSnapshot(entry,true);renderState();renderTimeline();toast(tr('undone'));
       }
       // LINE_INTERACTION:BEGIN
       // Pure geometry shared by mouse, finger, stylus and keyboard. A translation
@@ -3049,7 +3689,7 @@ body.help-scroll-locked{
         zeroTracks();
       }
       async function switchVideoSource(next){
-        if(next!== 'camera'&&next!=='file'||next===state.sourceMode||state.sourceBusy)return;
+        if(next!== 'camera'&&next!=='file'||next===state.sourceMode||state.sourceBusy||state.restoring)return;
         state.sourceBusy=true;
         renderState();
         try{
@@ -3108,8 +3748,9 @@ body.help-scroll-locked{
         return 0; // still allow playback and counting, but disable seeking UI
       }
       async function readVideoFile(file){
-        if(!isFileMode()||state.sourceBusy||!file)return;
-        if(!simdAvailable){state.videoErrorKey='simdUnsupported';renderState();return;}
+        if(!isFileMode()||state.sourceBusy||state.restoring||!file)return;
+        const reviewSession=state.phase==='done'&&!state.videoReady?currentSession:null;
+        if(!reviewSession&&!simdAvailable){state.videoErrorKey='simdUnsupported';renderState();return;}
         if(!(String(file.type).startsWith('video/')||/\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name))){
           state.videoErrorKey='videoBadFormat';renderState();return;
         }
@@ -3117,13 +3758,16 @@ body.help-scroll-locked{
         renderState();
         let newUrl=null;
         try{
-          if(!(await prepareToSwitch()))return;
-          resetActiveView();
+          if(!reviewSession){
+            if(!(await prepareToSwitch()))return;
+            resetActiveView();
+            state.phase='loading';
+          }
           state.sourceMode='file';
           video.removeAttribute('autoplay');
           video.muted=true;
           video.preload='auto';
-          state.phase='loading';renderState();
+          renderState();
           newUrl=URL.createObjectURL(file);
           state.videoUrl=newUrl;
           state.videoFilename=String(file.name).slice(0,220);
@@ -3146,23 +3790,35 @@ body.help-scroll-locked{
           });
           if(!video.videoWidth||!video.videoHeight)throw Error('Video dimensions unavailable');
           const duration=await getFiniteVideoDuration();
+          if(state.videoUrl!==newUrl)return;
+          if(reviewSession&&reviewSession!==currentSession){releaseLocalVideo();return;}
           state.videoDurationMs=Math.max(0,Math.round(duration*1000));
+          const expectedDuration=reviewSession?.runtimeInfo?.sourceDurationMs;
+          if(expectedDuration&&state.videoDurationMs&&Math.abs(expectedDuration-state.videoDurationMs)>250){
+            releaseLocalVideo();state.videoErrorKey='reviewDurationMismatch';return;
+          }
           $('#analysisMode').querySelector('[value=sequential]').disabled=!state.videoDurationMs;
-          if(!state.videoDurationMs){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
+          if(!state.videoDurationMs&&!reviewSession){$('#analysisMode').value='realtime';toast(tr('videoUnknownDuration'));}
           state.videoReady=true;
           state.fileNeedsReanalysis=false;
           state.filePreviewing=false;
           state.lastProcessedSourceMs=-1;
-          await initEmbeddedDetector();
-          state.phase='ready';$('#videoSourceBox').open=false;
+          if(!reviewSession){
+            await initEmbeddedDetector();
+            state.phase='ready';
+          }
+          $('#videoSourceBox').open=false;
           state.videoErrorKey=null;inferencePacer.reset();
-          zeroTracks();renderState(tr('videoReady'));draw();
-          loop();
+          zeroTracks();renderState(tr(reviewSession?'reviewHint':'videoReady'));draw();
+          if(!reviewSession)loop();
         }catch(error){
+          if(newUrl&&state.videoUrl!==newUrl)return;
           console.warn('[Passage Counter] Local video is unsupported',error);
           if(newUrl&&state.videoUrl===newUrl)releaseLocalVideo();
-          if(state.detector){state.detector.close();state.detector=null;}
-          state.phase='error';
+          if(!reviewSession){
+            if(state.detector){state.detector.close();state.detector=null;}
+            state.phase='error';
+          }
           state.videoErrorKey=error?.message==='Invalid or unknown video duration'?'videoInvalidDuration':'videoLoadFailed';
           renderState();
         }finally{
@@ -3171,12 +3827,13 @@ body.help-scroll-locked{
         }
       }
       async function toggleFilePreview(){
-        if(!isFileMode()||!state.videoReady||state.startTime||state.sourceBusy)return;
+        if(!isFileMode()||!state.videoReady||(state.startTime&&state.phase!=='done')||state.sourceBusy)return;
         if(state.filePreviewing){
           video.pause();state.filePreviewing=false;renderState();return;
         }
         try{
-          if(video.ended||video.currentTime>=video.duration-0.08){
+          const duration=state.videoDurationMs/1000;
+          if(video.ended||(duration>0&&video.currentTime>=duration-0.08)){
             state.fileInternalSeek=true;video.currentTime=0;
           }
           await video.play();
@@ -3187,6 +3844,10 @@ body.help-scroll-locked{
       }
       async function confirmFileReanalysis({requestedSecond=0,restart=false}={}){
         if(!isFileMode()||!state.videoReady||state.fileSeekingConfirmation||state.sourceBusy)return false;
+        if(state.phase==='done'&&!restart){
+          video.currentTime=Math.max(0,Math.min(state.videoDurationMs/1000,requestedSecond));
+          renderVideoTime();return true;
+        }
         state.fileSeekingConfirmation=true;
         if(state.filePreviewing){video.pause();state.filePreviewing=false;}
         if(state.phase==='counting')pauseCount();
@@ -3200,7 +3861,7 @@ body.help-scroll-locked{
               cancelLabel:tr('cancel')
             });
             if(!accepted){renderState(tr('videoSeekRejected'));return false;}
-            await resetCounts();
+            if(!await resetCounts())return false;
           }
           const target=Math.max(0,Math.min(state.videoDurationMs>0?state.videoDurationMs/1000:0,requestedSecond));
           state.fileInternalSeek=true;
@@ -3218,7 +3879,8 @@ body.help-scroll-locked{
       }
       async function closeVideoAction(){
         if(!isFileMode()||!state.videoUrl||state.sourceBusy)return;
-        if(state.startTime){
+        const finished=state.phase==='done';
+        if(state.startTime&&!finished){
           const accepted=await AppConfirm.ask({title:tr('videoRemoveTitle'),
             message:tr('videoRemoveMessage'),
             confirmLabel:tr('videoRemoveConfirm'),cancelLabel:tr('cancel')});
@@ -3227,7 +3889,7 @@ body.help-scroll-locked{
           await writeTail;
         }
         closeCamera();
-        state.phase=state.startTime?'interrupted':'idle';
+        state.phase=finished?'done':state.startTime?'interrupted':'idle';
         renderState(state.startTime?tr('videoReopenRequired'):tr('videoMissing'));
       }
       // VIDEO:END
@@ -3270,15 +3932,23 @@ body.help-scroll-locked{
         if(state.phase!=='done'&&state.phase!=='interrupted')state.phase=state.startTime?'paused':'idle';
         draw();renderState();
       }
+      let cameraRequest=0;
+      function cancelPermissionRequest(){
+        if(isFileMode()||state.phase!=='loading'||state.stream)return;
+        cameraRequest++;
+        state.phase='idle';renderState();
+      }
       async function startCamera(){
         if(isFileMode())return;
         if(!simdAvailable){state.phase='error';state.errorKey='simdUnsupported';renderState();return;}
         if(!navigator.mediaDevices?.getUserMedia){state.phase='error';state.errorKey='unsupported';renderState();return;}
         if(state.stream)return;
+        const request=++cameraRequest;
         state.errorKey=null;state.phase='loading';renderState();
         try{
           const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:$('#cameraFacing').value},width:{ideal:1280},height:{ideal:720}}});
-          state.stream=stream;
+          if(request!==cameraRequest){for(const track of stream.getTracks())track.stop();return;}
+          state.stream=stream;renderState();
           const track=stream.getVideoTracks()[0];
           if(track)track.addEventListener('ended',()=>{
             const wasCounting=state.phase==='counting';
@@ -3292,6 +3962,7 @@ body.help-scroll-locked{
           state.phase='ready';state.errorKey=null;state.lastInfer=0;inferencePacer.reset();zeroTracks();renderState();
           loop();
         }catch(err){
+          if(request!==cameraRequest)return;
           console.error('[Passage Counter] Camera / embedded runtime error',err);
           const permission=err?.name==='NotAllowedError'||err?.name==='NotFoundError'||err?.name==='NotReadableError'||err?.name==='OverconstrainedError';
           closeCamera();state.phase='error';state.errorKey=permission?'cameraBlocked':'modelFailed';renderState();
@@ -3300,7 +3971,7 @@ body.help-scroll-locked{
       function loop(now=performance.now()){
         if(!hasActiveSource()||state.sequentialRunning)return;
         const fileMode=isFileMode();
-        if(fileMode&&video.paused){state.frameHandle=0;return;}
+        if(fileMode&&(video.paused||state.phase==='done')){state.frameHandle=0;return;}
         const sourceMs=fileMode?fileMediaTimeMs():null;
         const freshFrame=!fileMode||(
           state.videoReady&&!video.seeking&&
@@ -3408,8 +4079,10 @@ body.help-scroll-locked{
           modelVersion:'EfficientDet-Lite0-int8-1'});
         inferencePacer.reset();
         if(!state.startTime||state.phase==='ready')state.focused=true;
+        const resuming=$('#appMain').dataset.screen==='measure';
         state.lastActive=performance.now();state.phase='counting';
-        transitionSession('counting');zeroTracks();renderState();renderTimeline();showMeasurement();
+        transitionSession('counting');zeroTracks();renderState();renderTimeline();
+        if(resuming)focusWorkflowHeading('measure');
         if(isFileMode()&&$('#analysisMode').value==='sequential'&&state.videoDurationMs>0){
           void runSequential();lockScreen();
         }else if(isFileMode()){
@@ -3418,7 +4091,6 @@ body.help-scroll-locked{
             if(state.phase==='counting')interrupt(tr('videoPlaybackFailed'));
           });
         }else lockScreen();
-        void writeTail.then(refreshSavedSessions);
       }
       function pauseCount(){
         if(state.phase!=='counting')return;
@@ -3441,10 +4113,9 @@ body.help-scroll-locked{
         if(!['counting','paused','interrupted'].includes(state.phase))return;
         cancelSequential();state.focused=false;
         state.phase='done';transitionSession('done','finished');
-        if(isFileMode()){video.pause();state.filePreviewing=false;}
+        if(isFileMode()){video.pause();state.filePreviewing=false;zeroTracks();draw();}
         else closeCamera();
         unlockScreen();renderState();renderTimeline();
-        void writeTail.then(refreshSavedSessions);
       }
       function normalizedFilename(){
         const input=$('#outputFilename');
@@ -3474,7 +4145,7 @@ body.help-scroll-locked{
         const rows=[['event_id','occurred_at','direction','direction_label','kind','delta','elapsed_ms','undo_of',
           'session_id','source_time_ms','event_kind_v1','reference_event_id']];
         for(const e of ledger.history())rows.push([e.id,e.occurredAt,e.direction,
-          countName(e.direction),e.kind,e.delta,e.elapsedMs,e.undoOf,
+          e.directionLabel,e.kind,e.delta,e.elapsedMs,e.undoOf,
           currentSession?.sessionId||'',e.sourceTimeMs??'',
           ({auto:'auto',correction:'manual_adjustment',undo:'undo_adjustment'})[e.kind],e.undoOf||'']);
         if(asRows===true)return rows;
@@ -3497,16 +4168,27 @@ body.help-scroll-locked{
       function exportIntervals(asRows=false){
         if(!currentSession||!state.startTime)return;
         const size=Number($('#aggregationMinutes').value)||5;
-        const buckets=timeline.aggregation(currentSession,ledger.history(),size);
-        const rows=[['session_id','bucket_start','bucket_end','bucket_minutes',
+        const buckets=selectedBuckets(size);
+        let rows;
+        if(usesMediaBuckets()){
+          rows=[['session_id','time_basis','bucket_kind','source_start_ms','source_end_ms','bucket_minutes',
+            'auto_a','manual_a','total_a','auto_b','manual_b','total_b']];
+          for(const entry of buckets)rows.push([
+            currentSession.sessionId,'video',entry.startMs===null?'unknown_position':'interval',
+            entry.startMs??'',entry.endMs??'',size,entry.autoA,entry.manualA,entry.totalA,
+            entry.autoB,entry.manualB,entry.totalB
+          ]);
+        }else{
+          rows=[['session_id','bucket_start','bucket_end','bucket_minutes',
           'observed_seconds','paused_seconds','missing_seconds','auto_a','manual_a','total_a',
           'auto_b','manual_b','total_b','coverage_status','timezone']];
-        for(const entry of buckets)rows.push([
-          currentSession.sessionId,entry.start,entry.end,size,
-          Math.round(entry.observedMs/1000),Math.round(entry.pausedMs/1000),Math.round(entry.missingMs/1000),
-          entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
-          entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
-        ]);
+          for(const entry of buckets)rows.push([
+            currentSession.sessionId,entry.start,entry.end,size,
+            Math.round(entry.observedMs/1000),Math.round(entry.pausedMs/1000),Math.round(entry.missingMs/1000),
+            entry.autoA,entry.manualA,entry.totalA,entry.autoB,entry.manualB,entry.totalB,
+            entry.coverageStatus,Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'
+          ]);
+        }
         if(asRows===true)return rows;
         downloadRows(rows,csvName('intervals'));
       }
@@ -3535,11 +4217,20 @@ body.help-scroll-locked{
         const sessionId=currentSession?.sessionId||null;
         if(state.phase==='counting')pauseCount();
         if(state.phase==='testing')finishTest(true);
-        await writeTail;
+        if(isFileMode()&&state.videoReady){
+          video.pause();state.filePreviewing=false;
+          // Reattached results do not load the detector until a new count is requested.
+          if(!state.detector){
+            state.sourceBusy=true;renderState();
+            try{await initEmbeddedDetector();}
+            catch{toast(tr('modelFailed'));return false;}
+            finally{state.sourceBusy=false;renderState();}
+          }
+        }
         // Deleting a session is explicit and confirmed at the call-site.
         if(sessionId){
-          try{await sessionStore.deleteSession(sessionId);}
-          catch(error){warnStorage(error);}
+          try{await deleteSessionRecord(sessionId);}
+          catch(error){warnStorage(error);toast(tr('deleteFailed'));return false;}
         }
         ledger.reset();currentSession=null;
         state.elapsedMs=0;state.lastActive=0;state.startTime=0;state.sessionStart=null;
@@ -3549,6 +4240,7 @@ body.help-scroll-locked{
         $('#resultText').hidden=true;$('#resultText').value='';
         state.phase=hasActiveSource()?'ready':'idle';renderState();renderTimeline();
         await refreshSavedSessions();
+        return true;
       }
       $('#languageButton').addEventListener('click',()=>{language=language==='ja'?'en':'ja';try{localStorage.setItem(STORAGE_KEY,language);}catch{}localize();});
       const helpDialog=$('#helpDialog');
@@ -3575,9 +4267,17 @@ body.help-scroll-locked{
         if(helpDialog.open)return;
         helpPreviousFocus=document.activeElement;
         lockHelpBackgroundScroll();
-        try{helpDialog.showModal();}
+        try{helpDialog.showModal();$('#helpDialogBody').scrollTop=0;}
         catch(error){unlockHelpBackgroundScroll();throw error;}
       });
+      for(const link of helpDialog.querySelectorAll('.help-nav a')){
+        link.addEventListener('click',event=>{
+          event.preventDefault();
+          const heading=helpDialog.querySelector(link.hash);
+          heading.focus({preventScroll:true});
+          heading.scrollIntoView({block:'start'});
+        });
+      }
       $('#helpClose').addEventListener('click',()=>helpDialog.close());
       helpDialog.addEventListener('close',unlockHelpBackgroundScroll);
       helpDialog.addEventListener('click',event=>{
@@ -3587,6 +4287,10 @@ body.help-scroll-locked{
            event.clientY<bounds.top||event.clientY>bounds.bottom)helpDialog.close();
       });
       $('#focusToggle').addEventListener('click',toggleWorkspace);
+      $('#inputOptions').addEventListener('click',event=>{
+        const button=event.currentTarget;
+        button.setAttribute('aria-expanded',String(button.getAttribute('aria-expanded')!=='true'));
+      });
       $('#dockSettings').addEventListener('click',toggleWorkspace);
       $('#dockStart').addEventListener('click',()=>{
         if(state.phase==='testing')finishTest();
@@ -3599,31 +4303,52 @@ body.help-scroll-locked{
       });
       for(const id of ['roiEnabled','roiLeft','roiRight','roiTop','roiBottom'])$('#'+id).addEventListener('change',updateArea);
       $('#analysisMode').addEventListener('change',()=>{if(!['counting','testing'].includes(state.phase))saveSetup();});
-      $('#cameraStart').addEventListener('click',startCamera);
+      $('#cameraStart').addEventListener('click',async()=>{
+        if($('#appMain').dataset.screen==='source'&&isFileMode())await switchVideoSource('camera');
+        if(!isFileMode())await startCamera();
+      });
+      function chooseSourceFile(input){
+        cancelPermissionRequest();
+        input.click();
+      }
+      $('#chooseVideo').addEventListener('click',()=>chooseSourceFile($('#videoFile')));
+      $('#chooseAnyVideo').addEventListener('click',()=>chooseSourceFile($('#fileFallbackInput')));
+      async function openSelectedFile(file){
+        if(!file||state.sourceBusy||state.restoring)return;
+        if($('#appMain').dataset.screen==='source'){
+          cancelPermissionRequest();
+          if(!isFileMode())await switchVideoSource('file');
+        }
+        if(isFileMode())await readVideoFile(file);
+      }
       $('#sourceMode').addEventListener('change',event=>switchVideoSource(event.target.value));
       $('#videoFile').addEventListener('change',event=>{
-        if(event.target.files?.[0])void readVideoFile(event.target.files[0]);
+        void openSelectedFile(event.target.files?.[0]);
+        event.target.value='';
       });
       $('#fileFallbackButton').addEventListener('click',()=>$('#fileFallbackInput').click());
       $('#fileFallbackInput').addEventListener('change',event=>{
-        if(event.target.files?.[0])void readVideoFile(event.target.files[0]);
+        void openSelectedFile(event.target.files?.[0]);
         event.target.value='';
       });
-      $('#videoSourceBox').addEventListener('dragover',event=>{
-        if(!isFileMode())return;
-        event.preventDefault();event.dataTransfer.dropEffect='copy';
-        $('#videoSourceBox').dataset.active='true';
-      });
-      $('#videoSourceBox').addEventListener('dragleave',()=>{$('#videoSourceBox').dataset.active='false';});
-      $('#videoSourceBox').addEventListener('drop',event=>{
-        if(!isFileMode())return;
-        event.preventDefault();$('#videoSourceBox').dataset.active='false';
-        const file=Array.from(event.dataTransfer?.files||[]).find(f=>
-          f.type.startsWith('video/')||/.(mp4|webm|mov|m4v|ogv)$/i.test(f.name));
-        if(file)void readVideoFile(file);
-        else{state.videoErrorKey='videoBadFormat';renderState();}
-      });
+      for(const zone of [$('#chooseVideo'),$('#videoSourceBox')]){
+        zone.addEventListener('dragover',event=>{
+          event.preventDefault();event.dataTransfer.dropEffect='copy';zone.dataset.active='true';
+        });
+        zone.addEventListener('dragleave',()=>{zone.dataset.active='false';});
+        zone.addEventListener('drop',event=>{
+          event.preventDefault();zone.dataset.active='false';
+          const files=Array.from(event.dataTransfer?.files||[]);
+          const video=files.find(file=>file.type.startsWith('video/')||/\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name));
+          void openSelectedFile(video||files[0]);
+        });
+      }
       $('#previewVideo').addEventListener('click',toggleFilePreview);
+      $('#resultVideoDetails').addEventListener('toggle',event=>{
+        if(state.phase!=='done'||!state.videoReady)return;
+        if(event.currentTarget.open)draw();
+        else if(!video.paused)video.pause();
+      });
       $('#reanalyzeVideo').addEventListener('click',()=>void confirmFileReanalysis({requestedSecond:0,restart:true}));
       $('#removeVideo').addEventListener('click',()=>void closeVideoAction());
       $('#videoSeek').addEventListener('change',event=>{
@@ -3631,9 +4356,16 @@ body.help-scroll-locked{
           requestedSecond:state.videoDurationMs*(Number(event.target.value)/1000)/1000
         });
       });
+      $('#reviewEvent').addEventListener('change',async event=>{
+        const value=event.target.value;
+        if(state.phase!=='done'||!state.videoReady||value==='')return;
+        event.target.selectedIndex=0;
+        const moved=await confirmFileReanalysis({requestedSecond:Math.max(0,Number(value)/1000-3)});
+        if(moved&&state.phase==='done'&&video.paused)await toggleFilePreview();
+      });
       video.addEventListener('timeupdate',renderVideoTime);
       video.addEventListener('play',()=>{
-        if(isFileMode()&&state.videoReady){
+        if(isFileMode()&&state.videoReady&&state.phase!=='done'){
           cancelAnimationFrame(state.frameHandle);
           state.frameHandle=requestAnimationFrame(loop);
         }
@@ -3694,9 +4426,11 @@ body.help-scroll-locked{
       $('#summaryButton').addEventListener('click',exportSummary);
       $('#intervalsButton').addEventListener('click',exportIntervals);
       $('#aggregationMinutes').addEventListener('change',renderTimeline);
+      $('#timeBasis').addEventListener('change',renderTimeline);
       $('#newSession').addEventListener('click',startNewSession);
       $('#sessionName').addEventListener('change',()=>{
-        if(currentSession)void queueSnapshot().then(refreshSavedSessions);
+        $('#resultSessionName').textContent=$('#sessionName').value;
+        if(currentSession)queueSnapshot(null,true);
       });
       for(const id of ['#labelA','#labelB']){
         $(id).addEventListener('change',()=>{
@@ -3732,6 +4466,11 @@ body.help-scroll-locked{
       });
       state.clockTimer=setInterval(()=>{
         renderOperations();
+        if(state.phase!=='counting'&&pendingWrites.has(currentSession)&&!state.restoring&&
+           Date.now()-state.lastCheckpointTick>=5000){
+          state.lastCheckpointTick=Date.now();
+          queueSnapshot();
+        }
         if(state.phase==='testing'){
           if(performance.now()-state.testStartedAt>=state.testDurationMs)finishTest();
           else formatTestStatus();

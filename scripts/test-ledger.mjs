@@ -90,4 +90,20 @@ testCase('reject malformed persisted events instead of corrupting counters',()=>
     occurredAt:new Date().toISOString(),elapsedMs:10}];
   assert.throws(()=>ledger.restore(wrong));
 });
+testCase('event labels survive edits, Undo and reload',()=>{
+  let name='Entrance';
+  const ledger=factory(()=>name);
+  ledger.auto('A_TO_B',100);
+  name='Door 1';
+  const correction=ledger.correct('A_TO_B',1,110);
+  name='North';
+  ledger.undo(120,correction.id);
+  const restored=factory();
+  restored.restore(ledger.history());
+  assert.deepEqual(Array.from(restored.history(),e=>e.directionLabel),['Entrance','Door 1','North']);
+  const older=ledger.history();
+  delete older[0].directionLabel;
+  restored.restore(older);
+  assert.equal(restored.history()[0].directionLabel,'A → B');
+});
 console.log('[ledger] All '+checks+' deterministic ledger checks passed');
