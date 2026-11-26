@@ -358,7 +358,7 @@ try {
   console.log('[persistence] IndexedDB-disabled client retains memory counts and exports CSV.');
 
   if((await page.locator('html').getAttribute('lang'))!=='en')await page.locator('#languageButton').click();
-  assert.equal(await page.locator('#pageTitle').textContent(), 'Choose your video source');
+  assert.match(await page.locator('#entryIntro').textContent(),/people cross it in each direction/);
   assert.equal(await page.locator('#brandName').textContent(),'Passage Counter');
   assert.equal(await page.locator('#versionBadge').textContent(),'v1.1.0');
   assert.equal(await page.locator('#languageButton').textContent(),'JA');

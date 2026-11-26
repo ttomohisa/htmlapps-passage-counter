@@ -56,8 +56,7 @@ try{
           iconWidth:icon.getBoundingClientRect().width,buttonWidth:rect.width,
           buttonHeight:rect.height};
       })(),
-      version:document.querySelector('#versionBadge').textContent,
-      text:document.querySelector('#pageTitle').textContent
+      version:document.querySelector('#versionBadge').textContent
     };
   });
   assert.equal(design.sticky,'sticky','Non-sticky BK header at '+width);
@@ -83,7 +82,9 @@ try{
     assert.equal(await page.locator('#brandName').textContent(),lang==='en'?'Passage Counter':'通過カウンター');
     assert.equal(await page.locator('#languageButton').textContent(),lang==='en'?'JA':'EN');
     assert.match(await page.locator('.local-badge').textContent(),lang==='en'?/local processing/i:/完全ローカル処理/);
-    assert((await page.locator('#pageTitle').textContent()).trim().length>8);
+    assert.equal(await page.locator('.page-intro :is(h1,h2)').count(),0);
+    assert(await page.getByRole('heading',{level:1,name:lang==='en'?'Passage Counter':'通過カウンター',exact:true}).isVisible());
+    assert.match(await page.locator('#entryIntro').textContent(),lang==='en'?/each direction/:/方向別/);
     assert(await page.locator('#helpButton').getAttribute('aria-label'));
     assert(await page.locator('#languageButton').getAttribute('aria-label'));
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),

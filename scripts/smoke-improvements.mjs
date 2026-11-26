@@ -117,6 +117,7 @@ try{
  await page.locator('#timeBasis').selectOption('wall');
  await page.locator('#newSession').click();
  await page.waitForFunction(()=>document.querySelector('#appMain').dataset.screen==='source');
+ await page.waitForFunction(()=>document.activeElement?.id==='entryIntro');
  assert(await page.locator('#confirmDialog').isHidden(),'A saved result can be left in one step');
  await page.locator('#timelineSection').waitFor({state:'hidden'});
  assert(await page.locator('#timeBasisField').evaluate(el=>el.hidden),'Inactive timeline should hide the axis selector');
