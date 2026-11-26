@@ -73,9 +73,9 @@ async function verifyCorrectionLayout(page){
       (value.right<=adjust.left+1||value.bottom<=adjust.top+1)&&document.documentElement.scrollWidth<=innerWidth+1;
     [label.textContent,count.textContent]=saved;
     if(saved[2]===undefined)delete count.dataset.digits;else count.dataset.digits=saved[2];
-    return fits;
+    return {fits,value:value.toJSON(),tile:tile.toJSON(),adjust:adjust.toJSON(),width:innerWidth};
   });
-  assert(stress,'Large counts and long direction labels fit inside the tile');
+  assert(stress.fits,'Large counts and long direction labels fit inside the tile '+JSON.stringify(stress));
 }
 try{
  await mkdir('dist/screenshots',{recursive:true});

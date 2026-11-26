@@ -923,7 +923,8 @@ body.help-scroll-locked{
   background:#f6f8f3;color:var(--text);margin:0;padding:12px 16px;border:0;border-radius:0;
 }
 #appMain:is([data-screen="setup"],[data-screen="measure"]) .source-caption{display:none}
-#appMain[data-screen="setup"] :is(#counterSummary,.support-panel,#setupFlow),
+#appMain[data-screen="setup"] :is(#counterSummary,.support-panel,#setupFlow,#savedSessions),
+#appMain[data-screen="measure"][data-focused="true"] #timelineSection,
 #appMain[data-screen="measure"] :is(#setupFlow,.count-footnote),
 #appMain:is([data-screen="setup"],[data-screen="measure"]) .next-action{display:none}
 #appMain[data-screen="setup"] .measure-console{padding:20px 20px 16px;position:static}
@@ -1003,6 +1004,8 @@ body.help-scroll-locked{
   }
   #appMain[data-screen="measure"] .counter strong[data-digits="1"],
   #appMain[data-screen="measure"] .counter strong[data-digits="2"]{font-size:34px}
+  #appMain[data-screen="measure"] .counter strong:is([data-digits="4"],[data-digits="5"],[data-digits="6"]){font-size:clamp(22px,6.6vw,32px)}
+  #appMain[data-screen="measure"] .counter strong:is([data-digits="7"],[data-digits="8"],[data-digits="9"]){font-size:18px}
   #appMain[data-screen="measure"] .counter-adjustments{grid-template-columns:repeat(2,minmax(44px,1fr));width:100%;gap:3px}
   #appMain[data-screen="measure"] .counter-adjustments button{width:100%}
   #appMain[data-screen="measure"] .total{border:0;margin:0;padding:0}
@@ -3032,19 +3035,22 @@ body.help-scroll-locked{
         for(const detail of $('#report').querySelectorAll('.result-sections > details'))detail.open=false;
       }
       let screenFocusFrame=0;
-      function updateWorkflowScreen(screen){
-        const main=$('#appMain');
-        if(main.dataset.screen===screen)return;
-        main.dataset.screen=screen;
+      function focusWorkflowHeading(screen){
         cancelAnimationFrame(screenFocusFrame);
         screenFocusFrame=requestAnimationFrame(()=>{
-          if(document.querySelector('dialog[open]'))return;
+          if($('#appMain').dataset.screen!==screen||document.querySelector('dialog[open]'))return;
           const headings={source:'#pageTitle',setup:'#cameraHeading',measure:'#counterHeading',result:'#reportHeading'};
           const heading=$(headings[screen]);
           heading.tabIndex=-1;
           heading.focus({preventScroll:true});
           window.scrollTo({top:0,behavior:'instant'});
         });
+      }
+      function updateWorkflowScreen(screen){
+        const main=$('#appMain');
+        if(main.dataset.screen===screen)return;
+        main.dataset.screen=screen;
+        focusWorkflowHeading(screen);
       }
       function renderSourceEntry(){
         const screen=$('#appMain').dataset.screen;
@@ -4024,8 +4030,10 @@ body.help-scroll-locked{
           modelVersion:'EfficientDet-Lite0-int8-1'});
         inferencePacer.reset();
         if(!state.startTime||state.phase==='ready')state.focused=true;
+        const resuming=$('#appMain').dataset.screen==='measure';
         state.lastActive=performance.now();state.phase='counting';
         transitionSession('counting');zeroTracks();renderState();renderTimeline();
+        if(resuming)focusWorkflowHeading('measure');
         if(isFileMode()&&$('#analysisMode').value==='sequential'&&state.videoDurationMs>0){
           void runSequential();lockScreen();
         }else if(isFileMode()){
